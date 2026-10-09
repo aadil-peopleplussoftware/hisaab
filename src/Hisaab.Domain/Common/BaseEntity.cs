@@ -16,4 +16,5 @@ public abstract class UserOwnedEntity : BaseEntity, IUserOwned, ISoftDeletable
     public bool IsDeleted { get; set; } = false;
     public DateTime? DeletedAtUtc { get; set; }
     public Guid? DeletedBy { get; set; }
+    public Guid? ImportBatchId { get; set; }
 }

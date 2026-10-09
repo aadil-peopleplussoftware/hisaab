@@ -14,6 +14,9 @@ public interface IApplicationDbContext
     DbSet<Holding> Holdings { get; }
     DbSet<InvestmentTransaction> InvestmentTransactions { get; }
     DbSet<AuditLog> AuditLogs { get; }
+    DbSet<ImportBatch> ImportBatches { get; }
+    DbSet<ImportError> ImportErrors { get; }
+    DbSet<MappingProfile> MappingProfiles { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

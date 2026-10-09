@@ -61,6 +61,17 @@ public class ExceptionHandlingMiddleware
                 }
             ),
 
+            KeyNotFoundException keyNotFoundEx => (
+                HttpStatusCode.NotFound,
+                new ProblemDetails
+                {
+                    Title = "Not Found",
+                    Status = (int)HttpStatusCode.NotFound,
+                    Detail = keyNotFoundEx.Message,
+                    Instance = context.Request.Path
+                }
+            ),
+
             ForbiddenAccessException forbiddenEx => (
                 // Return 404 to avoid data enumeration as required by OWASP & Section 5
                 HttpStatusCode.NotFound,

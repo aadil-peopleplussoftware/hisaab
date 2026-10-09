@@ -25,6 +25,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Hisaab.Application\Hisaab.Application.csproj" />
     <ProjectReference Include="..\..\src\Hisaab.Domain\Hisaab.Domain.csproj" />
+    <ProjectReference Include="..\..\src\Hisaab.Infrastructure\Hisaab.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

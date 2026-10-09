@@ -65,6 +65,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/reports/reports.component').then(m => m.ReportsComponent)
       },
       {
+        path: 'data-transfer',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/data-transfer/data-transfer.component').then(m => m.DataTransferComponent)
+      },
+      {
         path: 'settings',
         canActivate: [authGuard],
         loadComponent: () => import('./features/settings/settings.component').then(m => m.SettingsComponent)

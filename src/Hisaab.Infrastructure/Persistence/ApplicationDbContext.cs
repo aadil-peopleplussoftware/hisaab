@@ -24,6 +24,9 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<Holding> Holdings => Set<Holding>();
     public DbSet<InvestmentTransaction> InvestmentTransactions => Set<InvestmentTransaction>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<ImportBatch> ImportBatches => Set<ImportBatch>();
+    public DbSet<ImportError> ImportErrors => Set<ImportError>();
+    public DbSet<MappingProfile> MappingProfiles => Set<MappingProfile>();
 
     public ApplicationDbContext(
         DbContextOptions<ApplicationDbContext> options,
