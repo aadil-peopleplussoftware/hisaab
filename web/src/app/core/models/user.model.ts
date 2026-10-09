@@ -4,11 +4,13 @@ export interface User {
   fullName: string;
   avatarUrl?: string;
   role: 'User' | 'Admin';
+  timezone: string;
+  locale: string;
 }
 
 export interface AuthResponse {
   accessToken: string;
+  refreshToken?: string;
   expiresIn: number;
   user: User;
 }
-

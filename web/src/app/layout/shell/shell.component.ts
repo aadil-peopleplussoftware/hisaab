@@ -2,6 +2,7 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ThemeService } from '../../core/services/theme.service';
+import { AuthService } from '../../core/services/auth.service';
 import { MonthPickerComponent } from '../../shared/components/month-picker/month-picker.component';
 
 @Component({
@@ -118,9 +119,15 @@ import { MonthPickerComponent } from '../../shared/components/month-picker/month
               }
             </button>
 
-            <div class="user-avatar" title="Logged In User">
-              <span>A</span>
-            </div>
+            @if (authService.isAuthenticated()) {
+              <a routerLink="/profile" class="user-avatar" title="View Profile">
+                <span>{{ (authService.currentUser()?.fullName || 'User')[0].toUpperCase() }}</span>
+              </a>
+            } @else {
+              <a routerLink="/auth/login" class="btn-signin">
+                Sign In
+              </a>
+            }
           </div>
         </header>
 
@@ -402,9 +409,29 @@ import { MonthPickerComponent } from '../../shared/components/month-picker/month
         }
       }
     }
+
+    .btn-signin {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.4rem 0.85rem;
+      background: var(--color-primary);
+      color: #ffffff;
+      border-radius: var(--radius-md);
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-decoration: none;
+      min-height: calc(var(--min-touch-target) - 8px);
+      transition: background-color 0.15s ease;
+
+      &:hover {
+        background: var(--color-primary-hover);
+      }
+    }
   `]
 })
 export class ShellComponent {
   readonly themeService = inject(ThemeService);
+  readonly authService = inject(AuthService);
 }
 

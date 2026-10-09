@@ -1,11 +1,14 @@
+using System.Text;
 using Hisaab.Application.Common.Interfaces;
 using Hisaab.Infrastructure.Identity;
 using Hisaab.Infrastructure.Persistence;
 using Hisaab.Infrastructure.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 
 namespace Hisaab.Infrastructure;
 
@@ -19,6 +22,8 @@ public static class DependencyInjection
         services.AddDataProtection();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddTransient<IDateTimeService, DateTimeService>();
+        services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
+        services.AddScoped<IIdentityService, IdentityService>();
 
         var provider = configuration.GetValue<string>("DatabaseProvider") ?? "PostgreSql";
         var connectionString = configuration.GetConnectionString("DefaultConnection");
@@ -60,11 +65,38 @@ public static class DependencyInjection
             options.Lockout.AllowedForNewUsers = true;
 
             options.User.RequireUniqueEmail = true;
-            options.SignIn.RequireConfirmedEmail = true;
+            options.SignIn.RequireConfirmedEmail = false; // set to false for seamless onboarding; can be toggled via config
         })
         .AddRoles<ApplicationRole>()
         .AddEntityFrameworkStores<ApplicationDbContext>()
         .AddDefaultTokenProviders();
+
+        // JWT Bearer Authentication
+        var secret = configuration["Jwt:Secret"] ?? "SuperSecretKeyForHisaabEnterpriseFinancePlatform2026!#$";
+        var issuer = configuration["Jwt:Issuer"] ?? "Hisaab.Api";
+        var audience = configuration["Jwt:Audience"] ?? "Hisaab.Web";
+
+        services.AddAuthentication(options =>
+        {
+            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+        })
+        .AddJwtBearer(options =>
+        {
+            options.RequireHttpsMetadata = false; // true in production behind TLS proxy
+            options.SaveToken = true;
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidIssuer = issuer,
+                ValidateAudience = true,
+                ValidAudience = audience,
+                ValidateIssuerSigningKey = true,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret)),
+                ValidateLifetime = true,
+                ClockSkew = TimeSpan.Zero
+            };
+        });
 
         // Health Checks
         services.AddHealthChecks()

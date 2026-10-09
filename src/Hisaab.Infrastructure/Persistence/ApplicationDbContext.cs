@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Hisaab.Application.Common.Interfaces;
 using Hisaab.Domain.Common;
+using Hisaab.Domain.Entities;
 using Hisaab.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
@@ -13,6 +14,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
 {
     private readonly ICurrentUserService _currentUserService;
     private readonly IDateTimeService _dateTimeService;
+
+    public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
     public ApplicationDbContext(
         DbContextOptions<ApplicationDbContext> options,

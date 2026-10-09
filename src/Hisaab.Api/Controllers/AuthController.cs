@@ -1,0 +1,171 @@
+using Hisaab.Application.Features.Auth.Commands.ChangePassword;
+using Hisaab.Application.Features.Auth.Commands.Login;
+using Hisaab.Application.Features.Auth.Commands.Logout;
+using Hisaab.Application.Features.Auth.Commands.RefreshToken;
+using Hisaab.Application.Features.Auth.Commands.Register;
+using Hisaab.Application.Features.Auth.Commands.UpdateProfile;
+using Hisaab.Application.Features.Auth.DTOs;
+using Hisaab.Application.Features.Auth.Queries.GetProfile;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Hisaab.Api.Controllers;
+
+public class AuthController : ApiControllerBase
+{
+    private const string RefreshTokenCookieName = "hisaab_refresh_token";
+
+    [HttpPost("register")]
+    [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Register([FromBody] RegisterRequest request, CancellationToken cancellationToken)
+    {
+        var command = new RegisterCommand(
+            request.Email,
+            request.Password,
+            request.FullName,
+            Request.Headers["User-Agent"].ToString(),
+            HttpContext.Connection.RemoteIpAddress?.ToString());
+
+        var result = await Mediator.Send(command, cancellationToken);
+        if (!result.Succeeded)
+        {
+            return BadRequest(new { errors = result.Errors });
+        }
+
+        SetRefreshTokenCookie(result.Data!.RefreshToken);
+        return Ok(result.Data);
+    }
+
+    [HttpPost("login")]
+    [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Login([FromBody] LoginRequest request, CancellationToken cancellationToken)
+    {
+        var command = new LoginCommand(
+            request.Email,
+            request.Password,
+            Request.Headers["User-Agent"].ToString(),
+            HttpContext.Connection.RemoteIpAddress?.ToString());
+
+        var result = await Mediator.Send(command, cancellationToken);
+        if (!result.Succeeded)
+        {
+            return BadRequest(new { errors = result.Errors });
+        }
+
+        SetRefreshTokenCookie(result.Data!.RefreshToken);
+        return Ok(result.Data);
+    }
+
+    [HttpPost("refresh")]
+    [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Refresh([FromBody] RefreshTokenRequest? request, CancellationToken cancellationToken)
+    {
+        var token = request?.RefreshToken ?? Request.Cookies[RefreshTokenCookieName];
+
+        if (string.IsNullOrWhiteSpace(token))
+        {
+            return BadRequest(new { errors = new[] { "Refresh token is missing." } });
+        }
+
+        var command = new RefreshTokenCommand(
+            token,
+            Request.Headers["User-Agent"].ToString(),
+            HttpContext.Connection.RemoteIpAddress?.ToString());
+
+        var result = await Mediator.Send(command, cancellationToken);
+        if (!result.Succeeded)
+        {
+            return BadRequest(new { errors = result.Errors });
+        }
+
+        SetRefreshTokenCookie(result.Data!.RefreshToken);
+        return Ok(result.Data);
+    }
+
+    [HttpPost("logout")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> Logout([FromBody] RefreshTokenRequest? request, CancellationToken cancellationToken)
+    {
+        var token = request?.RefreshToken ?? Request.Cookies[RefreshTokenCookieName];
+
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            await Mediator.Send(new LogoutCommand(token), cancellationToken);
+        }
+
+        Response.Cookies.Delete(RefreshTokenCookieName);
+        return Ok(new { message = "Logged out successfully." });
+    }
+
+    [Authorize]
+    [HttpGet("profile")]
+    [ProducesResponseType(typeof(UserProfileDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> GetProfile(CancellationToken cancellationToken)
+    {
+        var result = await Mediator.Send(new GetProfileQuery(), cancellationToken);
+        if (!result.Succeeded)
+        {
+            return NotFound(new { errors = result.Errors });
+        }
+
+        return Ok(result.Data);
+    }
+
+    [Authorize]
+    [HttpPut("profile")]
+    [ProducesResponseType(typeof(UserProfileDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request, CancellationToken cancellationToken)
+    {
+        var command = new UpdateProfileCommand(request.FullName, request.AvatarUrl, request.Timezone, request.Locale);
+        var result = await Mediator.Send(command, cancellationToken);
+
+        if (!result.Succeeded)
+        {
+            return BadRequest(new { errors = result.Errors });
+        }
+
+        return Ok(result.Data);
+    }
+
+    [Authorize]
+    [HttpPost("change-password")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordRequest request, CancellationToken cancellationToken)
+    {
+        var command = new ChangePasswordCommand(request.CurrentPassword, request.NewPassword);
+        var result = await Mediator.Send(command, cancellationToken);
+
+        if (!result.Succeeded)
+        {
+            return BadRequest(new { errors = result.Errors });
+        }
+
+        Response.Cookies.Delete(RefreshTokenCookieName);
+        return Ok(new { message = "Password updated successfully. Please log in again." });
+    }
+
+    private void SetRefreshTokenCookie(string token)
+    {
+        var cookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true, // Strict HTTPS requirement
+            SameSite = SameSiteMode.Strict,
+            Expires = DateTimeOffset.UtcNow.AddDays(7)
+        };
+
+        Response.Cookies.Append(RefreshTokenCookieName, token, cookieOptions);
+    }
+}
+
+public record RegisterRequest(string Email, string Password, string FullName);
+public record LoginRequest(string Email, string Password);
+public record RefreshTokenRequest(string? RefreshToken);
+public record UpdateProfileRequest(string FullName, string? AvatarUrl, string Timezone, string Locale);
+public record ChangePasswordRequest(string CurrentPassword, string NewPassword);
