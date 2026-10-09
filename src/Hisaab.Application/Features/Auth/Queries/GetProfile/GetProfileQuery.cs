@@ -32,3 +32,4 @@ public class GetProfileQueryHandler : IRequestHandler<GetProfileQuery, Result<Us
         return await _identityService.GetProfileAsync(userId.Value, cancellationToken);
     }
 }
+

@@ -70,3 +70,4 @@ export interface CreateCategoryPayload {
   icon?: string;
   color?: string;
 }
+

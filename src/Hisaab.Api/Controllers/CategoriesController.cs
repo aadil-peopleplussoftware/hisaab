@@ -36,3 +36,4 @@ public class CategoriesController : ApiControllerBase
 }
 
 public record CreateCategoryRequest(TransactionType Type, string Name, string? Icon, string? Color);
+

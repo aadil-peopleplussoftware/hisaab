@@ -42,3 +42,4 @@ public class GetCategoriesQueryHandler : IRequestHandler<GetCategoriesQuery, Res
         return Result<List<CategoryDto>>.Success(categories);
     }
 }
+

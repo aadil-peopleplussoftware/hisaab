@@ -18,3 +18,4 @@ public class Category : BaseEntity, IUserOwned, ISoftDeletable
 
     public ICollection<Transaction> Transactions { get; set; } = new List<Transaction>();
 }
+

@@ -40,6 +40,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/loans/loans.component').then(m => m.LoansComponent)
       },
       {
+        path: 'loans/:id',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/loans/loan-detail/loan-detail.component').then(m => m.LoanDetailComponent)
+      },
+      {
         path: 'epfo',
         canActivate: [authGuard],
         loadComponent: () => import('./features/epfo/epfo.component').then(m => m.EpfoComponent)

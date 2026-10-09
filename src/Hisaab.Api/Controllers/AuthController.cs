@@ -169,3 +169,4 @@ public record LoginRequest(string Email, string Password);
 public record RefreshTokenRequest(string? RefreshToken);
 public record UpdateProfileRequest(string FullName, string? AvatarUrl, string Timezone, string Locale);
 public record ChangePasswordRequest(string CurrentPassword, string NewPassword);
+

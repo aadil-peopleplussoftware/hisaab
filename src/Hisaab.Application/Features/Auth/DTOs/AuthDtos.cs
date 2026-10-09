@@ -27,3 +27,4 @@ public record UserProfileDto(
     string Locale,
     DateTime CreatedAtUtc
 );
+

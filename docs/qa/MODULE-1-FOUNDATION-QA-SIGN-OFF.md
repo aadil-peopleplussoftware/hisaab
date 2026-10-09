@@ -48,3 +48,4 @@
    - Desktop sidebar navigation (>= 768px).
    - Semantic tokens: Income (green), Expense (red), Loans (amber), EPFO (teal), Investments (blue).
    - Dark mode toggle with `localStorage` persistence.
+

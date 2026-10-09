@@ -52,3 +52,4 @@ public interface IIdentityService
         string newPassword,
         CancellationToken cancellationToken = default);
 }
+

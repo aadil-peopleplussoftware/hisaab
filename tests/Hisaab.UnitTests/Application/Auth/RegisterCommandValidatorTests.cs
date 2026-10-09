@@ -45,3 +45,4 @@ public class RegisterCommandValidatorTests
         result.Errors.Should().Contain(e => e.PropertyName == "Password");
     }
 }
+

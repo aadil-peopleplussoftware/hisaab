@@ -6,3 +6,4 @@ public interface IJwtTokenGenerator
     (string RawToken, string TokenHash, DateTime ExpiresAtUtc) GenerateRefreshToken();
     string HashToken(string token);
 }
+

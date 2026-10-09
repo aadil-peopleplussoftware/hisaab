@@ -18,3 +18,4 @@ public class ChangePasswordCommandValidator : AbstractValidator<ChangePasswordCo
             .Matches(@"[\W_]").WithMessage("New password must contain at least one special character.");
     }
 }
+

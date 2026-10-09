@@ -43,3 +43,4 @@
    - Large touch targets (min 44px).
    - Card view on mobile, ledger table on desktop.
    - Dedicated print stylesheet hiding navigation during physical or PDF printing.
+

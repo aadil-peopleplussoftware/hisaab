@@ -45,3 +45,4 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
         _connection?.Dispose();
     }
 }
+

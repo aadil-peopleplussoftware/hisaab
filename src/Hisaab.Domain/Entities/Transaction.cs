@@ -13,3 +13,4 @@ public class Transaction : UserOwnedEntity
     public string? Note { get; set; }
     public Guid? AttachmentId { get; set; }
 }
+

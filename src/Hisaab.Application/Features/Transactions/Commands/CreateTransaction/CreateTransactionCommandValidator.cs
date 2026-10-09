@@ -23,3 +23,4 @@ public class CreateTransactionCommandValidator : AbstractValidator<CreateTransac
             .MaximumLength(500).WithMessage("Note must not exceed 500 characters.");
     }
 }
+

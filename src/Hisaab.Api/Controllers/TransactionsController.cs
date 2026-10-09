@@ -108,3 +108,4 @@ public record UpdateTransactionRequest(
     string? Note = null,
     Guid? AttachmentId = null
 );
+

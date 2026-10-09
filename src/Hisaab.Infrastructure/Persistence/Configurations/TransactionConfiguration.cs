@@ -29,3 +29,4 @@ public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
         builder.HasIndex(t => new { t.UserId, t.CategoryId });
     }
 }
+

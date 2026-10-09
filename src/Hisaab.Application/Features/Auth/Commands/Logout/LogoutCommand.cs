@@ -20,3 +20,4 @@ public class LogoutCommandHandler : IRequestHandler<LogoutCommand, Result>
         return await _identityService.LogoutAsync(request.RefreshToken, cancellationToken);
     }
 }
+

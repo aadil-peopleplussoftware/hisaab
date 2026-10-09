@@ -70,3 +70,4 @@ public class JwtTokenGenerator : IJwtTokenGenerator
         return Convert.ToBase64String(hashedBytes);
     }
 }
+

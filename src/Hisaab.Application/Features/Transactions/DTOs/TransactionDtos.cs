@@ -30,3 +30,4 @@ public record TransactionsResponseDto(
     PaginatedList<TransactionDto> Transactions,
     MonthlySummaryDto Summary
 );
+

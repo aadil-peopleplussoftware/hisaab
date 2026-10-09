@@ -26,3 +26,4 @@ public class RefreshTokenConfiguration : IEntityTypeConfiguration<RefreshToken>
         builder.HasIndex(rt => rt.ExpiresAtUtc);
     }
 }
+

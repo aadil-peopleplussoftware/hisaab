@@ -16,3 +16,4 @@ public class RefreshToken : BaseEntity, IUserOwned
     public bool IsRevoked => RevokedAtUtc != null;
     public bool IsActive => !IsRevoked && !IsExpired;
 }
+

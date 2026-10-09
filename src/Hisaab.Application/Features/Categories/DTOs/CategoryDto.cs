@@ -10,3 +10,4 @@ public record CategoryDto(
     string Color,
     bool IsSystem
 );
+

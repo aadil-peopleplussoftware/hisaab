@@ -72,3 +72,4 @@ describe('TransactionsService', () => {
     req.flush({ id: 'txn-1', ...payload, formattedAmount: '₹1,500.00', categoryName: 'Food', categoryIcon: 'tag', categoryColor: '#4f46e5' });
   });
 });
+

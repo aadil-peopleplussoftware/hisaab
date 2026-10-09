@@ -43,3 +43,4 @@ public class UpdateProfileCommandHandler : IRequestHandler<UpdateProfileCommand,
             cancellationToken);
     }
 }
+

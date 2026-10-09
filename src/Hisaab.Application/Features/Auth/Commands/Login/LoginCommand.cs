@@ -31,3 +31,4 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<AuthResp
             cancellationToken);
     }
 }
+

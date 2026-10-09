@@ -24,3 +24,4 @@ public class RegisterCommandValidator : AbstractValidator<RegisterCommand>
             .Matches(@"[\W_]").WithMessage("Password must contain at least one special character.");
     }
 }
+

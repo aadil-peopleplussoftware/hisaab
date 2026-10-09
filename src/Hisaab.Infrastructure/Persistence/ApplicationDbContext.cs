@@ -18,6 +18,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
     public DbSet<Category> Categories => Set<Category>();
     public DbSet<Transaction> Transactions => Set<Transaction>();
+    public DbSet<LoanAccount> LoanAccounts => Set<LoanAccount>();
+    public DbSet<LoanTransaction> LoanTransactions => Set<LoanTransaction>();
 
     public ApplicationDbContext(
         DbContextOptions<ApplicationDbContext> options,
@@ -28,6 +30,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
         _currentUserService = currentUserService;
         _dateTimeService = dateTimeService;
     }
+
+    public Guid? CurrentUserId => _currentUserService.UserId;
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -66,8 +70,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
                 // Defense-in-depth: Tenant Isolation Filter
                 var userIdProp = Expression.Property(parameter, nameof(IUserOwned.UserId));
                 var currentUserIdExpr = Expression.Property(
-                    Expression.Constant(_currentUserService),
-                    nameof(ICurrentUserService.UserId));
+                    Expression.Constant(this),
+                    nameof(CurrentUserId));
 
                 var hasValueExpr = Expression.Property(currentUserIdExpr, "HasValue");
                 var valueExpr = Expression.Property(currentUserIdExpr, "Value");

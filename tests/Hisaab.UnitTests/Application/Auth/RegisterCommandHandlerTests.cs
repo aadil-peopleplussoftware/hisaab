@@ -35,3 +35,4 @@ public class RegisterCommandHandlerTests
         result.Data.User.Email.Should().Be("user@hisaab.com");
     }
 }
+

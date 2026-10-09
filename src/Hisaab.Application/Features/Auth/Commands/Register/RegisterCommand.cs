@@ -33,3 +33,4 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, Result<Au
             cancellationToken);
     }
 }
+

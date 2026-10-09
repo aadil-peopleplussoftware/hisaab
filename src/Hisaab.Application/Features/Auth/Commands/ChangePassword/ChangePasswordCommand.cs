@@ -38,3 +38,4 @@ public class ChangePasswordCommandHandler : IRequestHandler<ChangePasswordComman
             cancellationToken);
     }
 }
+

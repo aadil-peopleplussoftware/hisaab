@@ -8,6 +8,8 @@ public interface IApplicationDbContext
     DbSet<RefreshToken> RefreshTokens { get; }
     DbSet<Category> Categories { get; }
     DbSet<Transaction> Transactions { get; }
+    DbSet<LoanAccount> LoanAccounts { get; }
+    DbSet<LoanTransaction> LoanTransactions { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

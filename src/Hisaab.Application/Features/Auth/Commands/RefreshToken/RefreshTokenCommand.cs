@@ -29,3 +29,4 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
             cancellationToken);
     }
 }
+

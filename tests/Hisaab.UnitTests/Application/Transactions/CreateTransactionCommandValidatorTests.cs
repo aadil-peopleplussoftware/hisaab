@@ -56,3 +56,4 @@ public class CreateTransactionCommandValidatorTests
         result.Errors.Should().Contain(e => e.PropertyName == "CategoryId");
     }
 }
+

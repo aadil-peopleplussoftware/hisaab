@@ -74,3 +74,4 @@ public class CreateCategoryCommandHandler : IRequestHandler<CreateCategoryComman
         return Result<CategoryDto>.Success(dto);
     }
 }
+

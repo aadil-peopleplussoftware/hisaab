@@ -17,3 +17,4 @@ public class UpdateProfileCommandValidator : AbstractValidator<UpdateProfileComm
             .NotEmpty().WithMessage("Locale is required.");
     }
 }
+

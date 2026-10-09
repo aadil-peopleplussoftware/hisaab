@@ -37,3 +37,4 @@
 3. **Multi-Tenancy & Authorization**:
    - Global query filters and `ICurrentUserService` ensure strict ownership checks.
    - All profile queries verify the authenticated subject.
+
