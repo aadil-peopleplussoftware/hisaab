@@ -24,6 +24,10 @@ public static class DependencyInjection
         services.AddTransient<IDateTimeService, DateTimeService>();
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         services.AddScoped<IIdentityService, IdentityService>();
+        services.AddScoped<IReportExportService, ReportExportService>();
+
+        // QuestPDF Community License for non-commercial/enterprise open use
+        QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 
         var provider = configuration.GetValue<string>("DatabaseProvider") ?? "PostgreSql";
         var connectionString = configuration.GetConnectionString("DefaultConnection");
