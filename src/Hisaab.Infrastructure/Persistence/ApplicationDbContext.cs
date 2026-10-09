@@ -16,6 +16,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     private readonly IDateTimeService _dateTimeService;
 
     public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
+    public DbSet<Category> Categories => Set<Category>();
+    public DbSet<Transaction> Transactions => Set<Transaction>();
 
     public ApplicationDbContext(
         DbContextOptions<ApplicationDbContext> options,
@@ -62,7 +64,6 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
             if (typeof(IUserOwned).IsAssignableFrom(clrType))
             {
                 // Defense-in-depth: Tenant Isolation Filter
-                // Non-admins see ONLY their own records. If unauthenticated/anonymous, returns false (or matched empty).
                 var userIdProp = Expression.Property(parameter, nameof(IUserOwned.UserId));
                 var currentUserIdExpr = Expression.Property(
                     Expression.Constant(_currentUserService),
@@ -70,11 +71,18 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
 
                 var hasValueExpr = Expression.Property(currentUserIdExpr, "HasValue");
                 var valueExpr = Expression.Property(currentUserIdExpr, "Value");
-                var userIdMatches = Expression.AndAlso(hasValueExpr, Expression.Equal(userIdProp, valueExpr));
+                Expression tenantCheck = Expression.AndAlso(hasValueExpr, Expression.Equal(userIdProp, valueExpr));
+
+                if (clrType == typeof(Category))
+                {
+                    var isSystemProp = Expression.Property(parameter, nameof(Category.IsSystem));
+                    var isSystemTrue = Expression.Equal(isSystemProp, Expression.Constant(true));
+                    tenantCheck = Expression.OrElse(isSystemTrue, tenantCheck);
+                }
 
                 filterExpression = filterExpression == null
-                    ? userIdMatches
-                    : Expression.AndAlso(filterExpression, userIdMatches);
+                    ? tenantCheck
+                    : Expression.AndAlso(filterExpression, tenantCheck);
             }
 
             if (filterExpression != null)
