@@ -23,6 +23,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<EpfEntry> EpfEntries => Set<EpfEntry>();
     public DbSet<Holding> Holdings => Set<Holding>();
     public DbSet<InvestmentTransaction> InvestmentTransactions => Set<InvestmentTransaction>();
+    public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
     public ApplicationDbContext(
         DbContextOptions<ApplicationDbContext> options,

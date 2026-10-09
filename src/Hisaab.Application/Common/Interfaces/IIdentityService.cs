@@ -51,5 +51,9 @@ public interface IIdentityService
         string currentPassword,
         string newPassword,
         CancellationToken cancellationToken = default);
+
+    Task<Result> DeleteAccountAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default);
 }
 

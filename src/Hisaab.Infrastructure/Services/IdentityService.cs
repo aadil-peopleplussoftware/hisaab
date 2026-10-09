@@ -330,5 +330,32 @@ public class IdentityService : IIdentityService
 
         return Result<AuthResponseDto>.Success(authResponse);
     }
+
+    public async Task<Result> DeleteAccountAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        var user = await _userManager.FindByIdAsync(userId.ToString());
+        if (user == null || user.IsDeleted)
+        {
+            return Result.Failure("User account not found.");
+        }
+
+        user.IsDeleted = true;
+        user.DeletedAtUtc = _dateTimeService.UtcNow;
+        user.IsActive = false;
+
+        var tokens = await _dbContext.RefreshTokens
+            .Where(r => r.UserId == userId && r.RevokedAtUtc == null)
+            .ToListAsync(cancellationToken);
+
+        foreach (var t in tokens)
+        {
+            t.RevokedAtUtc = _dateTimeService.UtcNow;
+        }
+
+        await _userManager.UpdateAsync(user);
+        await _dbContext.SaveChangesAsync(cancellationToken);
+
+        return Result.Success();
+    }
 }
 

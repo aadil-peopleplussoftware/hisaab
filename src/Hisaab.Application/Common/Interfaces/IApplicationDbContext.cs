@@ -13,6 +13,7 @@ public interface IApplicationDbContext
     DbSet<EpfEntry> EpfEntries { get; }
     DbSet<Holding> Holdings { get; }
     DbSet<InvestmentTransaction> InvestmentTransactions { get; }
+    DbSet<AuditLog> AuditLogs { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

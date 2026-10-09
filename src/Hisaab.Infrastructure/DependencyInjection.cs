@@ -25,6 +25,7 @@ public static class DependencyInjection
         services.AddScoped<IJwtTokenGenerator, JwtTokenGenerator>();
         services.AddScoped<IIdentityService, IdentityService>();
         services.AddScoped<IReportExportService, ReportExportService>();
+        services.AddScoped<IAuditService, AuditService>();
 
         // QuestPDF Community License for non-commercial/enterprise open use
         QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
