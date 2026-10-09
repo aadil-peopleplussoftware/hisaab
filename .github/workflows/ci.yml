@@ -48,6 +48,10 @@ jobs:
         working-directory: ./web
         run: npm ci
 
+      - name: Run Frontend Tests
+        working-directory: ./web
+        run: npm test -- --watch=false
+
       - name: Build Angular SPA
         working-directory: ./web
         run: npm run build -- --configuration production
