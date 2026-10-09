@@ -55,6 +55,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/investments/investments.component').then(m => m.InvestmentsComponent)
       },
       {
+        path: 'investments/:id',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/investments/holding-detail/holding-detail.component').then(m => m.HoldingDetailComponent)
+      },
+      {
         path: 'reports',
         canActivate: [authGuard],
         loadComponent: () => import('./features/reports/reports.component').then(m => m.ReportsComponent)
