@@ -16,3 +16,4 @@ public class GetDashboardQueryValidator : AbstractValidator<GetDashboardQuery>
             .WithMessage("Trend months must be between 3 and 24.");
     }
 }
+

@@ -86,3 +86,4 @@ public record DashboardResponseDto(
     List<ActiveLoanDueDto> UpcomingLoanDues,
     List<DashboardRecentTransactionDto> RecentTransactions
 );
+

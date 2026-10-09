@@ -58,3 +58,4 @@ describe('ReportsService', () => {
     req.flush(mockBlob);
   });
 });
+

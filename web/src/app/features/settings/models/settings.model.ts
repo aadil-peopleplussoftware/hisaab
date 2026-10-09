@@ -57,3 +57,4 @@ export interface SystemHealth {
   processArchitecture: string;
   databaseProvider: string;
 }
+

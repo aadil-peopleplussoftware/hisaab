@@ -1045,3 +1045,4 @@ export class HoldingDetailComponent implements OnInit {
     }
   }
 }
+

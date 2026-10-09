@@ -132,3 +132,4 @@ public class SettingsAndAdminEndpointsTests : IClassFixture<CustomWebApplication
         loginDeletedResp.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 }
+

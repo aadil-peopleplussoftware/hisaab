@@ -43,3 +43,4 @@ export class ReportsService {
     window.URL.revokeObjectURL(url);
   }
 }
+

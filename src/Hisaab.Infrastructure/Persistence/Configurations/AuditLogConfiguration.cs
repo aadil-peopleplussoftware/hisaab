@@ -36,3 +36,4 @@ public class AuditLogConfiguration : IEntityTypeConfiguration<AuditLog>
         builder.HasIndex(a => a.Action);
     }
 }
+

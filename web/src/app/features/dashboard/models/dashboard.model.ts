@@ -82,3 +82,4 @@ export interface DashboardResponse {
   upcomingLoanDues: ActiveLoanDue[];
   recentTransactions: DashboardRecentTransaction[];
 }
+

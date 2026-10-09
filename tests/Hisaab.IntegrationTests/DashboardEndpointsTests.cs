@@ -186,3 +186,4 @@ public class DashboardEndpointsTests : IClassFixture<CustomWebApplicationFactory
         dashB.RecentTransactions.Should().BeEmpty();
     }
 }
+

@@ -52,3 +52,4 @@ export class InvestmentsService {
     return this.http.delete<void>(`${this.baseUrl}/${holdingId}/transactions/${transactionId}`);
   }
 }
+

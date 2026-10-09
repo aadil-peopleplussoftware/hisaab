@@ -18,3 +18,4 @@ export class DashboardService {
     return this.http.get<DashboardResponse>(this.baseUrl, { params });
   }
 }
+

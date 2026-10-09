@@ -65,3 +65,4 @@ export class SettingsService {
     window.URL.revokeObjectURL(url);
   }
 }
+

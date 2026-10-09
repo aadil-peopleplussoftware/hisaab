@@ -111,3 +111,4 @@
 | `GET` | `/api/v1/admin/users` | Lists registered user accounts (metadata only; no financial data) | Role: Admin |
 | `GET` | `/api/v1/admin/audit-logs` | Browses security and audit log events | Role: Admin |
 | `GET` | `/api/v1/admin/system-health` | Server memory, uptime, OS architecture, and database provider diagnostics | Role: Admin |
+

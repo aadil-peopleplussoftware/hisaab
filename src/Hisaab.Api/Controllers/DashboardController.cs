@@ -30,3 +30,4 @@ public class DashboardController : ApiControllerBase
         return Ok(result.Data);
     }
 }
+

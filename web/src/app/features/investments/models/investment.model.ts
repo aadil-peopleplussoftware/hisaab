@@ -106,3 +106,4 @@ export interface CreateInvestmentTransactionRequest {
   note?: string | null;
   updatedCurrentValue?: number | null;
 }
+

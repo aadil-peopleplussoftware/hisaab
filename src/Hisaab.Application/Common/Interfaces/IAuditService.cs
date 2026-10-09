@@ -9,3 +9,4 @@ public interface IAuditService
         string? details = null,
         CancellationToken cancellationToken = default);
 }
+

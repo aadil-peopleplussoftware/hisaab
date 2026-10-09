@@ -137,3 +137,4 @@ public class ReportsEndpointsTests : IClassFixture<CustomWebApplicationFactory>
         anonResp.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 }
+

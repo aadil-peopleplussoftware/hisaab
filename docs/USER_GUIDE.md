@@ -78,3 +78,4 @@ Welcome to **Hisaab**, an enterprise-grade, mobile-first personal finance applic
 - Create and manage custom transaction categories with custom colors.
 - **Account Deletion**: Request permanent account deletion. Revokes all active sessions and marks account for compliant purge.
 - **Admin Console**: Administrators can inspect user metadata, audit security logs, and review live server runtime health.
+

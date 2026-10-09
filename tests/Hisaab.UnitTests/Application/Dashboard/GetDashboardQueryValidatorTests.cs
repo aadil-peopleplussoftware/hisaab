@@ -64,3 +64,4 @@ public class GetDashboardQueryValidatorTests
         result.Errors.Should().Contain(e => e.PropertyName == "TrendMonths");
     }
 }
+

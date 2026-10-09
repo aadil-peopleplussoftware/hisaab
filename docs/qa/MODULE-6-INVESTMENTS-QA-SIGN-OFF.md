@@ -65,3 +65,4 @@ All **58 backend automated tests** (49 unit + 9 integration) and **27 frontend a
 ## 4. Compliance & Sign-Off
 
 Module 6 satisfies all requirements in the Hisaab Master Prompt and is signed off for progression to **Module 7 — Dashboard**.
+

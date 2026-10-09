@@ -93,3 +93,4 @@ public class ReportsController : ApiControllerBase
         return File(result.Content, result.ContentType, result.FileName);
     }
 }
+

@@ -22,3 +22,4 @@ public interface IReportExportService
 
     Task<FileExportResult> ExportDashboardPdfAsync(string month, CancellationToken cancellationToken);
 }
+

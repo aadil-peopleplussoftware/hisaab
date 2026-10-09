@@ -80,3 +80,4 @@ describe('SettingsService', () => {
     req.flush({ totalCount: 0, page: 1, pageSize: 25, items: [] });
   });
 });
+

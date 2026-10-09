@@ -244,3 +244,4 @@ describe('InvestmentsService', () => {
     req.flush(null);
   });
 });
+
