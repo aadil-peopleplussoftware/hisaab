@@ -20,6 +20,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<Transaction> Transactions => Set<Transaction>();
     public DbSet<LoanAccount> LoanAccounts => Set<LoanAccount>();
     public DbSet<LoanTransaction> LoanTransactions => Set<LoanTransaction>();
+    public DbSet<EpfEntry> EpfEntries => Set<EpfEntry>();
 
     public ApplicationDbContext(
         DbContextOptions<ApplicationDbContext> options,

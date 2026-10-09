@@ -10,6 +10,7 @@ public interface IApplicationDbContext
     DbSet<Transaction> Transactions { get; }
     DbSet<LoanAccount> LoanAccounts { get; }
     DbSet<LoanTransaction> LoanTransactions { get; }
+    DbSet<EpfEntry> EpfEntries { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }
