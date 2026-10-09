@@ -1,0 +1,101 @@
+/* Hisaab Enterprise Design System Tokens */
+:root {
+  --font-family-base: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --font-family-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  /* Semantic Financial Tokens */
+  --color-income: #16a34a;
+  --color-income-bg: #f0fdf4;
+  --color-expense: #dc2626;
+  --color-expense-bg: #fef2f2;
+  --color-loan: #d97706;
+  --color-loan-bg: #fffbeb;
+  --color-investment: #2563eb;
+  --color-investment-bg: #eff6ff;
+  --color-epf: #0d9488;
+  --color-epf-bg: #f0fdfa;
+
+  /* Light Theme Defaults */
+  --color-bg-app: #f8fafc;
+  --color-bg-card: #ffffff;
+  --color-bg-subtle: #f1f5f9;
+  --color-border: #e2e8f0;
+  --color-text-main: #0f172a;
+  --color-text-muted: #64748b;
+  --color-primary: #4f46e5;
+  --color-primary-hover: #4338ca;
+  --color-primary-contrast: #ffffff;
+
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --radius-md: 0.75rem;
+  --radius-lg: 1rem;
+  --min-touch-target: 44px;
+}
+
+[data-theme='dark'] {
+  --color-income: #22c55e;
+  --color-income-bg: #052e16;
+  --color-expense: #ef4444;
+  --color-expense-bg: #450a0a;
+  --color-loan: #f59e0b;
+  --color-loan-bg: #451a03;
+  --color-investment: #3b82f6;
+  --color-investment-bg: #172554;
+  --color-epf: #14b8a6;
+  --color-epf-bg: #042f2e;
+
+  /* Dark Theme Palette */
+  --color-bg-app: #090d16;
+  --color-bg-card: #131c2e;
+  --color-bg-subtle: #1e293b;
+  --color-border: #334155;
+  --color-text-main: #f8fafc;
+  --color-text-muted: #94a3b8;
+  --color-primary: #6366f1;
+  --color-primary-hover: #4f46e5;
+  --color-primary-contrast: #ffffff;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  font-family: var(--font-family-base);
+  background-color: var(--color-bg-app);
+  color: var(--color-text-main);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Tabular digits for monetary amounts */
+.amount, .tabular-nums {
+  font-family: var(--font-family-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+/* Touch targets enforcement */
+button, a, input, select {
+  min-height: var(--min-touch-target);
+  font-family: inherit;
+}
+
+/* Print Optimization (Section 8) */
+@media print {
+  .no-print, nav, .bottom-nav, .side-nav, .app-header {
+    display: none !important;
+  }
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  .card {
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+  }
+}

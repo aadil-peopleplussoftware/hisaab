@@ -1,0 +1,20 @@
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+COPY ["src/Hisaab.Domain/Hisaab.Domain.csproj", "src/Hisaab.Domain/"]
+COPY ["src/Hisaab.Application/Hisaab.Application.csproj", "src/Hisaab.Application/"]
+COPY ["src/Hisaab.Infrastructure/Hisaab.Infrastructure.csproj", "src/Hisaab.Infrastructure/"]
+COPY ["src/Hisaab.Api/Hisaab.Api.csproj", "src/Hisaab.Api/"]
+
+RUN dotnet restore "src/Hisaab.Api/Hisaab.Api.csproj"
+
+COPY . .
+WORKDIR "/src/src/Hisaab.Api"
+RUN dotnet publish "Hisaab.Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
+WORKDIR /app
+EXPOSE 8080
+COPY --from=build /app/publish .
+ENTRYPOINT ["dotnet", "Hisaab.Api.dll"]
+

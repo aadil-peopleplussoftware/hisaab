@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Hisaab.Api/Hisaab.Api.csproj" />
+    <Project Path="src/Hisaab.Application/Hisaab.Application.csproj" />
+    <Project Path="src/Hisaab.Domain/Hisaab.Domain.csproj" />
+    <Project Path="src/Hisaab.Infrastructure/Hisaab.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Hisaab.IntegrationTests/Hisaab.IntegrationTests.csproj" />
+    <Project Path="tests/Hisaab.UnitTests/Hisaab.UnitTests.csproj" />
+  </Folder>
+</Solution>

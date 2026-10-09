@@ -1,0 +1,85 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: hisaab-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: hisaab_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d hisaab_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  minio:
+    image: minio/minio:latest
+    container_name: hisaab-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadminpassword
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio_data:/data
+
+  seq:
+    image: datalust/seq:latest
+    container_name: hisaab-seq
+    restart: unless-stopped
+    environment:
+      ACCEPT_EULA: "Y"
+    ports:
+      - "5341:80"
+    volumes:
+      - seq_data:/data
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: hisaab-api
+    restart: unless-stopped
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_URLS: http://+:8080
+      DatabaseProvider: PostgreSql
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=hisaab_db;Username=postgres;Password=postgrespassword
+      Seq__ServerUrl: http://seq:5341
+      Cors__AllowedOrigins__0: http://localhost
+      Cors__AllowedOrigins__1: http://localhost:80
+      Cors__AllowedOrigins__2: http://localhost:4200
+    depends_on:
+      postgres:
+        condition: service_healthy
+      seq:
+        condition: service_started
+    ports:
+      - "5000:8080"
+
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: hisaab-web
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
+  minio_data:
+  seq_data:
+
