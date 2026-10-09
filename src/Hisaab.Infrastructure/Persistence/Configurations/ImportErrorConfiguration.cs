@@ -25,3 +25,4 @@ public class ImportErrorConfiguration : IEntityTypeConfiguration<ImportError>
         builder.HasIndex(e => new { e.BatchId, e.RowNumber });
     }
 }
+

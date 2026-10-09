@@ -57,3 +57,4 @@ describe('DataTransferComponent', () => {
     expect(component.activeTab()).toBe('profiles');
   });
 });
+

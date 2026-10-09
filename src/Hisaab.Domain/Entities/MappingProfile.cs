@@ -11,3 +11,4 @@ public class MappingProfile : BaseEntity, IUserOwned
     public string? ValueMapJson { get; set; } = "{}";  // JSON dictionary: { "systemField": { "userValue": "targetValue" } }
     public string? DateFormat { get; set; } = "dd-MM-yyyy";
 }
+

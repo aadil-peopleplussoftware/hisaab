@@ -587,17 +587,25 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
     }
 
     .form-control {
-      padding: 0.5rem 0.75rem;
+      padding: 0.5rem 0.85rem;
       border: 1px solid var(--color-border);
-      border-radius: var(--radius-sm);
-      background: var(--color-bg-main, #ffffff);
+      border-radius: var(--radius-md);
+      background: var(--color-bg-card);
       color: var(--color-text-main);
-      font-size: 0.9rem;
+      font-size: 0.875rem;
       min-height: var(--min-touch-target);
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+      &:focus {
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18);
+      }
 
       &:disabled {
-        opacity: 0.7;
-        background: var(--color-bg-subtle, #f3f4f6);
+        opacity: 0.65;
+        background: var(--color-bg-subtle);
+        cursor: not-allowed;
       }
     }
 
@@ -610,10 +618,10 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 1rem;
+      padding: 1rem 1.25rem;
       border: 1px solid var(--color-border);
       border-radius: var(--radius-md);
-      background: var(--color-bg-subtle, #f3f4f6);
+      background: var(--color-bg-subtle);
     }
 
     .theme-info {
@@ -622,7 +630,8 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
       gap: 0.2rem;
 
       strong {
-        font-size: 0.9rem;
+        font-size: 0.875rem;
+        color: var(--color-text-main);
       }
       span {
         font-size: 0.8rem;
@@ -631,15 +640,21 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
     }
 
     .btn-theme-toggle {
-      padding: 0.4rem 0.85rem;
+      padding: 0.45rem 1rem;
       border: 1px solid var(--color-border);
-      border-radius: var(--radius-sm);
+      border-radius: var(--radius-md);
       background: var(--color-bg-card);
       color: var(--color-text-main);
-      font-size: 0.8rem;
+      font-size: 0.8125rem;
       font-weight: 600;
       cursor: pointer;
-      min-height: var(--min-touch-target);
+      min-height: 40px;
+      transition: all 0.15s ease;
+
+      &:hover {
+        background: var(--color-bg-subtle);
+        border-color: var(--color-text-muted);
+      }
     }
 
     .form-actions {
@@ -647,18 +662,28 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
     }
 
     .btn-primary {
-      padding: 0.6rem 1.25rem;
+      padding: 0.5rem 1.25rem;
       background: var(--color-primary);
       color: #ffffff;
       border: none;
-      border-radius: var(--radius-sm);
+      border-radius: var(--radius-md);
       font-weight: 600;
       font-size: 0.875rem;
       cursor: pointer;
       min-height: var(--min-touch-target);
+      transition: all 0.15s ease;
+
+      &:hover:not(:disabled) {
+        background: var(--color-primary-hover);
+        box-shadow: 0 4px 6px -1px rgb(79 70 229 / 0.3);
+      }
+
+      &:active:not(:disabled) {
+        transform: scale(0.98);
+      }
 
       &:disabled {
-        opacity: 0.6;
+        opacity: 0.55;
         cursor: not-allowed;
       }
     }

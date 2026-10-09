@@ -11,3 +11,4 @@ public class ImportError : BaseEntity
     public string? Value { get; set; }
     public string Message { get; set; } = string.Empty;
 }
+

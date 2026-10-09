@@ -6,11 +6,12 @@ import { DashboardService } from './services/dashboard.service';
 import { DashboardResponse, MonthlyTrend } from './models/dashboard.model';
 import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
 import { StatCardComponent } from '../../shared/components/stat-card/stat-card.component';
+import { MonthPickerComponent } from '../../shared/components/month-picker/month-picker.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, InrCurrencyPipe, StatCardComponent],
+  imports: [CommonModule, FormsModule, RouterLink, InrCurrencyPipe, StatCardComponent, MonthPickerComponent],
   template: `
     <div class="dashboard-page">
       <!-- Top Header & Month Navigator -->
@@ -20,26 +21,8 @@ import { StatCardComponent } from '../../shared/components/stat-card/stat-card.c
           <p class="subtitle">Complete personal balance sheet and monthly cashflow</p>
         </div>
 
-        <div class="month-selector-bar">
-          <button type="button" class="btn-nav" (click)="changeMonth(-1)" aria-label="Previous Month">
-            ‹
-          </button>
-          <div class="current-month-display">
-            <span class="month-label">{{ formatMonthDisplay(selectedMonth()) }}</span>
-            <input
-              type="month"
-              [ngModel]="selectedMonth()"
-              (ngModelChange)="onMonthPickerChange($event)"
-              class="month-input-hidden"
-              aria-label="Select month"
-            />
-          </div>
-          <button type="button" class="btn-nav" (click)="changeMonth(1)" aria-label="Next Month">
-            ›
-          </button>
-          <button type="button" class="btn-today" (click)="resetToCurrentMonth()">
-            Current
-          </button>
+        <div class="header-picker-wrap">
+          <app-month-picker [initialMonth]="selectedMonth()" (monthChange)="onMonthPickerChange($event)" />
         </div>
       </div>
 

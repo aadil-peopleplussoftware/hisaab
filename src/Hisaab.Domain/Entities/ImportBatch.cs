@@ -21,3 +21,4 @@ public class ImportBatch : BaseEntity, IUserOwned
 
     public ICollection<ImportError> Errors { get; set; } = new List<ImportError>();
 }
+

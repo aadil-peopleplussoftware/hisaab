@@ -16,3 +16,4 @@ public enum ImportMode
     AddNewOnly = 1,
     UpdateExisting = 2
 }
+

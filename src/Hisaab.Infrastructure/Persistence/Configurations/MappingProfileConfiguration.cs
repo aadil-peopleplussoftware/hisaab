@@ -33,3 +33,4 @@ public class MappingProfileConfiguration : IEntityTypeConfiguration<MappingProfi
         builder.HasIndex(m => new { m.UserId, m.Module });
     }
 }
+

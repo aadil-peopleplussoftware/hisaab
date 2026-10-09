@@ -82,3 +82,4 @@ Key architectural highlights:
 ## 4. Compliance & Sign-Off
 
 Module 8.5 satisfies all acceptance criteria and security benchmarks from the Hisaab Master Prompt and is officially signed off for progression to **Module 9 — Settings & Administration**.
+

@@ -210,3 +210,4 @@ public class DeleteMappingProfileCommandHandler : IRequestHandler<DeleteMappingP
         return Unit.Value;
     }
 }
+

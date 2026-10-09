@@ -353,13 +353,20 @@ import { ReportsService } from './services/reports.service';
     }
 
     .form-input {
-      padding: 0.4rem 0.65rem;
+      padding: 0.45rem 0.75rem;
       border: 1px solid var(--color-border);
-      border-radius: var(--radius-sm);
-      background: var(--color-bg-main, #ffffff);
+      border-radius: var(--radius-md);
+      background: var(--color-bg-card);
       color: var(--color-text-main);
       font-size: 0.875rem;
       min-height: var(--min-touch-target);
+      outline: none;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+      &:focus {
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.18);
+      }
     }
 
     .card-actions {
@@ -372,53 +379,58 @@ import { ReportsService } from './services/reports.service';
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      gap: 0.4rem;
-      padding: 0.6rem 1rem;
-      border-radius: var(--radius-sm);
-      font-size: 0.85rem;
+      gap: 0.5rem;
+      padding: 0.5rem 1.15rem;
+      border-radius: var(--radius-md);
+      font-size: 0.875rem;
       font-weight: 600;
       cursor: pointer;
       min-height: var(--min-touch-target);
       border: 1px solid transparent;
       transition: all 0.15s ease;
 
+      &:active {
+        transform: scale(0.98);
+      }
+
       &:disabled {
-        opacity: 0.6;
+        opacity: 0.55;
         cursor: not-allowed;
       }
     }
 
     .btn-pdf {
-      background: var(--color-bg-subtle, #f3f4f6);
+      background: var(--color-bg-subtle);
       color: var(--color-text-main);
       border-color: var(--color-border);
 
       &:hover:not(:disabled) {
-        background: #fee2e2;
-        color: #991b1b;
-        border-color: #fca5a5;
+        background: var(--color-expense-bg);
+        color: var(--color-expense);
+        border-color: var(--color-expense-border);
       }
     }
 
     .btn-pdf-primary {
-      background: #4f46e5;
+      background: var(--color-primary);
       color: #ffffff;
       flex: 1;
 
       &:hover:not(:disabled) {
-        background: #4338ca;
+        background: var(--color-primary-hover);
+        box-shadow: 0 4px 6px -1px rgb(79 70 229 / 0.3);
       }
     }
 
     .btn-excel {
-      background: var(--color-bg-subtle, #f3f4f6);
+      background: var(--color-bg-subtle);
       color: var(--color-text-main);
       border-color: var(--color-border);
 
       &:hover:not(:disabled) {
-        background: #dcfce7;
-        color: #166534;
-        border-color: #86efac;
+        background: var(--color-income-bg);
+        color: var(--color-income);
+        border-color: var(--color-income-border);
       }
     }
 

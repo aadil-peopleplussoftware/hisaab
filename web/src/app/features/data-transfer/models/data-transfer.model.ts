@@ -103,3 +103,4 @@ export interface MappingProfile {
   dateFormat?: string;
   createdAtUtc: string;
 }
+
