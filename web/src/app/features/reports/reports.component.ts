@@ -28,7 +28,14 @@ import { ReportsService } from './services/reports.service';
         <!-- Report 1: Monthly Income & Expense -->
         <div class="report-card">
           <div class="card-icon-title">
-            <span class="icon-circle icon-income">📄</span>
+            <span class="icon-circle icon-income">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
+            </span>
             <div>
               <h3>Income & Expense Statement</h3>
               <p>Category-wise transaction breakdown and net savings summary</p>
@@ -52,7 +59,12 @@ import { ReportsService } from './services/reports.service';
               @if (loadingKey() === 'tx-pdf') {
                 <span class="spinner-sm"></span> Generating...
               } @else {
-                ⬇ Download PDF (A4)
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" class="mr-1">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                <span>Download PDF (A4)</span>
               }
             </button>
             <button
@@ -64,7 +76,13 @@ import { ReportsService } from './services/reports.service';
               @if (loadingKey() === 'tx-xlsx') {
                 <span class="spinner-sm"></span>
               } @else {
-                📊 Export Excel
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" class="mr-1">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="8" y1="13" x2="16" y2="13"/>
+                  <line x1="8" y1="17" x2="16" y2="17"/>
+                </svg>
+                <span>Export Excel</span>
               }
             </button>
           </div>
@@ -73,7 +91,11 @@ import { ReportsService } from './services/reports.service';
         <!-- Report 2: Executive Monthly Financial Statement (Dashboard) -->
         <div class="report-card hero-style">
           <div class="card-icon-title">
-            <span class="icon-circle icon-dash">⭐</span>
+            <span class="icon-circle icon-dash">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+            </span>
             <div>
               <h3>Comprehensive Financial Statement</h3>
               <p>Full net worth balance sheet, liquid cash, investments, EPF, and loans</p>
@@ -97,7 +119,12 @@ import { ReportsService } from './services/reports.service';
               @if (loadingKey() === 'dash-pdf') {
                 <span class="spinner-sm"></span> Generating Statement...
               } @else {
-                ⬇ Download Executive Statement (PDF)
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" class="mr-1">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                <span>Download Executive Statement (PDF)</span>
               }
             </button>
           </div>
@@ -106,7 +133,14 @@ import { ReportsService } from './services/reports.service';
         <!-- Report 3: Loans & Ledger Statement -->
         <div class="report-card">
           <div class="card-icon-title">
-            <span class="icon-circle icon-loan">🤝</span>
+            <span class="icon-circle icon-loan">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+            </span>
             <div>
               <h3>Loan Accounts & Ledger Statement</h3>
               <p>Complete ledger of given and taken loans, disbursements, and repayments</p>
@@ -123,7 +157,12 @@ import { ReportsService } from './services/reports.service';
               @if (loadingKey() === 'loans-pdf') {
                 <span class="spinner-sm"></span> Generating...
               } @else {
-                ⬇ Download PDF (A4)
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" class="mr-1">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                <span>Download PDF (A4)</span>
               }
             </button>
             <button
@@ -135,7 +174,13 @@ import { ReportsService } from './services/reports.service';
               @if (loadingKey() === 'loans-xlsx') {
                 <span class="spinner-sm"></span>
               } @else {
-                📊 Export Excel
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" class="mr-1">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="8" y1="13" x2="16" y2="13"/>
+                  <line x1="8" y1="17" x2="16" y2="17"/>
+                </svg>
+                <span>Export Excel</span>
               }
             </button>
           </div>
@@ -144,7 +189,17 @@ import { ReportsService } from './services/reports.service';
         <!-- Report 4: EPFO Passbook Statement -->
         <div class="report-card">
           <div class="card-icon-title">
-            <span class="icon-circle icon-epfo">🏛️</span>
+            <span class="icon-circle icon-epfo">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="3" y1="21" x2="21" y2="21"/>
+                <line x1="3" y1="10" x2="21" y2="10"/>
+                <polyline points="12 3 2 10 22 10"/>
+                <line x1="6" y1="10" x2="6" y2="21"/>
+                <line x1="10" y1="10" x2="10" y2="21"/>
+                <line x1="14" y1="10" x2="14" y2="21"/>
+                <line x1="18" y1="10" x2="18" y2="21"/>
+              </svg>
+            </span>
             <div>
               <h3>EPFO Annual Passbook</h3>
               <p>Monthly employee, employer, pension shares, interest, and withdrawals</p>
@@ -172,7 +227,12 @@ import { ReportsService } from './services/reports.service';
               @if (loadingKey() === 'epf-pdf') {
                 <span class="spinner-sm"></span> Generating...
               } @else {
-                ⬇ Download PDF (A4)
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" class="mr-1">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                <span>Download PDF (A4)</span>
               }
             </button>
             <button
@@ -184,7 +244,13 @@ import { ReportsService } from './services/reports.service';
               @if (loadingKey() === 'epf-xlsx') {
                 <span class="spinner-sm"></span>
               } @else {
-                📊 Export Excel
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" class="mr-1">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="8" y1="13" x2="16" y2="13"/>
+                  <line x1="8" y1="17" x2="16" y2="17"/>
+                </svg>
+                <span>Export Excel</span>
               }
             </button>
           </div>
@@ -193,7 +259,12 @@ import { ReportsService } from './services/reports.service';
         <!-- Report 5: Investment Portfolio Valuation -->
         <div class="report-card">
           <div class="card-icon-title">
-            <span class="icon-circle icon-invest">📈</span>
+            <span class="icon-circle icon-invest">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
+                <polyline points="16 7 22 7 22 13"/>
+              </svg>
+            </span>
             <div>
               <h3>Investment Portfolio Report</h3>
               <p>Asset allocation, holding-wise valuations, invested capital, and gain/loss</p>
@@ -210,7 +281,12 @@ import { ReportsService } from './services/reports.service';
               @if (loadingKey() === 'inv-pdf') {
                 <span class="spinner-sm"></span> Generating...
               } @else {
-                ⬇ Download PDF (A4)
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" class="mr-1">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                <span>Download PDF (A4)</span>
               }
             </button>
             <button
@@ -222,7 +298,13 @@ import { ReportsService } from './services/reports.service';
               @if (loadingKey() === 'inv-xlsx') {
                 <span class="spinner-sm"></span>
               } @else {
-                📊 Export Excel
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" class="mr-1">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="8" y1="13" x2="16" y2="13"/>
+                  <line x1="8" y1="17" x2="16" y2="17"/>
+                </svg>
+                <span>Export Excel</span>
               }
             </button>
           </div>

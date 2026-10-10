@@ -164,7 +164,12 @@ import { StatCardComponent } from '../../shared/components/stat-card/stat-card.c
       <!-- Empty State -->
       @if (!loading() && holdings().length === 0) {
         <div class="empty-card card">
-          <div class="empty-icon">📈</div>
+          <div class="empty-icon">
+            <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.8">
+              <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
+              <polyline points="16 7 22 7 22 13"/>
+            </svg>
+          </div>
           <h3>No investment holdings found</h3>
           <p>Add your Mutual Funds, Stocks, Gold, FD, or PPF to track your net worth and returns.</p>
           <button type="button" class="btn-primary mt-4" (click)="openCreateModal()">

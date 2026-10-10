@@ -28,7 +28,11 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
           [class.active]="activeTab() === 'preferences'"
           (click)="setTab('preferences')"
         >
-          ⚙️ Preferences
+          <svg class="tab-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z" />
+          </svg>
+          <span>Preferences</span>
         </button>
         <button
           type="button"
@@ -36,7 +40,11 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
           [class.active]="activeTab() === 'appearance'"
           (click)="setTab('appearance')"
         >
-          🎨 Appearance & Studio
+          <svg class="tab-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M12 2a10 10 0 0 0 0 20v-4a6 6 0 0 1 0-12V2Z" />
+          </svg>
+          <span>Appearance & Studio</span>
         </button>
         <button
           type="button"
@@ -44,7 +52,11 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
           [class.active]="activeTab() === 'categories'"
           (click)="setTab('categories')"
         >
-          🏷️ Categories
+          <svg class="tab-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+            <line x1="7" y1="7" x2="7.01" y2="7" />
+          </svg>
+          <span>Categories</span>
         </button>
         <button
           type="button"
@@ -52,7 +64,12 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
           [class.active]="activeTab() === 'export'"
           (click)="setTab('export')"
         >
-          💾 Data Backup & Export
+          <svg class="tab-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          <span>Data Backup & Export</span>
         </button>
         <button
           type="button"
@@ -60,7 +77,10 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
           [class.active]="activeTab() === 'privacy'"
           (click)="setTab('privacy')"
         >
-          🛡️ Privacy & Danger Zone
+          <svg class="tab-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+          </svg>
+          <span>Privacy & Danger Zone</span>
         </button>
         @if (isAdmin) {
           <button
@@ -69,7 +89,10 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
             [class.active]="activeTab() === 'admin'"
             (click)="setTab('admin')"
           >
-            ⚡ Admin Console
+            <svg class="tab-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+            </svg>
+            <span>Admin Console</span>
           </button>
         }
       </div>
@@ -144,7 +167,22 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
                 class="btn-theme-toggle"
                 (click)="themeService.toggleTheme()"
               >
-                {{ themeService.isDarkMode() ? '☀️ Switch to Light' : '🌙 Switch to Dark' }}
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" class="mr-1">
+                  @if (themeService.isDarkMode()) {
+                    <circle cx="12" cy="12" r="5" />
+                    <line x1="12" y1="1" x2="12" y2="3" />
+                    <line x1="12" y1="21" x2="12" y2="23" />
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+                    <line x1="1" y1="12" x2="3" y2="12" />
+                    <line x1="21" y1="12" x2="23" y2="12" />
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+                  } @else {
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                  }
+                </svg>
+                <span>{{ themeService.isDarkMode() ? 'Switch to Light' : 'Switch to Dark' }}</span>
               </button>
             </div>
 
@@ -162,8 +200,14 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
         <div class="card-section">
           <div class="card-title-row">
             <div>
-              <h3>🎨 Appearance & Layout Studio</h3>
-              <p class="section-desc">Personalize your color theme, icon pack, sidebar position, and layout density.</p>
+              <div class="title-with-icon">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <path d="M12 2a10 10 0 0 0 0 20v-4a6 6 0 0 1 0-12V2Z" />
+                </svg>
+                <h3>Appearance & Layout Studio</h3>
+              </div>
+              <p class="section-desc">Personalize your color theme, vector icon style, sidebar layout, display currency, and sensory audio.</p>
             </div>
           </div>
 
@@ -189,7 +233,12 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
                   <div class="theme-footer">
                     <span class="badge">{{ t.category | uppercase }}</span>
                     @if (themeService.currentTheme() === t.id) {
-                      <span class="active-tag">✓ Active</span>
+                      <span class="active-tag">
+                        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        Active
+                      </span>
                     }
                   </div>
                 </div>
@@ -207,13 +256,43 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
                   [class.active]="themeService.iconStyle() === ic.id"
                   (click)="themeService.setIconStyle(ic.id)"
                 >
-                  <div class="icon-preview-tag">{{ ic.sampleIcon }}</div>
+                  <div class="icon-preview-tag">
+                    @if (ic.id === 'linear') {
+                      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
+                        <rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/>
+                      </svg>
+                    } @else if (ic.id === 'filled') {
+                      <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                        <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
+                        <rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/>
+                      </svg>
+                    } @else if (ic.id === 'duotone') {
+                      <svg viewBox="0 0 24 24" width="22" height="22">
+                        <rect x="3" y="3" width="7" height="7" rx="1.5" fill="currentColor" opacity="0.3" stroke="currentColor" stroke-width="1.5"/>
+                        <rect x="14" y="3" width="7" height="7" rx="1.5" fill="currentColor" opacity="0.9"/>
+                        <rect x="14" y="14" width="7" height="7" rx="1.5" fill="currentColor" opacity="0.3" stroke="currentColor" stroke-width="1.5"/>
+                        <rect x="3" y="14" width="7" height="7" rx="1.5" fill="currentColor" opacity="0.9"/>
+                      </svg>
+                    } @else {
+                      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.2">
+                        <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+                        <rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
+                      </svg>
+                    }
+                  </div>
                   <div class="icon-meta">
                     <span class="icon-title">{{ ic.name }}</span>
                     <span class="icon-desc">{{ ic.description }}</span>
                   </div>
+                  <span class="badge">{{ ic.badge }}</span>
                   @if (themeService.iconStyle() === ic.id) {
-                    <span class="active-tag">✓ Active</span>
+                    <span class="active-tag">
+                      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                      Active
+                    </span>
                   }
                 </div>
               }
@@ -230,13 +309,65 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
                   [class.active]="themeService.sidebarPosition() === sp.id"
                   (click)="themeService.setSidebarPosition(sp.id)"
                 >
-                  <div class="pos-badge">{{ sp.icon }}</div>
+                  <div class="pos-badge">
+                    @if (sp.id === 'left') {
+                      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/>
+                      </svg>
+                    } @else if (sp.id === 'right') {
+                      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="15" y1="3" x2="15" y2="21"/>
+                      </svg>
+                    } @else if (sp.id === 'top') {
+                      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/>
+                      </svg>
+                    } @else {
+                      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="6" y1="3" x2="6" y2="21"/>
+                      </svg>
+                    }
+                  </div>
                   <div class="pos-meta">
                     <span class="pos-title">{{ sp.name }}</span>
                     <span class="pos-desc">{{ sp.description }}</span>
                   </div>
+                  <span class="badge">{{ sp.badge }}</span>
                   @if (themeService.sidebarPosition() === sp.id) {
-                    <span class="active-tag">✓ Active</span>
+                    <span class="active-tag">
+                      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                      Active
+                    </span>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Multi-Currency Display Preference -->
+          <div class="studio-block">
+            <h4 class="studio-subheading">Display Currency Conversion (5 Currencies)</h4>
+            <div class="currency-picker-grid">
+              @for (c of themeService.availableCurrencies; track c.code) {
+                <div
+                  class="currency-select-card"
+                  [class.active]="themeService.displayCurrency() === c.code"
+                  (click)="themeService.setDisplayCurrency(c.code)"
+                >
+                  <div class="curr-symbol">{{ c.symbol }}</div>
+                  <div class="curr-meta">
+                    <span class="curr-code">{{ c.code }}</span>
+                    <span class="curr-name">{{ c.name }}</span>
+                  </div>
+                  @if (themeService.displayCurrency() === c.code) {
+                    <span class="active-tag">
+                      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                      Active
+                    </span>
                   }
                 </div>
               }
@@ -245,7 +376,7 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
 
           <!-- Advanced Workflow & Density -->
           <div class="studio-block">
-            <h4 class="studio-subheading">Workflow & Privacy Preferences</h4>
+            <h4 class="studio-subheading">Workflow & Accessibility Preferences</h4>
             <div class="settings-switch-grid">
               <div class="setting-switch-card" (click)="themeService.toggleDensity()">
                 <div class="switch-content">
@@ -264,6 +395,16 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
                 </div>
                 <div class="toggle-pill" [class.on]="themeService.privacyMode()">
                   {{ themeService.privacyMode() ? 'MASKED' : 'VISIBLE' }}
+                </div>
+              </div>
+
+              <div class="setting-switch-card" (click)="themeService.toggleSoundEffects()">
+                <div class="switch-content">
+                  <strong>Sensory Audio Feedback</strong>
+                  <p>Play subtle synthesised haptic clicks on navigation and transaction events.</p>
+                </div>
+                <div class="toggle-pill" [class.on]="themeService.soundEffects()">
+                  {{ themeService.soundEffects() ? 'ENABLED' : 'MUTED' }}
                 </div>
               </div>
             </div>
@@ -322,7 +463,15 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
 
           <div class="export-cards-grid">
             <div class="export-option-box">
-              <span class="export-icon">📄</span>
+              <div class="export-icon-box">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.8">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="16" y1="13" x2="8" y2="13"/>
+                  <line x1="16" y1="17" x2="8" y2="17"/>
+                  <polyline points="10 9 9 9 8 9"/>
+                </svg>
+              </div>
               <h4>JSON Data Archive</h4>
               <p>Complete JSON dump containing your profile, categories, transactions, loans, EPFO, and investment records.</p>
               <button
@@ -331,12 +480,25 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
                 [disabled]="exporting() === 'json'"
                 (click)="downloadJsonBackup()"
               >
-                {{ exporting() === 'json' ? 'Exporting...' : '⬇ Download JSON Archive' }}
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" class="mr-1">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                <span>{{ exporting() === 'json' ? 'Exporting...' : 'Download JSON Archive' }}</span>
               </button>
             </div>
 
             <div class="export-option-box">
-              <span class="export-icon">📊</span>
+              <div class="export-icon-box text-excel">
+                <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#10b981" stroke-width="1.8">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="8" y1="13" x2="16" y2="13"/>
+                  <line x1="8" y1="17" x2="16" y2="17"/>
+                  <polyline points="10 9 9 9 8 9"/>
+                </svg>
+              </div>
               <h4>All-in-One Excel Workbook</h4>
               <p>Multi-tab styled Excel (.xlsx) file with sheets for Overview, Transactions, Loans, EPFO, and Investments.</p>
               <button
@@ -345,7 +507,12 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
                 [disabled]="exporting() === 'excel'"
                 (click)="downloadExcelBackup()"
               >
-                {{ exporting() === 'excel' ? 'Exporting...' : '⬇ Export Master Workbook' }}
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" class="mr-1">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                <span>{{ exporting() === 'excel' ? 'Exporting...' : 'Export Master Workbook' }}</span>
               </button>
             </div>
           </div>
@@ -381,7 +548,13 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
               [class.active]="adminView() === 'users'"
               (click)="setAdminView('users')"
             >
-              👥 User Accounts ({{ adminUsers().length }})
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" class="mr-1">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              <span>User Accounts ({{ adminUsers().length }})</span>
             </button>
             <button
               type="button"
@@ -389,7 +562,13 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
               [class.active]="adminView() === 'audit'"
               (click)="setAdminView('audit')"
             >
-              📜 Audit Logs
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" class="mr-1">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="16" y1="13" x2="8" y2="13"/>
+                <line x1="16" y1="17" x2="8" y2="17"/>
+              </svg>
+              <span>Audit Logs</span>
             </button>
             <button
               type="button"
@@ -397,7 +576,12 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
               [class.active]="adminView() === 'health'"
               (click)="setAdminView('health')"
             >
-              💻 System Health
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" class="mr-1">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                <line x1="8" y1="21" x2="16" y2="21"/>
+                <line x1="12" y1="17" x2="12" y2="21"/>
+              </svg>
+              <span>System Health</span>
             </button>
           </div>
 
@@ -557,7 +741,14 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
       @if (showDeleteModal()) {
         <div class="modal-backdrop">
           <div class="modal-card danger-modal">
-            <h3>⚠️ Confirm Account Deletion</h3>
+            <div class="danger-modal-title">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+              <h3>Confirm Account Deletion</h3>
+            </div>
             <p>
               This is permanent and cannot be undone. To confirm, type <strong>DELETE</strong> below:
             </p>
@@ -616,6 +807,9 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
     }
 
     .tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
       background: transparent;
       border: 1px solid transparent;
       padding: 0.5rem 1rem;
@@ -626,6 +820,10 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
       cursor: pointer;
       white-space: nowrap;
       min-height: var(--min-touch-target);
+
+      .tab-svg {
+        flex-shrink: 0;
+      }
 
       &:hover {
         background: var(--color-bg-subtle, #f3f4f6);
@@ -639,6 +837,18 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
 
       &.tab-admin {
         border-color: #818cf8;
+      }
+    }
+
+    .title-with-icon {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--color-primary);
+
+      h3 {
+        margin: 0;
+        color: var(--color-text-main);
       }
     }
 
@@ -1340,6 +1550,88 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
           background: var(--color-primary);
           color: #ffffff;
         }
+      }
+    }
+
+    .currency-picker-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .currency-select-card {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      background: var(--color-canvas-subtle);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.12s ease;
+
+      &:hover {
+        border-color: var(--color-accent-fg);
+      }
+
+      &.active {
+        border-color: var(--color-primary);
+        background: var(--color-bg-card);
+        box-shadow: 0 0 0 2px var(--color-primary);
+      }
+
+      .curr-symbol {
+        font-size: 18px;
+        font-weight: 700;
+        min-width: 28px;
+        color: var(--color-primary);
+      }
+
+      .curr-meta {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .curr-code {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--color-text-main);
+      }
+
+      .curr-name {
+        font-size: 11px;
+        color: var(--color-text-muted);
+      }
+    }
+
+    .danger-modal-title {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 0.75rem;
+
+      h3 {
+        margin: 0;
+        color: #991b1b;
+      }
+    }
+
+    .export-icon-box {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-md);
+      background: var(--color-bg-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-text-muted);
+      margin-bottom: 0.25rem;
+
+      &.text-excel {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
       }
     }
   `]

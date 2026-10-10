@@ -102,7 +102,12 @@ import { StatCardComponent } from '../../shared/components/stat-card/stat-card.c
         <div class="loading-state">Loading transactions...</div>
       } @else if (transactions().length === 0) {
         <div class="empty-state card">
-          <div class="empty-icon">📝</div>
+          <div class="empty-icon">
+            <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.8">
+              <rect x="1" y="4" width="22" height="16" rx="2" ry="2"/>
+              <line x1="1" y1="10" x2="23" y2="10"/>
+            </svg>
+          </div>
           <h3>No transactions found</h3>
           <p>There are no transactions recorded for this period or filter.</p>
           <button type="button" class="btn-primary" (click)="openCreateModal()">

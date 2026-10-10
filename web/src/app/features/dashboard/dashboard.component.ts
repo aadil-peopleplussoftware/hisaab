@@ -90,6 +90,78 @@ import { MonthPickerComponent } from '../../shared/components/month-picker/month
           </div>
         </div>
 
+        <!-- FINANCIAL HEALTH & WEALTH INTELLIGENCE SUITE -->
+        <div class="intelligence-card">
+          <div class="intel-header">
+            <div class="intel-title-wrap">
+              <div class="intel-icon-box">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                </svg>
+              </div>
+              <div>
+                <h3>Financial Health & Wealth Intelligence</h3>
+                <p class="intel-subtitle">Real-time solvency analysis, runway buffer, and milestone trajectory</p>
+              </div>
+            </div>
+            <div class="health-score-badge" [class]="getHealthScore(d).colorClass">
+              <span class="health-num">{{ getHealthScore(d).score }}/100</span>
+              <span class="health-tag">{{ getHealthScore(d).label }}</span>
+            </div>
+          </div>
+
+          <div class="intel-grid">
+            <!-- Metric 1: Emergency Runway -->
+            <div class="intel-metric-box">
+              <div class="metric-top">
+                <span class="metric-title">Emergency Fund Runway</span>
+                <span class="status-chip" [class.chip-safe]="getEmergencyRunway(d) >= 6" [class.chip-mid]="getEmergencyRunway(d) >= 3 && getEmergencyRunway(d) < 6" [class.chip-low]="getEmergencyRunway(d) < 3">
+                  {{ getEmergencyRunway(d) >= 6 ? 'SAFE BUFFER' : (getEmergencyRunway(d) >= 3 ? 'MODERATE' : 'LOW BUFFER') }}
+                </span>
+              </div>
+              <div class="metric-val-row">
+                <span class="metric-big-num">{{ getEmergencyRunway(d) }}</span>
+                <span class="metric-unit">Months</span>
+              </div>
+              <p class="metric-explainer">
+                Liquid cash reserves can sustain living expenses for <strong>{{ getEmergencyRunway(d) }} months</strong> without income.
+              </p>
+            </div>
+
+            <!-- Metric 2: Solvency & Debt-to-Asset -->
+            <div class="intel-metric-box">
+              <div class="metric-top">
+                <span class="metric-title">Debt-to-Asset Leverage</span>
+                <span class="status-chip" [class.chip-safe]="getDebtToAssetRatio(d) < 20" [class.chip-mid]="getDebtToAssetRatio(d) >= 20 && getDebtToAssetRatio(d) <= 40" [class.chip-low]="getDebtToAssetRatio(d) > 40">
+                  {{ getDebtToAssetRatio(d) < 20 ? 'LOW LEVERAGE' : (getDebtToAssetRatio(d) <= 40 ? 'CONTROLLED' : 'HIGH DEBT') }}
+                </span>
+              </div>
+              <div class="metric-val-row">
+                <span class="metric-big-num">{{ getDebtToAssetRatio(d) }}%</span>
+                <span class="metric-unit">of Total Assets</span>
+              </div>
+              <p class="metric-explainer">
+                Total liabilities ({{ d.netWorth.formattedTotalLiabilities }}) represent <strong>{{ getDebtToAssetRatio(d) }}%</strong> of balance sheet assets.
+              </p>
+            </div>
+
+            <!-- Metric 3: Wealth Milestone Tracker -->
+            <div class="intel-metric-box milestone-box">
+              <div class="metric-top">
+                <span class="metric-title">Target Milestone ({{ getMilestoneData(d.netWorth.totalNetWorth).label }})</span>
+                <span class="milestone-pct">{{ getMilestoneData(d.netWorth.totalNetWorth).progress }}%</span>
+              </div>
+              <div class="milestone-track">
+                <div class="milestone-fill" [style.width.%]="getMilestoneData(d.netWorth.totalNetWorth).progress"></div>
+              </div>
+              <div class="milestone-footer">
+                <span>Current: <strong>{{ d.netWorth.formattedTotalNetWorth }}</strong></span>
+                <span>Remaining: <strong>{{ getMilestoneData(d.netWorth.totalNetWorth).remaining | inrCurrency }}</strong></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- Monthly KPI Cards Grid -->
         <div class="kpi-grid">
           <app-stat-card
@@ -528,6 +600,216 @@ import { MonthPickerComponent } from '../../shared/components/month-picker/month
       }
       .text-danger {
         color: #fca5a5;
+      }
+    }
+
+    /* Financial Health & Intelligence Cockpit */
+    .intelligence-card {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1.5rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .intel-header {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+
+      @media (min-width: 640px) {
+        flex-direction: row;
+        align-items: center;
+      }
+    }
+
+    .intel-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+
+      h3 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--color-text-main);
+      }
+
+      .intel-subtitle {
+        margin: 0.15rem 0 0;
+        font-size: 0.8rem;
+        color: var(--color-text-muted);
+      }
+    }
+
+    .intel-icon-box {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-md);
+      background: var(--color-bg-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-primary);
+    }
+
+    .health-score-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      font-size: 0.8125rem;
+      font-weight: 700;
+
+      &.health-prime {
+        background: rgba(16, 185, 129, 0.12);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+      }
+
+      &.health-good {
+        background: rgba(59, 130, 246, 0.12);
+        color: #3b82f6;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+      }
+
+      &.health-warning {
+        background: rgba(245, 158, 11, 0.12);
+        color: #f59e0b;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+      }
+
+      .health-num {
+        font-family: var(--font-mono, monospace);
+        font-weight: 800;
+      }
+    }
+
+    .intel-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+
+      @media (min-width: 768px) {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .intel-metric-box {
+      background: var(--color-canvas-subtle, var(--color-bg-subtle));
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .metric-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .metric-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--color-text-muted);
+    }
+
+    .status-chip {
+      font-size: 0.6875rem;
+      font-weight: 800;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      letter-spacing: 0.03em;
+
+      &.chip-safe {
+        background: rgba(16, 185, 129, 0.15);
+        color: #10b981;
+      }
+      &.chip-mid {
+        background: rgba(245, 158, 11, 0.15);
+        color: #f59e0b;
+      }
+      &.chip-low {
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+      }
+    }
+
+    .metric-val-row {
+      display: flex;
+      align-items: baseline;
+      gap: 0.4rem;
+    }
+
+    .metric-big-num {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--color-text-main);
+      font-family: var(--font-mono, monospace);
+      letter-spacing: -0.02em;
+    }
+
+    .metric-unit {
+      font-size: 0.8125rem;
+      color: var(--color-text-muted);
+      font-weight: 600;
+    }
+
+    .metric-explainer {
+      margin: 0;
+      font-size: 0.775rem;
+      color: var(--color-text-muted);
+      line-height: 1.4;
+
+      strong {
+        color: var(--color-text-main);
+      }
+    }
+
+    .milestone-box {
+      justify-content: space-between;
+    }
+
+    .milestone-pct {
+      font-size: 0.75rem;
+      font-weight: 800;
+      font-family: var(--font-mono, monospace);
+      color: var(--color-primary);
+    }
+
+    .milestone-track {
+      height: 8px;
+      background: var(--color-border);
+      border-radius: 9999px;
+      overflow: hidden;
+      margin: 0.25rem 0;
+    }
+
+    .milestone-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--color-primary), #10b981);
+      border-radius: 9999px;
+      transition: width 0.4s ease;
+    }
+
+    .milestone-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+
+      strong {
+        color: var(--color-text-main);
       }
     }
 
@@ -1131,6 +1413,64 @@ export class DashboardComponent implements OnInit {
     if (maxVal <= 0 || amount <= 0) return 4;
     const pct = Math.round((amount / maxVal) * 100);
     return Math.max(pct, 4); // minimum 4% height for visibility
+  }
+
+  getEmergencyRunway(d: DashboardResponse): number {
+    const monthlyExpense = d.monthlyOverview.totalExpense;
+    if (monthlyExpense <= 0) return 12;
+    const liquidCash = d.netWorth.liquidCash;
+    return liquidCash <= 0 ? 0 : Math.round((liquidCash / monthlyExpense) * 10) / 10;
+  }
+
+  getDebtToAssetRatio(d: DashboardResponse): number {
+    const assets = d.netWorth.totalAssets;
+    if (assets <= 0) return 0;
+    return Math.round((d.netWorth.totalLiabilities / assets) * 1000) / 10;
+  }
+
+  getMilestoneData(netWorth: number): { target: number; label: string; progress: number; remaining: number } {
+    let target = 1000000;
+    let label = '₹10 Lakh';
+    if (netWorth >= 10000000) {
+      target = 20000000;
+      label = '₹2 Crore';
+    } else if (netWorth >= 5000000) {
+      target = 10000000;
+      label = '₹1 Crore';
+    } else if (netWorth >= 2500000) {
+      target = 5000000;
+      label = '₹50 Lakh';
+    } else if (netWorth >= 1000000) {
+      target = 2500000;
+      label = '₹25 Lakh';
+    }
+    const current = Math.max(0, netWorth);
+    const progress = Math.min(100, Math.round((current / target) * 1000) / 10);
+    const remaining = Math.max(0, target - current);
+    return { target, label, progress, remaining };
+  }
+
+  getHealthScore(d: DashboardResponse): { score: number; label: string; colorClass: string } {
+    const savingsRate = Math.min(100, Math.max(0, d.monthlyOverview.savingsRatePercentage));
+    const savingsPts = (savingsRate / 50) * 40;
+
+    const runway = this.getEmergencyRunway(d);
+    const runwayPts = Math.min(35, (runway / 6) * 35);
+
+    const debtRatio = this.getDebtToAssetRatio(d);
+    const debtPts = Math.max(0, 25 - (debtRatio / 40) * 25);
+
+    const total = Math.round(Math.min(100, Math.max(10, savingsPts + runwayPts + debtPts)));
+    let label = 'Healthy Wealth Pace';
+    let colorClass = 'health-good';
+    if (total >= 80) {
+      label = 'Prime Health';
+      colorClass = 'health-prime';
+    } else if (total < 50) {
+      label = 'Attention Needed';
+      colorClass = 'health-warning';
+    }
+    return { score: total, label, colorClass };
   }
 
   private getCurrentMonthString(): string {
