@@ -1,0 +1,22 @@
+{
+  "name": "hisaab",
+  "version": "1.0.0",
+  "description": "Hisaab — Multi-user, mobile-friendly personal finance web app (ASP.NET Core 8 + Angular 18 + PostgreSQL 18)",
+  "scripts": {
+    "dev": "node scripts/dev.js",
+    "start": "node scripts/dev.js",
+    "dev:api": "dotnet run --project src/Hisaab.Api --launch-profile http",
+    "dev:web": "npm start --prefix web",
+    "build": "dotnet build && npm run build --prefix web",
+    "test": "dotnet test && npm test --prefix web -- --watch=false"
+  },
+  "keywords": [
+    "personal-finance",
+    "dotnet8",
+    "angular18",
+    "postgresql",
+    "clean-architecture"
+  ],
+  "author": "Hisaab Team",
+  "license": "MIT"
+}

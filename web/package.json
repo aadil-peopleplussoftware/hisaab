@@ -2,6 +2,7 @@
   "name": "web",
   "version": "0.0.0",
   "scripts": {
+    "dev": "node ../scripts/dev.js",
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
