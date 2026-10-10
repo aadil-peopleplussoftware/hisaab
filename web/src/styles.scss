@@ -93,8 +93,15 @@
   --primary-hover: #1a7f37;
 }
 
-[data-theme='dark'] {
-  /* GitHub Dark Primer Palette */
+/* Theme 1: Light / GitHub Primer Light (Default) */
+[data-theme='light'],
+[data-theme='github-light'] {
+  /* Inherits root variables */
+}
+
+/* Theme 2: Dark / GitHub Primer Dark */
+[data-theme='dark'],
+[data-theme='github-dark'] {
   --color-canvas-default: #0d1117;
   --color-canvas-subtle: #161b22;
   --color-border-default: #30363d;
@@ -166,6 +173,275 @@
   --border-color: #30363d;
   --primary: #238636;
   --primary-hover: #2ea043;
+}
+
+/* Theme 3: Nordic Arctic Frost */
+[data-theme='nord'] {
+  --color-canvas-default: #2e3440;
+  --color-canvas-subtle: #242933;
+  --color-border-default: #434c5e;
+  --color-border-muted: #3b4252;
+  --color-fg-default: #eceff4;
+  --color-fg-muted: #d8dee9;
+  --color-fg-subtle: #e5e9f0;
+  --color-accent-fg: #88c0d0;
+  --color-accent-emphasis: #81a1c1;
+  --color-accent-subtle: rgba(136, 192, 208, 0.15);
+
+  --color-btn-text: #eceff4;
+  --color-btn-bg: #3b4252;
+  --color-btn-border: #4c566a;
+  --color-btn-hover-bg: #434c5e;
+  --color-btn-hover-border: #88c0d0;
+  --color-btn-active-bg: #2e3440;
+
+  --color-btn-primary-text: #2e3440;
+  --color-btn-primary-bg: #88c0d0;
+  --color-btn-primary-border: #88c0d0;
+  --color-btn-primary-hover-bg: #8fbcbb;
+
+  --color-btn-danger-text: #bf616a;
+  --color-btn-danger-bg: #3b4252;
+  --color-btn-danger-border: rgba(191, 97, 106, 0.3);
+  --color-btn-danger-hover-bg: #bf616a;
+  --color-btn-danger-hover-text: #ffffff;
+
+  --color-income: #a3be8c;
+  --color-income-bg: rgba(163, 190, 140, 0.15);
+  --color-income-border: #a3be8c;
+  --color-expense: #bf616a;
+  --color-expense-bg: rgba(191, 97, 106, 0.15);
+  --color-expense-border: #bf616a;
+  --color-loan: #ebcb8b;
+  --color-loan-bg: rgba(235, 203, 139, 0.15);
+  --color-loan-border: #ebcb8b;
+  --color-investment: #81a1c1;
+  --color-investment-bg: rgba(129, 161, 193, 0.15);
+  --color-investment-border: #81a1c1;
+  --color-epf: #8fbcbb;
+  --color-epf-bg: rgba(143, 188, 187, 0.15);
+  --color-epf-border: #8fbcbb;
+
+  --color-bg-app: #242933;
+  --color-bg-card: #2e3440;
+  --color-bg-subtle: #242933;
+  --color-bg-hover: #3b4252;
+  --color-border: #434c5e;
+  --color-border-subtle: #3b4252;
+  --color-text-main: #eceff4;
+  --color-text-secondary: #e5e9f0;
+  --color-text-muted: #d8dee9;
+  --color-text-subtle: #e5e9f0;
+  --color-primary: #88c0d0;
+  --color-primary-hover: #8fbcbb;
+  --color-primary-active: #81a1c1;
+  --color-primary-light: rgba(136, 192, 208, 0.2);
+  --color-primary-contrast: #2e3440;
+
+  --shadow-sm: 0 1px 0 rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 3px 6px rgba(0, 0, 0, 0.4);
+
+  --bg-surface: #2e3440;
+  --color-bg-main: #2e3440;
+  --text-primary: #eceff4;
+  --text-secondary: #e5e9f0;
+  --border-color: #434c5e;
+  --primary: #88c0d0;
+  --primary-hover: #8fbcbb;
+}
+
+/* Theme 4: Midnight Emerald Wealth */
+[data-theme='midnight-emerald'] {
+  --color-canvas-default: #0b111e;
+  --color-canvas-subtle: #06090e;
+  --color-border-default: #1a2639;
+  --color-border-muted: #131c2b;
+  --color-fg-default: #f1f5f9;
+  --color-fg-muted: #94a3b8;
+  --color-fg-subtle: #64748b;
+  --color-accent-fg: #10b981;
+  --color-accent-emphasis: #059669;
+  --color-accent-subtle: rgba(16, 185, 129, 0.15);
+
+  --color-btn-text: #f1f5f9;
+  --color-btn-bg: #111b2e;
+  --color-btn-border: #1a2639;
+  --color-btn-hover-bg: #192742;
+  --color-btn-hover-border: #10b981;
+  --color-btn-active-bg: #0b111e;
+
+  --color-btn-primary-text: #ffffff;
+  --color-btn-primary-bg: #10b981;
+  --color-btn-primary-border: #059669;
+  --color-btn-primary-hover-bg: #059669;
+
+  --color-btn-danger-text: #f43f5e;
+  --color-btn-danger-bg: #111b2e;
+  --color-btn-danger-border: rgba(244, 63, 94, 0.3);
+  --color-btn-danger-hover-bg: #f43f5e;
+  --color-btn-danger-hover-text: #ffffff;
+
+  --color-income: #10b981;
+  --color-income-bg: rgba(16, 185, 129, 0.15);
+  --color-income-border: #059669;
+  --color-expense: #f43f5e;
+  --color-expense-bg: rgba(244, 63, 94, 0.15);
+  --color-expense-border: #e11d48;
+  --color-loan: #f59e0b;
+  --color-loan-bg: rgba(245, 158, 11, 0.15);
+  --color-loan-border: #d97706;
+  --color-investment: #38bdf8;
+  --color-investment-bg: rgba(56, 189, 248, 0.15);
+  --color-investment-border: #0284c7;
+  --color-epf: #2dd4bf;
+  --color-epf-bg: rgba(45, 212, 191, 0.15);
+  --color-epf-border: #0d9488;
+
+  --color-bg-app: #06090e;
+  --color-bg-card: #0b111e;
+  --color-bg-subtle: #06090e;
+  --color-bg-hover: #111b2e;
+  --color-border: #1a2639;
+  --color-border-subtle: #131c2b;
+  --color-text-main: #f1f5f9;
+  --color-text-secondary: #e2e8f0;
+  --color-text-muted: #94a3b8;
+  --color-text-subtle: #64748b;
+  --color-primary: #10b981;
+  --color-primary-hover: #059669;
+  --color-primary-active: #047857;
+  --color-primary-light: rgba(16, 185, 129, 0.15);
+  --color-primary-contrast: #ffffff;
+
+  --shadow-sm: 0 1px 0 rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 3px 6px rgba(0, 0, 0, 0.6);
+
+  --bg-surface: #0b111e;
+  --color-bg-main: #0b111e;
+  --text-primary: #f1f5f9;
+  --text-secondary: #e2e8f0;
+  --border-color: #1a2639;
+  --primary: #10b981;
+  --primary-hover: #059669;
+}
+
+/* Theme 5: Warm Sepia & Paper */
+[data-theme='sepia-paper'] {
+  --color-canvas-default: #fdfaf3;
+  --color-canvas-subtle: #f4eee1;
+  --color-border-default: #dcd3c1;
+  --color-border-muted: #e7dfd0;
+  --color-fg-default: #2d2b28;
+  --color-fg-muted: #736e65;
+  --color-fg-subtle: #8c867c;
+  --color-accent-fg: #b85d19;
+  --color-accent-emphasis: #9e4b0e;
+  --color-accent-subtle: rgba(184, 93, 25, 0.12);
+
+  --color-btn-text: #2d2b28;
+  --color-btn-bg: #ede5d4;
+  --color-btn-border: #dcd3c1;
+  --color-btn-hover-bg: #e2d9c6;
+  --color-btn-hover-border: #b85d19;
+  --color-btn-active-bg: #dacfb9;
+
+  --color-btn-primary-text: #ffffff;
+  --color-btn-primary-bg: #b85d19;
+  --color-btn-primary-border: #9e4b0e;
+  --color-btn-primary-hover-bg: #9e4b0e;
+
+  --color-btn-danger-text: #b93838;
+  --color-btn-danger-bg: #ede5d4;
+  --color-btn-danger-border: rgba(185, 56, 56, 0.3);
+  --color-btn-danger-hover-bg: #b93838;
+  --color-btn-danger-hover-text: #ffffff;
+
+  --color-income: #2b7a4b;
+  --color-income-bg: #e3f2e8;
+  --color-income-border: #4ea873;
+  --color-expense: #b93838;
+  --color-expense-bg: #fae6e6;
+  --color-expense-border: #df6e6e;
+  --color-loan: #a06a18;
+  --color-loan-bg: #fcf1d8;
+  --color-loan-border: #d89b38;
+  --color-investment: #2a6b8f;
+  --color-investment-bg: #e1eff8;
+  --color-investment-border: #529fc7;
+  --color-epf: #237871;
+  --color-epf-bg: #dff2f0;
+  --color-epf-border: #44aba2;
+
+  --color-bg-app: #f4eee1;
+  --color-bg-card: #fdfaf3;
+  --color-bg-subtle: #f4eee1;
+  --color-bg-hover: #ede5d4;
+  --color-border: #dcd3c1;
+  --color-border-subtle: #e7dfd0;
+  --color-text-main: #2d2b28;
+  --color-text-secondary: #48443e;
+  --color-text-muted: #736e65;
+  --color-text-subtle: #8c867c;
+  --color-primary: #b85d19;
+  --color-primary-hover: #9e4b0e;
+  --color-primary-active: #823c08;
+  --color-primary-light: #f7e6d7;
+  --color-primary-contrast: #ffffff;
+
+  --shadow-sm: 0 1px 0 rgba(60, 50, 40, 0.08);
+  --shadow-md: 0 3px 6px rgba(60, 50, 40, 0.12);
+
+  --bg-surface: #fdfaf3;
+  --color-bg-main: #fdfaf3;
+  --text-primary: #2d2b28;
+  --text-secondary: #48443e;
+  --border-color: #dcd3c1;
+  --primary: #b85d19;
+  --primary-hover: #9e4b0e;
+}
+
+/* ==========================================================================
+   Advanced Studio Modifiers: Privacy Eye & Density & Layouts
+   ========================================================================== */
+
+/* Privacy Eye Mask Mode */
+[data-privacy='masked'] {
+  .amount,
+  .tabular-nums,
+  [data-amount],
+  .stat-value,
+  .pill-amount,
+  .net-worth-amount,
+  .due-amount,
+  .cat-amount,
+  .badge-item .value {
+    filter: blur(7px);
+    user-select: none;
+    transition: filter 0.18s cubic-bezier(0.33, 1, 0.68, 1);
+
+    &:hover {
+      filter: none;
+      cursor: pointer;
+    }
+  }
+}
+
+/* Compact Data Density Mode */
+[data-density='compact'] {
+  table.data-table tbody td,
+  table.txn-table tbody td {
+    padding: 6px 12px !important;
+  }
+  table.data-table thead th,
+  table.txn-table thead th {
+    padding: 6px 12px !important;
+  }
+  .card, .Box {
+    padding: 12px !important;
+  }
+  .stat-card {
+    padding: 10px 12px !important;
+  }
 }
 
 /* ==========================================================================

@@ -33,6 +33,14 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
         <button
           type="button"
           class="tab-btn"
+          [class.active]="activeTab() === 'appearance'"
+          (click)="setTab('appearance')"
+        >
+          🎨 Appearance & Studio
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
           [class.active]="activeTab() === 'categories'"
           (click)="setTab('categories')"
         >
@@ -146,6 +154,120 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
               </button>
             </div>
           </form>
+        </div>
+      }
+
+      <!-- TAB: Appearance & Studio -->
+      @if (activeTab() === 'appearance') {
+        <div class="card-section">
+          <div class="card-title-row">
+            <div>
+              <h3>🎨 Appearance & Layout Studio</h3>
+              <p class="section-desc">Personalize your color theme, icon pack, sidebar position, and layout density.</p>
+            </div>
+          </div>
+
+          <!-- 5 Themes Grid -->
+          <div class="studio-block">
+            <h4 class="studio-subheading">Color Themes (5 Themes Available)</h4>
+            <div class="theme-picker-grid">
+              @for (t of themeService.availableThemes; track t.id) {
+                <div
+                  class="theme-select-card"
+                  [class.active]="themeService.currentTheme() === t.id"
+                  (click)="themeService.setTheme(t.id)"
+                >
+                  <div class="theme-swatch-bar">
+                    @for (c of t.previewColors; track c) {
+                      <span class="swatch-circle" [style.background-color]="c"></span>
+                    }
+                  </div>
+                  <div class="theme-meta">
+                    <span class="theme-title">{{ t.name }}</span>
+                    <span class="theme-desc">{{ t.description }}</span>
+                  </div>
+                  <div class="theme-footer">
+                    <span class="badge">{{ t.category | uppercase }}</span>
+                    @if (themeService.currentTheme() === t.id) {
+                      <span class="active-tag">✓ Active</span>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- 4 Icon Packs Grid -->
+          <div class="studio-block">
+            <h4 class="studio-subheading">Navigation Icon Pack (4 Styles)</h4>
+            <div class="icon-picker-grid">
+              @for (ic of themeService.availableIconStyles; track ic.id) {
+                <div
+                  class="icon-select-card"
+                  [class.active]="themeService.iconStyle() === ic.id"
+                  (click)="themeService.setIconStyle(ic.id)"
+                >
+                  <div class="icon-preview-tag">{{ ic.sampleIcon }}</div>
+                  <div class="icon-meta">
+                    <span class="icon-title">{{ ic.name }}</span>
+                    <span class="icon-desc">{{ ic.description }}</span>
+                  </div>
+                  @if (themeService.iconStyle() === ic.id) {
+                    <span class="active-tag">✓ Active</span>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- 4 Sidebar Positions Grid -->
+          <div class="studio-block">
+            <h4 class="studio-subheading">Sidebar Position & Layout (4 Options)</h4>
+            <div class="sidebar-picker-grid">
+              @for (sp of themeService.availableSidebarPositions; track sp.id) {
+                <div
+                  class="sidebar-select-card"
+                  [class.active]="themeService.sidebarPosition() === sp.id"
+                  (click)="themeService.setSidebarPosition(sp.id)"
+                >
+                  <div class="pos-badge">{{ sp.icon }}</div>
+                  <div class="pos-meta">
+                    <span class="pos-title">{{ sp.name }}</span>
+                    <span class="pos-desc">{{ sp.description }}</span>
+                  </div>
+                  @if (themeService.sidebarPosition() === sp.id) {
+                    <span class="active-tag">✓ Active</span>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Advanced Workflow & Density -->
+          <div class="studio-block">
+            <h4 class="studio-subheading">Workflow & Privacy Preferences</h4>
+            <div class="settings-switch-grid">
+              <div class="setting-switch-card" (click)="themeService.toggleDensity()">
+                <div class="switch-content">
+                  <strong>Compact Data Density</strong>
+                  <p>Reduce table row heights and card paddings for maximum screen room.</p>
+                </div>
+                <div class="toggle-pill" [class.on]="themeService.density() === 'compact'">
+                  {{ themeService.density() === 'compact' ? 'COMPACT' : 'NORMAL' }}
+                </div>
+              </div>
+
+              <div class="setting-switch-card" (click)="themeService.togglePrivacy()">
+                <div class="switch-content">
+                  <strong>Financial Privacy Eye (Blur Amounts)</strong>
+                  <p>Masks all financial figures in public spaces; hover over any value to reveal.</p>
+                </div>
+                <div class="toggle-pill" [class.on]="themeService.privacyMode()">
+                  {{ themeService.privacyMode() ? 'MASKED' : 'VISIBLE' }}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       }
 
@@ -1023,6 +1145,203 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
       cursor: pointer;
       font-weight: 600;
     }
+
+    /* Appearance & Studio Styles */
+    .studio-block {
+      margin-bottom: 24px;
+    }
+
+    .studio-subheading {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 12px;
+    }
+
+    .theme-picker-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 12px;
+    }
+
+    .theme-select-card {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      background: var(--color-canvas-subtle);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: all 0.12s ease;
+
+      &:hover {
+        border-color: var(--color-accent-fg);
+      }
+
+      &.active {
+        border-color: var(--color-primary);
+        background: var(--color-bg-card);
+        box-shadow: 0 0 0 2px var(--color-primary);
+      }
+    }
+
+    .theme-swatch-bar {
+      display: flex;
+      gap: 6px;
+    }
+
+    .swatch-circle {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 1px solid rgba(0, 0, 0, 0.15);
+    }
+
+    .theme-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .theme-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--color-text-main);
+    }
+
+    .theme-desc {
+      font-size: 12px;
+      color: var(--color-text-muted);
+    }
+
+    .theme-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: auto;
+    }
+
+    .active-tag {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--color-primary);
+    }
+
+    .icon-picker-grid,
+    .sidebar-picker-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    .icon-select-card,
+    .sidebar-select-card {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      background: var(--color-canvas-subtle);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.12s ease;
+
+      &:hover {
+        border-color: var(--color-accent-fg);
+      }
+
+      &.active {
+        border-color: var(--color-primary);
+        background: var(--color-bg-card);
+        box-shadow: 0 0 0 2px var(--color-primary);
+      }
+    }
+
+    .icon-preview-tag,
+    .pos-badge {
+      font-size: 18px;
+      font-weight: 700;
+      min-width: 32px;
+      text-align: center;
+    }
+
+    .icon-meta,
+    .pos-meta {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .icon-title,
+    .pos-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-text-main);
+    }
+
+    .icon-desc,
+    .pos-desc {
+      font-size: 11px;
+      color: var(--color-text-muted);
+    }
+
+    .settings-switch-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+
+      @media (min-width: 768px) {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    .setting-switch-card {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      background: var(--color-canvas-subtle);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      transition: all 0.12s ease;
+
+      &:hover {
+        border-color: var(--color-accent-fg);
+      }
+
+      .switch-content {
+        strong {
+          display: block;
+          font-size: 13px;
+          color: var(--color-text-main);
+        }
+        p {
+          font-size: 12px;
+          color: var(--color-text-muted);
+          margin: 2px 0 0;
+        }
+      }
+
+      .toggle-pill {
+        padding: 3px 10px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 700;
+        background: rgba(175, 184, 193, 0.3);
+        color: var(--color-text-muted);
+
+        &.on {
+          background: var(--color-primary);
+          color: #ffffff;
+        }
+      }
+    }
   `]
 })
 export class SettingsComponent implements OnInit {
@@ -1032,7 +1351,7 @@ export class SettingsComponent implements OnInit {
   readonly themeService = inject(ThemeService);
   readonly authService = inject(AuthService);
 
-  readonly activeTab = signal<'preferences' | 'categories' | 'export' | 'privacy' | 'admin'>('preferences');
+  readonly activeTab = signal<'preferences' | 'appearance' | 'categories' | 'export' | 'privacy' | 'admin'>('preferences');
   readonly profile = signal<UserProfile | null>(null);
   readonly categories = signal<Category[]>([]);
   readonly saving = signal<boolean>(false);
@@ -1077,7 +1396,7 @@ export class SettingsComponent implements OnInit {
     this.loadCategories();
   }
 
-  setTab(tab: 'preferences' | 'categories' | 'export' | 'privacy' | 'admin'): void {
+  setTab(tab: 'preferences' | 'appearance' | 'categories' | 'export' | 'privacy' | 'admin'): void {
     this.activeTab.set(tab);
     if (tab === 'admin') {
       this.loadAdminData();
