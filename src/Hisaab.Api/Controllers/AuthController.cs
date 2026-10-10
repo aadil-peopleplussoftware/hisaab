@@ -6,6 +6,7 @@ using Hisaab.Application.Features.Auth.Commands.Register;
 using Hisaab.Application.Features.Auth.Commands.UpdateProfile;
 using Hisaab.Application.Features.Auth.DTOs;
 using Hisaab.Application.Features.Auth.Queries.GetProfile;
+using Hisaab.Application.Common.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -13,7 +14,13 @@ namespace Hisaab.Api.Controllers;
 
 public class AuthController : ApiControllerBase
 {
+    private readonly IIdentityService _identityService;
     private const string RefreshTokenCookieName = "hisaab_refresh_token";
+
+    public AuthController(IIdentityService identityService)
+    {
+        _identityService = identityService;
+    }
 
     [HttpPost("register")]
     [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
@@ -150,6 +157,77 @@ public class AuthController : ApiControllerBase
         return Ok(new { message = "Password updated successfully. Please log in again." });
     }
 
+    [HttpPost("google")]
+    [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _identityService.ExternalLoginAsync(
+            request.Email,
+            request.FullName ?? request.Email.Split('@')[0],
+            request.AvatarUrl,
+            Request.Headers["User-Agent"].ToString(),
+            HttpContext.Connection.RemoteIpAddress?.ToString(),
+            cancellationToken);
+
+        if (!result.Succeeded)
+        {
+            return BadRequest(new { errors = result.Errors });
+        }
+
+        SetRefreshTokenCookie(result.Data!.RefreshToken);
+        return Ok(result.Data);
+    }
+
+    [HttpPost("send-otp")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> SendOtp([FromBody] SendOtpRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _identityService.SendOtpAsync(request.Identifier, cancellationToken);
+        if (!result.Succeeded)
+        {
+            return BadRequest(new { errors = result.Errors });
+        }
+
+        return Ok(new { message = $"Verification code sent to {request.Identifier}", codeHint = result.Data });
+    }
+
+    [HttpPost("verify-otp")]
+    [ProducesResponseType(typeof(AuthResponseDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _identityService.VerifyOtpAsync(
+            request.Identifier,
+            request.Code,
+            Request.Headers["User-Agent"].ToString(),
+            HttpContext.Connection.RemoteIpAddress?.ToString(),
+            cancellationToken);
+
+        if (!result.Succeeded)
+        {
+            return BadRequest(new { errors = result.Errors });
+        }
+
+        SetRefreshTokenCookie(result.Data!.RefreshToken);
+        return Ok(result.Data);
+    }
+
+    [HttpPost("forgot-password")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _identityService.ForgotPasswordAsync(request.Email, cancellationToken);
+        if (!result.Succeeded)
+        {
+            return BadRequest(new { errors = result.Errors });
+        }
+
+        return Ok(new { message = result.Data });
+    }
+
     private void SetRefreshTokenCookie(string token)
     {
         var cookieOptions = new CookieOptions
@@ -169,4 +247,8 @@ public record LoginRequest(string Email, string Password);
 public record RefreshTokenRequest(string? RefreshToken);
 public record UpdateProfileRequest(string FullName, string? AvatarUrl, string Timezone, string Locale);
 public record ChangePasswordRequest(string CurrentPassword, string NewPassword);
+public record GoogleLoginRequest(string Email, string? FullName, string? AvatarUrl);
+public record SendOtpRequest(string Identifier);
+public record VerifyOtpRequest(string Identifier, string Code);
+public record ForgotPasswordRequest(string Email);
 

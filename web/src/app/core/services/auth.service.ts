@@ -26,6 +26,25 @@ export interface ChangePasswordPayload {
   newPassword: string;
 }
 
+export interface GoogleLoginPayload {
+  email: string;
+  fullName?: string;
+  avatarUrl?: string;
+}
+
+export interface SendOtpPayload {
+  identifier: string;
+}
+
+export interface VerifyOtpPayload {
+  identifier: string;
+  code: string;
+}
+
+export interface ForgotPasswordPayload {
+  email: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -79,6 +98,26 @@ export class AuthService {
     return this.http.post<{ message: string }>(`${this.baseUrl}/change-password`, payload).pipe(
       tap(() => this.clearSession())
     );
+  }
+
+  googleLogin(payload: GoogleLoginPayload): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.baseUrl}/google`, payload).pipe(
+      tap(auth => this.setSession(auth))
+    );
+  }
+
+  sendOtp(identifier: string): Observable<{ message: string; codeHint?: string }> {
+    return this.http.post<{ message: string; codeHint?: string }>(`${this.baseUrl}/send-otp`, { identifier });
+  }
+
+  verifyOtp(identifier: string, code: string): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.baseUrl}/verify-otp`, { identifier, code }).pipe(
+      tap(auth => this.setSession(auth))
+    );
+  }
+
+  forgotPassword(email: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.baseUrl}/forgot-password`, { email });
   }
 
   setSession(auth: AuthResponse): void {

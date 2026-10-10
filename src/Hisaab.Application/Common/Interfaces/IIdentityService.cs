@@ -55,5 +55,28 @@ public interface IIdentityService
     Task<Result> DeleteAccountAsync(
         Guid userId,
         CancellationToken cancellationToken = default);
+
+    Task<Result<AuthResponseDto>> ExternalLoginAsync(
+        string email,
+        string fullName,
+        string? avatarUrl,
+        string? deviceInfo,
+        string? ipAddress,
+        CancellationToken cancellationToken = default);
+
+    Task<Result<string>> SendOtpAsync(
+        string identifier,
+        CancellationToken cancellationToken = default);
+
+    Task<Result<AuthResponseDto>> VerifyOtpAsync(
+        string identifier,
+        string code,
+        string? deviceInfo,
+        string? ipAddress,
+        CancellationToken cancellationToken = default);
+
+    Task<Result<string>> ForgotPasswordAsync(
+        string email,
+        CancellationToken cancellationToken = default);
 }
 
