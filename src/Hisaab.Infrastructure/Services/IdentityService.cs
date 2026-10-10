@@ -19,19 +19,25 @@ public class IdentityService : IIdentityService
     private readonly ApplicationDbContext _dbContext;
     private readonly IJwtTokenGenerator _jwtTokenGenerator;
     private readonly IDateTimeService _dateTimeService;
+    private readonly IEmailService _emailService;
+    private readonly Microsoft.Extensions.Logging.ILogger<IdentityService> _logger;
 
     public IdentityService(
         UserManager<ApplicationUser> userManager,
         RoleManager<ApplicationRole> roleManager,
         ApplicationDbContext dbContext,
         IJwtTokenGenerator jwtTokenGenerator,
-        IDateTimeService dateTimeService)
+        IDateTimeService dateTimeService,
+        IEmailService emailService,
+        Microsoft.Extensions.Logging.ILogger<IdentityService> logger)
     {
         _userManager = userManager;
         _roleManager = roleManager;
         _dbContext = dbContext;
         _jwtTokenGenerator = jwtTokenGenerator;
         _dateTimeService = dateTimeService;
+        _emailService = emailService;
+        _logger = logger;
     }
 
     public async Task<Result<AuthResponseDto>> RegisterAsync(
@@ -423,20 +429,46 @@ public class IdentityService : IIdentityService
         return await GenerateAuthResponseAsync(user, role, deviceInfo, ipAddress, cancellationToken);
     }
 
-    public Task<Result<string>> SendOtpAsync(
+    public async Task<Result<OtpResultDto>> SendOtpAsync(
         string identifier,
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(identifier))
         {
-            return Task.FromResult(Result<string>.Failure("Phone or email is required."));
+            return Result<OtpResultDto>.Failure("Phone or email is required.");
         }
 
         var clean = identifier.Trim().ToLowerInvariant();
         var randomCode = Random.Shared.Next(100000, 999999).ToString();
         _otpCache[clean] = (randomCode, _dateTimeService.UtcNow.AddMinutes(10));
 
-        return Task.FromResult(Result<string>.Success(randomCode));
+        var sentViaEmail = false;
+        if (clean.Contains('@'))
+        {
+            var html = $@"
+                <div style='font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 24px; border: 1px solid #d0d7de; border-radius: 8px; background: #ffffff;'>
+                    <div style='display: flex; align-items: center; gap: 8px; margin-bottom: 20px;'>
+                        <div style='background: #1f883d; color: #ffffff; width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px;'>₹</div>
+                        <h2 style='margin: 0; font-size: 18px; color: #1f2328;'>Hisaab Verification Code</h2>
+                    </div>
+                    <p style='color: #424a53; font-size: 14px; line-height: 1.5;'>Your one-time login passcode for Hisaab is:</p>
+                    <div style='background: #f6f8fa; border: 1px solid #d0d7de; border-radius: 6px; padding: 18px; font-size: 30px; font-weight: 700; letter-spacing: 6px; text-align: center; color: #1f883d; margin: 16px 0;'>
+                        {randomCode}
+                    </div>
+                    <p style='color: #656d76; font-size: 13px; line-height: 1.4; margin-top: 16px;'>
+                        This passcode is valid for 10 minutes. If you did not request this login, please ignore this email.
+                    </p>
+                </div>";
+
+            sentViaEmail = await _emailService.SendEmailAsync(clean, $"Your Hisaab Verification Code: {randomCode}", html, cancellationToken);
+        }
+
+        var message = sentViaEmail
+            ? $"Verification passcode sent directly to your email inbox ({clean})."
+            : $"Verification code generated: {randomCode}.";
+
+        var resultDto = new OtpResultDto(clean, sentViaEmail, sentViaEmail ? null : randomCode, message);
+        return Result<OtpResultDto>.Success(resultDto);
     }
 
     public async Task<Result<AuthResponseDto>> VerifyOtpAsync(
@@ -487,16 +519,86 @@ public class IdentityService : IIdentityService
         return await GenerateAuthResponseAsync(user, role, deviceInfo, ipAddress, cancellationToken);
     }
 
-    public Task<Result<string>> ForgotPasswordAsync(
+    public async Task<Result<ForgotPasswordResultDto>> ForgotPasswordAsync(
         string email,
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(email))
         {
-            return Task.FromResult(Result<string>.Failure("Email address is required."));
+            return Result<ForgotPasswordResultDto>.Failure("Email address is required.");
         }
 
-        return Task.FromResult(Result<string>.Success("Password reset instructions have been dispatched to your email address."));
+        var clean = email.Trim().ToLowerInvariant();
+        var user = await _userManager.FindByEmailAsync(clean);
+
+        if (user == null || user.IsDeleted || !user.IsActive)
+        {
+            // Do not reveal user existence; return generic success
+            return Result<ForgotPasswordResultDto>.Success(new ForgotPasswordResultDto(
+                clean, false, null, "If an account matches this email, reset instructions have been dispatched."));
+        }
+
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+        var resetLink = $"http://localhost:4200/auth/reset-password?email={Uri.EscapeDataString(clean)}&token={Uri.EscapeDataString(token)}";
+
+        var html = $@"
+            <div style='font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Helvetica, Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 24px; border: 1px solid #d0d7de; border-radius: 8px; background: #ffffff;'>
+                <div style='display: flex; align-items: center; gap: 8px; margin-bottom: 20px;'>
+                    <div style='background: #1f883d; color: #ffffff; width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 16px;'>₹</div>
+                    <h2 style='margin: 0; font-size: 18px; color: #1f2328;'>Reset Your Hisaab Password</h2>
+                </div>
+                <p style='color: #424a53; font-size: 14px; line-height: 1.5;'>
+                    We received a password reset request for your account (<strong>{clean}</strong>). Click the button below to set a new password:
+                </p>
+                <div style='text-align: center; margin: 24px 0;'>
+                    <a href='{resetLink}' style='background: #1f883d; color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 15px; display: inline-block;'>Reset Password</a>
+                </div>
+                <p style='color: #656d76; font-size: 13px; line-height: 1.4;'>
+                    Or open this link directly in your browser:<br/>
+                    <a href='{resetLink}' style='color: #0969da; word-break: break-all;'>{resetLink}</a>
+                </p>
+                <p style='color: #656d76; font-size: 12px; margin-top: 24px;'>
+                    This password reset link expires in 24 hours. If you did not request this, you can safely ignore this email.
+                </p>
+            </div>";
+
+        var sentViaEmail = await _emailService.SendEmailAsync(clean, "Reset Your Hisaab Password", html, cancellationToken);
+        var message = sentViaEmail
+            ? $"Password reset email sent directly to {clean}."
+            : $"Password reset link generated successfully.";
+
+        return Result<ForgotPasswordResultDto>.Success(new ForgotPasswordResultDto(clean, sentViaEmail, resetLink, message));
+    }
+
+    public async Task<Result<string>> ResetPasswordAsync(
+        string email,
+        string token,
+        string newPassword,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(token) || string.IsNullOrWhiteSpace(newPassword))
+        {
+            return Result<string>.Failure("Email, token, and new password are required.");
+        }
+
+        var clean = email.Trim().ToLowerInvariant();
+        var user = await _userManager.FindByEmailAsync(clean);
+
+        if (user == null || user.IsDeleted || !user.IsActive)
+        {
+            return Result<string>.Failure("Invalid password reset request.");
+        }
+
+        var resetResult = await _userManager.ResetPasswordAsync(user, token, newPassword);
+        if (!resetResult.Succeeded)
+        {
+            return Result<string>.Failure(resetResult.Errors.Select(e => e.Description));
+        }
+
+        // Revoke all existing sessions on password reset
+        await RevokeAllSessionsAsync(user.Id, cancellationToken);
+
+        return Result<string>.Success("Password has been reset successfully. You can now sign in with your new password.");
     }
 }
 

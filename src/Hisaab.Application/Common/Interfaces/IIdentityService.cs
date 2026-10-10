@@ -64,7 +64,7 @@ public interface IIdentityService
         string? ipAddress,
         CancellationToken cancellationToken = default);
 
-    Task<Result<string>> SendOtpAsync(
+    Task<Result<OtpResultDto>> SendOtpAsync(
         string identifier,
         CancellationToken cancellationToken = default);
 
@@ -75,8 +75,17 @@ public interface IIdentityService
         string? ipAddress,
         CancellationToken cancellationToken = default);
 
-    Task<Result<string>> ForgotPasswordAsync(
+    Task<Result<ForgotPasswordResultDto>> ForgotPasswordAsync(
         string email,
         CancellationToken cancellationToken = default);
+
+    Task<Result<string>> ResetPasswordAsync(
+        string email,
+        string token,
+        string newPassword,
+        CancellationToken cancellationToken = default);
 }
+
+public record OtpResultDto(string Identifier, bool SentViaEmail, string? CodeHint, string Message);
+public record ForgotPasswordResultDto(string Email, bool SentViaEmail, string? ResetLink, string Message);
 

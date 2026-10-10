@@ -45,6 +45,26 @@ export interface ForgotPasswordPayload {
   email: string;
 }
 
+export interface ResetPasswordPayload {
+  email: string;
+  token: string;
+  newPassword: string;
+}
+
+export interface OtpResponse {
+  identifier: string;
+  sentViaEmail: boolean;
+  codeHint?: string;
+  message: string;
+}
+
+export interface ForgotPasswordResponse {
+  email: string;
+  sentViaEmail: boolean;
+  resetLink?: string;
+  message: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -106,8 +126,8 @@ export class AuthService {
     );
   }
 
-  sendOtp(identifier: string): Observable<{ message: string; codeHint?: string }> {
-    return this.http.post<{ message: string; codeHint?: string }>(`${this.baseUrl}/send-otp`, { identifier });
+  sendOtp(identifier: string): Observable<OtpResponse> {
+    return this.http.post<OtpResponse>(`${this.baseUrl}/send-otp`, { identifier });
   }
 
   verifyOtp(identifier: string, code: string): Observable<AuthResponse> {
@@ -116,8 +136,12 @@ export class AuthService {
     );
   }
 
-  forgotPassword(email: string): Observable<{ message: string }> {
-    return this.http.post<{ message: string }>(`${this.baseUrl}/forgot-password`, { email });
+  forgotPassword(email: string): Observable<ForgotPasswordResponse> {
+    return this.http.post<ForgotPasswordResponse>(`${this.baseUrl}/forgot-password`, { email });
+  }
+
+  resetPassword(payload: ResetPasswordPayload): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.baseUrl}/reset-password`, payload);
   }
 
   setSession(auth: AuthResponse): void {

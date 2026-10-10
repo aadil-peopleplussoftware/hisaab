@@ -180,7 +180,7 @@ public class AuthController : ApiControllerBase
     }
 
     [HttpPost("send-otp")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(OtpResultDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> SendOtp([FromBody] SendOtpRequest request, CancellationToken cancellationToken)
     {
@@ -190,7 +190,7 @@ public class AuthController : ApiControllerBase
             return BadRequest(new { errors = result.Errors });
         }
 
-        return Ok(new { message = $"Verification code sent to {request.Identifier}", codeHint = result.Data });
+        return Ok(result.Data);
     }
 
     [HttpPost("verify-otp")]
@@ -215,11 +215,25 @@ public class AuthController : ApiControllerBase
     }
 
     [HttpPost("forgot-password")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ForgotPasswordResultDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ForgotPassword([FromBody] ForgotPasswordRequest request, CancellationToken cancellationToken)
     {
         var result = await _identityService.ForgotPasswordAsync(request.Email, cancellationToken);
+        if (!result.Succeeded)
+        {
+            return BadRequest(new { errors = result.Errors });
+        }
+
+        return Ok(result.Data);
+    }
+
+    [HttpPost("reset-password")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request, CancellationToken cancellationToken)
+    {
+        var result = await _identityService.ResetPasswordAsync(request.Email, request.Token, request.NewPassword, cancellationToken);
         if (!result.Succeeded)
         {
             return BadRequest(new { errors = result.Errors });
@@ -251,4 +265,5 @@ public record GoogleLoginRequest(string Email, string? FullName, string? AvatarU
 public record SendOtpRequest(string Identifier);
 public record VerifyOtpRequest(string Identifier, string Code);
 public record ForgotPasswordRequest(string Email);
+public record ResetPasswordRequest(string Email, string Token, string NewPassword);
 
