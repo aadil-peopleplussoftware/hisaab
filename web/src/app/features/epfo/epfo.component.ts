@@ -21,7 +21,7 @@ import { StatCardComponent } from '../../shared/components/stat-card/stat-card.c
       <!-- Page Header & Actions -->
       <div class="page-header no-print">
         <div>
-          <h2>EPFO (Provident Fund)</h2>
+          <h1 class="page-title">EPFO (Provident Fund)</h1>
           <p class="subtitle">Track monthly EPF contributions, EPS pension fund, interest credits & running balance</p>
         </div>
 

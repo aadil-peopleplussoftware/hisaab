@@ -56,7 +56,7 @@ import { StatCardComponent } from '../../../shared/components/stat-card/stat-car
                   Valuation updated {{ d.holding.valueUpdatedAtUtc | date:'mediumDate' }}
                 </span>
               </div>
-              <h2 class="holding-title">{{ d.holding.name }}</h2>
+              <h1 class="holding-title">{{ d.holding.name }}</h1>
               @if (d.holding.note) {
                 <div class="holding-subnote">{{ d.holding.note }}</div>
               }

@@ -16,7 +16,7 @@ import { StatCardComponent } from '../../shared/components/stat-card/stat-card.c
       <!-- Page Title & Actions -->
       <div class="page-header no-print">
         <div>
-          <h2>Income & Expenses</h2>
+          <h1 class="page-title">Income & Expenses</h1>
           <p class="subtitle">Monthly transaction ledger and expense tracking</p>
         </div>
 

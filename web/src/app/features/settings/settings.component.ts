@@ -16,7 +16,7 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
   template: `
     <div class="settings-page">
       <div class="page-header">
-        <h2>Settings & Administration</h2>
+        <h1 class="page-title">Settings & Administration</h1>
         <p class="subtitle">System preferences, custom categories, data backup, and enterprise controls</p>
       </div>
 

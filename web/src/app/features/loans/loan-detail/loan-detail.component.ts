@@ -68,7 +68,7 @@ import { StatCardComponent } from '../../../shared/components/stat-card/stat-car
                   {{ d.account.status === 1 ? 'Active' : 'Closed' }}
                 </span>
               </div>
-              <h2 class="account-name">{{ d.account.name }}</h2>
+              <h1 class="account-name">{{ d.account.name }}</h1>
               <div class="counterparty-name">
                 {{ d.account.direction === 1 ? 'Borrower: ' : 'Lender: ' }}
                 <strong>{{ d.account.counterparty }}</strong>

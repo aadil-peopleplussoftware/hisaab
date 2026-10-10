@@ -11,7 +11,7 @@ import { ReportsService } from './services/reports.service';
     <div class="reports-page">
       <div class="page-header">
         <div>
-          <h2>Financial Reports & Exports</h2>
+          <h1 class="page-title">Financial Reports & Exports</h1>
           <p class="subtitle">Download server-generated QuestPDF A4 statements and ClosedXML Excel workbooks</p>
         </div>
       </div>

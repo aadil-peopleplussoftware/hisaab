@@ -23,7 +23,7 @@ import { StatCardComponent } from '../../shared/components/stat-card/stat-card.c
       <!-- Header & Action -->
       <div class="page-header no-print">
         <div>
-          <h2>Loans (Given & Taken)</h2>
+          <h1 class="page-title">Loans (Given & Taken)</h1>
           <p class="subtitle">Track money lent to friends/family and borrowed debts with interest</p>
         </div>
 
