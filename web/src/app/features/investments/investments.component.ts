@@ -22,7 +22,7 @@ import { StatCardComponent } from '../../shared/components/stat-card/stat-card.c
       <!-- Page Header & Action -->
       <div class="page-header no-print">
         <div>
-          <h2>Investments & Holdings</h2>
+          <h1 class="page-title">Investments & Holdings</h1>
           <p class="subtitle">Track Mutual Funds, Stocks, FD, PPF, NPS, Gold portfolio with real-time gain/loss</p>
         </div>
 

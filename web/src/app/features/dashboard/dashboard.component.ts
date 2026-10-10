@@ -17,7 +17,7 @@ import { MonthPickerComponent } from '../../shared/components/month-picker/month
       <!-- Top Header & Month Navigator -->
       <div class="dashboard-header">
         <div class="title-section">
-          <h2>Financial Dashboard</h2>
+          <h1 class="page-title">Financial Dashboard</h1>
           <p class="subtitle">Complete personal balance sheet and monthly cashflow</p>
         </div>
 
@@ -48,7 +48,7 @@ import { MonthPickerComponent } from '../../shared/components/month-picker/month
           <div class="hero-header">
             <div>
               <span class="hero-badge">NET WORTH</span>
-              <h1 class="net-worth-amount">{{ d.netWorth.formattedTotalNetWorth }}</h1>
+              <div class="net-worth-amount amount" role="text">{{ d.netWorth.formattedTotalNetWorth }}</div>
               <span class="hero-subtext">Total Liquid Cash + Investments + EPF + Receivables − Payables</span>
             </div>
             <div class="assets-liabilities-badges">
