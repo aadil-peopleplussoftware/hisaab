@@ -27,6 +27,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<ImportBatch> ImportBatches => Set<ImportBatch>();
     public DbSet<ImportError> ImportErrors => Set<ImportError>();
     public DbSet<MappingProfile> MappingProfiles => Set<MappingProfile>();
+    public DbSet<BusinessEntity> Businesses => Set<BusinessEntity>();
+    public DbSet<BusinessTransaction> BusinessTransactions => Set<BusinessTransaction>();
 
     public ApplicationDbContext(
         DbContextOptions<ApplicationDbContext> options,

@@ -60,6 +60,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/investments/holding-detail/holding-detail.component').then(m => m.HoldingDetailComponent)
       },
       {
+        path: 'business',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/business/business.component').then(m => m.BusinessComponent)
+      },
+      {
         path: 'reports',
         canActivate: [authGuard],
         loadComponent: () => import('./features/reports/reports.component').then(m => m.ReportsComponent)

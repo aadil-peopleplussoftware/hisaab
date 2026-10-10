@@ -17,6 +17,8 @@ public interface IApplicationDbContext
     DbSet<ImportBatch> ImportBatches { get; }
     DbSet<ImportError> ImportErrors { get; }
     DbSet<MappingProfile> MappingProfiles { get; }
+    DbSet<BusinessEntity> Businesses { get; }
+    DbSet<BusinessTransaction> BusinessTransactions { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

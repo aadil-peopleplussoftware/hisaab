@@ -73,6 +73,11 @@ interface CommandItem {
             <span class="nav-label">Investments</span>
           </a>
 
+          <a routerLink="/business" routerLinkActive="active" class="nav-item" title="Business & Ventures">
+            <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'business' }" />
+            <span class="nav-label">Business & Ventures</span>
+          </a>
+
           <div class="nav-section-label">TOOLS & EXPORTS</div>
           <a routerLink="/reports" routerLinkActive="active" class="nav-item" title="Reports & PDF">
             <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'reports' }" />
@@ -693,6 +698,10 @@ interface CommandItem {
                 <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'investments' }" />
                 <span>Investments</span>
               </a>
+              <a routerLink="/business" (click)="closeMobileMenu()" class="drawer-link">
+                <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'business' }" />
+                <span>Business & Ventures</span>
+              </a>
               <a routerLink="/reports" (click)="closeMobileMenu()" class="drawer-link">
                 <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'reports' }" />
                 <span>Reports & PDF</span>
@@ -787,6 +796,9 @@ interface CommandItem {
                 @case ('investments') {
                   <path d="M3 3a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zm18 4l-7 7-4-4-5 5-1.4-1.4 6.4-6.4 4 4 5.6-5.6H17V5h5v5h-1V7z" />
                 }
+                @case ('business') {
+                  <path d="M20 6h-4V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zm-10-2h4v2h-4V4zm10 16H4V8h16v12z" />
+                }
                 @case ('reports') {
                   <path d="M6 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6H6zm7 7V3.5L18.5 9H13z" />
                 }
@@ -827,6 +839,12 @@ interface CommandItem {
                     <polygon points="22 7 13.5 15.5 8.5 10.5 2 17 2 22 22 22" fill="currentColor" fill-opacity="0.2" stroke="none" />
                     <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
                     <polyline points="16 7 22 7 22 13" />
+                  }
+                  @case ('business') {
+                    <rect width="20" height="14" x="2" y="7" rx="2" fill="currentColor" fill-opacity="0.2" />
+                    <path d="M16 7V4a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3" />
+                    <line x1="12" y1="12" x2="12" y2="15" />
+                    <line x1="2" y1="11" x2="22" y2="11" />
                   }
                   @case ('reports') {
                     <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" fill="currentColor" fill-opacity="0.2" />
@@ -874,6 +892,11 @@ interface CommandItem {
                   <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
                   <polyline points="16 7 22 7 22 13" />
                 }
+                @case ('business') {
+                  <rect width="20" height="14" x="2" y="7" rx="1.5" />
+                  <path d="M16 7V4a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3" />
+                  <line x1="12" y1="12" x2="12" y2="15" />
+                }
                 @case ('reports') {
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                   <polyline points="14 2 14 8 20 8" />
@@ -919,6 +942,11 @@ interface CommandItem {
                 @case ('investments') {
                   <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
                   <polyline points="16 7 22 7 22 13" />
+                }
+                @case ('business') {
+                  <rect width="20" height="14" x="2" y="7" rx="2" />
+                  <path d="M16 7V4a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3" />
+                  <line x1="12" y1="12" x2="12" y2="15" />
                 }
                 @case ('reports') {
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -2247,6 +2275,12 @@ export class ShellComponent implements OnInit {
       action: () => this.router.navigate(['/investments'])
     },
     {
+      id: 'goto-business',
+      title: 'Go to Business & Ventures',
+      category: 'Navigation',
+      action: () => this.router.navigate(['/business'])
+    },
+    {
       id: 'goto-reports',
       title: 'Go to Financial Reports & PDF',
       category: 'Navigation',
@@ -2475,6 +2509,9 @@ export class ShellComponent implements OnInit {
           break;
         case 'i':
           this.router.navigate(['/investments']);
+          break;
+        case 'b':
+          this.router.navigate(['/business']);
           break;
         case 'r':
           this.router.navigate(['/reports']);
