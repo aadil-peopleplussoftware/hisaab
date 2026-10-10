@@ -3,6 +3,7 @@ using Hisaab.Api.Middleware;
 using Hisaab.Application;
 using Hisaab.Infrastructure;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.OpenApi.Models;
 
@@ -78,6 +79,78 @@ using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<Hisaab.Infrastructure.Persistence.ApplicationDbContext>();
     await dbContext.Database.EnsureCreatedAsync();
+
+    // Ensure business tables exist if added after initial database creation
+    try
+    {
+        await dbContext.Database.ExecuteSqlRawAsync(@"
+            CREATE TABLE IF NOT EXISTS businesses (
+                ""Id"" uuid NOT NULL,
+                ""UserId"" uuid NOT NULL,
+                ""Name"" character varying(200) NOT NULL,
+                ""LegalName"" character varying(200),
+                ""Type"" integer NOT NULL,
+                ""Currency"" character varying(10) NOT NULL,
+                ""TaxId"" character varying(50),
+                ""Description"" character varying(1000),
+                ""IsActive"" boolean NOT NULL DEFAULT true,
+                ""Color"" character varying(20),
+                ""CreatedAtUtc"" timestamp with time zone NOT NULL,
+                ""UpdatedAtUtc"" timestamp with time zone,
+                ""CreatedBy"" uuid,
+                ""UpdatedBy"" uuid,
+                ""RowVersion"" bigint NOT NULL DEFAULT 0,
+                ""IsDeleted"" boolean NOT NULL DEFAULT false,
+                ""DeletedAtUtc"" timestamp with time zone,
+                ""DeletedBy"" uuid,
+                ""ImportBatchId"" uuid,
+                CONSTRAINT ""PK_businesses"" PRIMARY KEY (""Id"")
+            );
+
+            CREATE INDEX IF NOT EXISTS ""IX_businesses_UserId_IsActive"" ON businesses (""UserId"", ""IsActive"");
+            CREATE INDEX IF NOT EXISTS ""IX_businesses_UserId_Name"" ON businesses (""UserId"", ""Name"");
+
+            CREATE TABLE IF NOT EXISTS business_transactions (
+                ""Id"" uuid NOT NULL,
+                ""BusinessId"" uuid NOT NULL,
+                ""Type"" integer NOT NULL,
+                ""Category"" character varying(100) NOT NULL,
+                ""Amount"" numeric(18,2) NOT NULL,
+                ""TaxRatePercent"" numeric(5,2) NOT NULL DEFAULT 0,
+                ""TaxAmount"" numeric(18,2) NOT NULL DEFAULT 0,
+                ""TotalAmount"" numeric(18,2) NOT NULL,
+                ""TransactionDate"" timestamp with time zone NOT NULL,
+                ""Counterparty"" character varying(150) NOT NULL,
+                ""InvoiceNumber"" character varying(100),
+                ""DueDate"" timestamp with time zone,
+                ""PaymentStatus"" integer NOT NULL,
+                ""PaymentMethod"" character varying(100),
+                ""Description"" character varying(1000),
+                ""AttachmentUrl"" character varying(500),
+                ""CreatedAtUtc"" timestamp with time zone NOT NULL,
+                ""UpdatedAtUtc"" timestamp with time zone,
+                ""CreatedBy"" uuid,
+                ""UpdatedBy"" uuid,
+                ""RowVersion"" bigint NOT NULL DEFAULT 0,
+                ""UserId"" uuid NOT NULL,
+                ""IsDeleted"" boolean NOT NULL DEFAULT false,
+                ""DeletedAtUtc"" timestamp with time zone,
+                ""DeletedBy"" uuid,
+                ""ImportBatchId"" uuid,
+                CONSTRAINT ""PK_business_transactions"" PRIMARY KEY (""Id""),
+                CONSTRAINT ""FK_business_transactions_businesses_BusinessId"" FOREIGN KEY (""BusinessId"") REFERENCES businesses (""Id"") ON DELETE CASCADE
+            );
+
+            CREATE INDEX IF NOT EXISTS ""IX_business_transactions_BusinessId"" ON business_transactions (""BusinessId"");
+            CREATE INDEX IF NOT EXISTS ""IX_business_transactions_UserId_BusinessId_TransactionDate"" ON business_transactions (""UserId"", ""BusinessId"", ""TransactionDate"");
+            CREATE INDEX IF NOT EXISTS ""IX_business_transactions_UserId_Type"" ON business_transactions (""UserId"", ""Type"");
+            CREATE INDEX IF NOT EXISTS ""IX_business_transactions_UserId_PaymentStatus"" ON business_transactions (""UserId"", ""PaymentStatus"");
+        ");
+    }
+    catch
+    {
+        // Ignored for non-Postgres providers (e.g. SQLite test runners)
+    }
 }
 
 // Middleware Pipeline

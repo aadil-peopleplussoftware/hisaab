@@ -92,3 +92,4 @@ public class UpdateBusinessTransactionCommandHandler : IRequestHandler<UpdateBus
         await _context.SaveChangesAsync(cancellationToken);
     }
 }
+

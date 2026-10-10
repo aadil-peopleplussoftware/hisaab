@@ -16,3 +16,4 @@ public class BusinessEntity : UserOwnedEntity
 
     public ICollection<BusinessTransaction> Transactions { get; set; } = new List<BusinessTransaction>();
 }
+

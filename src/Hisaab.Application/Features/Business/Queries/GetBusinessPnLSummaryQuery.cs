@@ -101,3 +101,4 @@ public class GetBusinessPnLSummaryQueryHandler : IRequestHandler<GetBusinessPnLS
         );
     }
 }
+

@@ -94,3 +94,4 @@ export class BusinessService {
     return this.http.patch<void>(`${this.baseUrl}/transactions/${id}/status`, { status });
   }
 }
+

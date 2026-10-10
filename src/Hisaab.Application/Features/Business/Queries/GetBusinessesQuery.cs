@@ -140,3 +140,4 @@ public class GetBusinessesQueryHandler : IRequestHandler<GetBusinessesQuery, Bus
         return new BusinessListResponseDto(dtos, consolidatedSummary);
     }
 }
+

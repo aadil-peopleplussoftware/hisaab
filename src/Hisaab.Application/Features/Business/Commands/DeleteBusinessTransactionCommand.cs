@@ -31,3 +31,4 @@ public class DeleteBusinessTransactionCommandHandler : IRequestHandler<DeleteBus
         await _context.SaveChangesAsync(cancellationToken);
     }
 }
+

@@ -2333,3 +2333,4 @@ export class BusinessComponent implements OnInit {
     return summary.categoryBreakdown.filter(c => c.type === BusinessTransactionType.Expense);
   }
 }
+

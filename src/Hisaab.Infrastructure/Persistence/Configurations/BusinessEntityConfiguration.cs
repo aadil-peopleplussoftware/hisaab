@@ -41,3 +41,4 @@ public class BusinessEntityConfiguration : IEntityTypeConfiguration<BusinessEnti
         builder.HasIndex(b => new { b.UserId, b.Name });
     }
 }
+

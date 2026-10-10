@@ -154,3 +154,4 @@ export interface UpdateBusinessTransactionRequest {
   description?: string | null;
   attachmentUrl?: string | null;
 }
+

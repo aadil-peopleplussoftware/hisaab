@@ -79,3 +79,4 @@ public record BusinessListResponseDto(
     List<BusinessDto> Businesses,
     BusinessPnLSummaryDto ConsolidatedSummary
 );
+

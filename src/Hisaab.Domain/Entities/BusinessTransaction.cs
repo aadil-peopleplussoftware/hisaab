@@ -26,3 +26,4 @@ public class BusinessTransaction : UserOwnedEntity
     public string? Description { get; set; }
     public string? AttachmentUrl { get; set; }
 }
+

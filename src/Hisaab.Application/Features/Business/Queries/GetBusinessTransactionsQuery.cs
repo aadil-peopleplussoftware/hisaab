@@ -103,3 +103,4 @@ public class GetBusinessTransactionsQueryHandler : IRequestHandler<GetBusinessTr
         )).ToList();
     }
 }
+

@@ -26,3 +26,4 @@ public enum BusinessPaymentStatus
     Overdue = 3,
     Cancelled = 4
 }
+

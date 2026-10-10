@@ -65,3 +65,4 @@ public class CreateBusinessCommandHandler : IRequestHandler<CreateBusinessComman
         return business.Id;
     }
 }
+

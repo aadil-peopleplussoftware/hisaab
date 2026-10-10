@@ -53,3 +53,4 @@ public class BusinessTransactionConfiguration : IEntityTypeConfiguration<Busines
         builder.HasIndex(t => new { t.UserId, t.PaymentStatus });
     }
 }
+

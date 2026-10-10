@@ -157,3 +157,4 @@ public record UpdateBusinessTransactionRequest(
 );
 
 public record UpdateTransactionStatusRequest(BusinessPaymentStatus Status);
+
