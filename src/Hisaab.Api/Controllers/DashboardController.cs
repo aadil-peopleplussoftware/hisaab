@@ -18,10 +18,15 @@ public class DashboardController : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> GetDashboard(
         [FromQuery] string? month,
+        [FromQuery] string? periodType = "month",
+        [FromQuery] string? date = null,
+        [FromQuery] int? year = null,
+        [FromQuery] DateTime? startDate = null,
+        [FromQuery] DateTime? endDate = null,
         [FromQuery] int trendMonths = 6,
         CancellationToken cancellationToken = default)
     {
-        var result = await Mediator.Send(new GetDashboardQuery(month, trendMonths), cancellationToken);
+        var result = await Mediator.Send(new GetDashboardQuery(month, trendMonths, periodType, date, year, startDate, endDate), cancellationToken);
         if (!result.Succeeded)
         {
             return BadRequest(new { errors = result.Errors });

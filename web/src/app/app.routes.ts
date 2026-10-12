@@ -29,6 +29,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent)
       },
       {
+        path: 'analytics',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/analytics/kpi-dashboard.component').then(m => m.KpiDashboardComponent)
+      },
+      {
         path: 'profile',
         canActivate: [authGuard],
         loadComponent: () => import('./features/auth/profile/profile.component').then(m => m.ProfileComponent)

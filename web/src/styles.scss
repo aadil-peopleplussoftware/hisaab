@@ -4,93 +4,115 @@
    ========================================================================== */
 
 :root {
-  /* Typography - GitHub System Font Stack with JetBrains Mono */
-  --font-family-base: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  /* Typography - Google Sans & Roboto Font Stack */
+  --font-family-base: 'Google Sans', 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-family-google: 'Google Sans', 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
   --font-family-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 
-  /* GitHub Light Primer Palette */
+  /* Google Play Console Light Palette */
   --color-canvas-default: #ffffff;
-  --color-canvas-subtle: #f6f8fa;
-  --color-border-default: #d0d7de;
-  --color-border-muted: #d8dee4;
-  --color-fg-default: #1f2328;
-  --color-fg-muted: #656d76;
-  --color-fg-subtle: #6e7781;
-  --color-accent-fg: #0969da;
-  --color-accent-emphasis: #0969da;
-  --color-accent-subtle: #ddf4ff;
+  --color-canvas-subtle: #f8fafd;
+  --color-canvas-surface: #f0f4f9;
+  --color-border-default: #e0e2e5;
+  --color-border-muted: #e7eaed;
+  --color-border-subtle: #f1f3f4;
+  --color-fg-default: #1f1f1f;
+  --color-fg-muted: #444746;
+  --color-fg-subtle: #5f6368;
+  --color-fg-disabled: #8e918f;
 
-  /* GitHub Button System Tokens (Light) */
-  --color-btn-text: #24292f;
-  --color-btn-bg: #f6f8fa;
-  --color-btn-border: rgba(31, 35, 40, 0.15);
-  --color-btn-hover-bg: #f3f4f6;
-  --color-btn-hover-border: rgba(31, 35, 40, 0.15);
-  --color-btn-active-bg: #ebecf0;
+  /* Google Brand Blue & Accent Tokens */
+  --color-accent-fg: #0b57d0;
+  --color-accent-emphasis: #0b57d0;
+  --color-accent-subtle: #d3e3fd;
+  --color-accent-hover: #0842a0;
+
+  /* Google Play Console Nav Active State (Material 3 Soft Pill) */
+  --color-nav-active-bg: #d3e3fd;
+  --color-nav-active-fg: #041e49;
+  --color-nav-active-icon: #0b57d0;
+  --color-nav-hover-bg: #f1f3f4;
+  --color-nav-hover-fg: #1f1f1f;
+  --color-sidebar-bg: #ffffff;
+  --color-sidebar-border: #e0e2e5;
+
+  /* Google Button System Tokens (Light) */
+  --color-btn-text: #0b57d0;
+  --color-btn-bg: #ffffff;
+  --color-btn-border: #747775;
+  --color-btn-hover-bg: #f1f3f4;
+  --color-btn-hover-border: #747775;
+  --color-btn-active-bg: #e1e3e1;
 
   --color-btn-primary-text: #ffffff;
-  --color-btn-primary-bg: #1f883d;
-  --color-btn-primary-border: rgba(31, 35, 40, 0.15);
-  --color-btn-primary-hover-bg: #1a7f37;
+  --color-btn-primary-bg: #0b57d0;
+  --color-btn-primary-border: #0b57d0;
+  --color-btn-primary-hover-bg: #0842a0;
 
-  --color-btn-danger-text: #cf222e;
-  --color-btn-danger-bg: #f6f8fa;
-  --color-btn-danger-border: rgba(31, 35, 40, 0.15);
-  --color-btn-danger-hover-bg: #a40e26;
+  --color-btn-danger-text: #c5221f;
+  --color-btn-danger-bg: #fce8e6;
+  --color-btn-danger-border: #fad2cf;
+  --color-btn-danger-hover-bg: #c5221f;
   --color-btn-danger-hover-text: #ffffff;
 
-  /* Semantic Financial Colors (Mapped to GitHub Status Standards) */
-  --color-income: #1a7f37;
-  --color-income-bg: #dafbe1;
-  --color-income-border: #4ac26b;
-  --color-expense: #cf222e;
-  --color-expense-bg: #ffebe9;
-  --color-expense-border: #ff8182;
-  --color-loan: #9a6700;
-  --color-loan-bg: #fff8c5;
-  --color-loan-border: #d4a72c;
-  --color-investment: #0969da;
-  --color-investment-bg: #ddf4ff;
-  --color-investment-border: #54aeff;
-  --color-epf: #0d766e;
-  --color-epf-bg: #ccfbf1;
-  --color-epf-border: #2dd4bf;
+  /* Notifications Salmon Pill */
+  --color-notif-bg: #fce8e6;
+  --color-notif-fg: #c5221f;
+
+  /* Semantic Financial Colors (Google Play Material Standards) */
+  --color-income: #137333;
+  --color-income-bg: #e6f4ea;
+  --color-income-border: #ceead6;
+  --color-expense: #c5221f;
+  --color-expense-bg: #fce8e6;
+  --color-expense-border: #fad2cf;
+  --color-loan: #b06000;
+  --color-loan-bg: #fef7e0;
+  --color-loan-border: #feefc3;
+  --color-investment: #0b57d0;
+  --color-investment-bg: #d3e3fd;
+  --color-investment-border: #a8c7fa;
+  --color-epf: #007b83;
+  --color-epf-bg: #e0f2f1;
+  --color-epf-border: #b2dfdb;
 
   /* Universal App Surface Tokens */
-  --color-bg-app: #f6f8fa;
+  --color-bg-app: #ffffff;
   --color-bg-card: #ffffff;
-  --color-bg-subtle: #f6f8fa;
-  --color-bg-hover: #f3f4f6;
-  --color-border: #d0d7de;
-  --color-border-subtle: #d8dee4;
-  --color-text-main: #1f2328;
-  --color-text-secondary: #24292f;
-  --color-text-muted: #656d76;
-  --color-text-subtle: #6e7781;
-  --color-primary: #1f883d;
-  --color-primary-hover: #1a7f37;
-  --color-primary-active: #156d2e;
-  --color-primary-light: #dafbe1;
+  --color-bg-subtle: #f8fafd;
+  --color-bg-hover: #f1f3f4;
+  --color-border: #e0e2e5;
+  --color-border-subtle: #f1f3f4;
+  --color-text-main: #1f1f1f;
+  --color-text-secondary: #444746;
+  --color-text-muted: #5f6368;
+  --color-text-subtle: #747775;
+  --color-primary: #0b57d0;
+  --color-primary-hover: #0842a0;
+  --color-primary-active: #041e49;
+  --color-primary-light: #d3e3fd;
   --color-primary-contrast: #ffffff;
 
-  /* Shadows & Radii (GitHub Primer Specs) */
-  --shadow-sm: 0 1px 0 rgba(31, 35, 40, 0.04);
-  --shadow-md: 0 3px 6px rgba(140, 149, 159, 0.15);
-  --shadow-lg: 0 8px 24px rgba(140, 149, 159, 0.2);
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
+  /* Google Play Console Shadows & Pill Radii */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 9999px;
   --radius-full: 9999px;
-  --min-touch-target: 44px;
+  --min-touch-target: 40px;
 
   /* Legacy Aliases */
   --bg-surface: #ffffff;
   --color-bg-main: #ffffff;
-  --text-primary: #1f2328;
-  --text-secondary: #24292f;
-  --border-color: #d0d7de;
-  --primary: #1f883d;
-  --primary-hover: #1a7f37;
+  --text-primary: #1f1f1f;
+  --text-secondary: #444746;
+  --border-color: #e0e2e5;
+  --primary: #0b57d0;
+  --primary-hover: #0842a0;
 }
 
 /* Theme 1: Light / GitHub Primer Light (Default) */
@@ -173,6 +195,17 @@
   --border-color: #30363d;
   --primary: #238636;
   --primary-hover: #2ea043;
+
+  /* Sidebar & Navigation Tokens (Dark) */
+  --color-sidebar-bg: #161b22;
+  --color-sidebar-border: #30363d;
+  --color-nav-active-bg: rgba(56, 139, 253, 0.18);
+  --color-nav-active-fg: #58a6ff;
+  --color-nav-active-icon: #58a6ff;
+  --color-nav-hover-bg: #21262d;
+  --color-nav-hover-fg: #f0f6fc;
+  --color-notif-bg: rgba(248, 81, 73, 0.18);
+  --color-notif-fg: #f85149;
 }
 
 /* Theme 3: Nordic Arctic Frost */
@@ -248,6 +281,17 @@
   --border-color: #434c5e;
   --primary: #88c0d0;
   --primary-hover: #8fbcbb;
+
+  /* Sidebar & Navigation Tokens (Nord) */
+  --color-sidebar-bg: #2e3440;
+  --color-sidebar-border: #434c5e;
+  --color-nav-active-bg: rgba(136, 192, 208, 0.2);
+  --color-nav-active-fg: #88c0d0;
+  --color-nav-active-icon: #88c0d0;
+  --color-nav-hover-bg: #3b4252;
+  --color-nav-hover-fg: #eceff4;
+  --color-notif-bg: rgba(191, 97, 106, 0.2);
+  --color-notif-fg: #bf616a;
 }
 
 /* Theme 4: Midnight Emerald Wealth */
@@ -323,6 +367,17 @@
   --border-color: #1a2639;
   --primary: #10b981;
   --primary-hover: #059669;
+
+  /* Sidebar & Navigation Tokens (Midnight Emerald) */
+  --color-sidebar-bg: #0b111e;
+  --color-sidebar-border: #1a2639;
+  --color-nav-active-bg: rgba(16, 185, 129, 0.18);
+  --color-nav-active-fg: #34d399;
+  --color-nav-active-icon: #10b981;
+  --color-nav-hover-bg: #131c2b;
+  --color-nav-hover-fg: #f1f5f9;
+  --color-notif-bg: rgba(244, 63, 94, 0.2);
+  --color-notif-fg: #f43f5e;
 }
 
 /* Theme 5: Warm Sepia & Paper */
@@ -398,6 +453,17 @@
   --border-color: #dcd3c1;
   --primary: #b85d19;
   --primary-hover: #9e4b0e;
+
+  /* Sidebar & Navigation Tokens (Sepia Paper) */
+  --color-sidebar-bg: #fdfaf3;
+  --color-sidebar-border: #dcd3c1;
+  --color-nav-active-bg: rgba(184, 93, 25, 0.15);
+  --color-nav-active-fg: #b85d19;
+  --color-nav-active-icon: #b85d19;
+  --color-nav-hover-bg: #f4eee1;
+  --color-nav-hover-fg: #2d2b28;
+  --color-notif-bg: rgba(184, 93, 25, 0.15);
+  --color-notif-fg: #b85d19;
 }
 
 /* ==========================================================================
@@ -471,17 +537,18 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* GitHub Heading Hierarchy - Strict Unambiguous Outline */
+/* Google Play Console Heading Hierarchy */
 h1, h2, h3, h4, h5, h6 {
   color: var(--color-text-main);
-  font-weight: 600;
+  font-family: var(--font-family-google);
+  font-weight: 500;
   line-height: 1.25;
 }
 
-h1 { font-size: 24px; font-weight: 600; }
-h2 { font-size: 18px; font-weight: 600; }
-h3 { font-size: 15px; font-weight: 600; }
-h4 { font-size: 13px; font-weight: 600; }
+h1 { font-size: 26px; font-weight: 400; letter-spacing: -0.015em; }
+h2 { font-size: 20px; font-weight: 500; letter-spacing: -0.01em; }
+h3 { font-size: 16px; font-weight: 500; }
+h4 { font-size: 14px; font-weight: 500; }
 
 p {
   color: var(--color-text-muted);
@@ -497,11 +564,7 @@ p {
 }
 
 /* ==========================================================================
-   GitHub Primer Button System (Strictly 4 Styles)
-   1. .btn-primary   - Green Call to Action
-   2. .btn / .btn-secondary / .btn-outline - Default Gray Button
-   3. .btn-danger    - Red Destructive Button
-   4. .btn-invisible / .btn-ghost - Flat Transparent Action
+   Google Play Console Pill Button System
    ========================================================================== */
 
 button, a, input, select, textarea {
@@ -521,66 +584,71 @@ button, a, input, select, textarea {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  min-height: 32px;
-  padding: 5px 14px;
-  font-size: 13px;
+  gap: 8px;
+  min-height: 36px;
+  padding: 8px 20px;
+  font-size: 14px;
   font-weight: 500;
   line-height: 20px;
-  border-radius: var(--radius-md); /* 6px */
-  border: 1px solid var(--color-btn-border);
-  background-color: var(--color-btn-bg);
-  color: var(--color-btn-text);
-  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-pill); /* Google Pill Radius */
+  border: 1px solid var(--color-border-default);
+  background-color: var(--color-canvas-default);
+  color: var(--color-accent-fg);
   cursor: pointer;
   text-decoration: none;
   white-space: nowrap;
   user-select: none;
-  transition: 80ms cubic-bezier(0.33, 1, 0.68, 1);
+  transition: all 0.15s ease;
 
   &:hover {
-    background-color: var(--color-btn-hover-bg);
-    border-color: var(--color-btn-hover-border);
+    background-color: var(--color-bg-hover);
+    border-color: var(--color-border-default);
     text-decoration: none;
   }
 
   &:active {
-    background-color: var(--color-btn-active-bg);
+    background-color: #e1e3e1;
   }
 
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.3);
+    box-shadow: 0 0 0 3px rgba(11, 87, 208, 0.25);
   }
 
   &:disabled, &[disabled] {
     opacity: 0.6;
     cursor: not-allowed;
     pointer-events: none;
-    box-shadow: none;
+    background-color: #e1e3e1;
+    color: #8e918f;
+    border-color: transparent;
   }
 }
 
-/* 1. Primary Button (GitHub Green) */
+/* 1. Primary Button (Google Blue Pill) */
 .btn-primary {
-  color: var(--color-btn-primary-text);
+  color: #ffffff;
   background-color: var(--color-btn-primary-bg);
   border-color: var(--color-btn-primary-border);
+  box-shadow: 0 1px 2px rgba(11, 87, 208, 0.2);
 
   &:hover {
     background-color: var(--color-btn-primary-hover-bg);
-    border-color: var(--color-btn-primary-border);
+    border-color: var(--color-btn-primary-hover-bg);
+    box-shadow: 0 2px 4px rgba(11, 87, 208, 0.3);
   }
 }
 
-/* 2. Secondary / Default Button */
+/* 2. Secondary / Outlined Button */
 .btn, .btn-secondary, .btn-outline, .btn-action, .btn-back, .btn-retry {
-  color: var(--color-btn-text);
-  background-color: var(--color-btn-bg);
-  border-color: var(--color-btn-border);
+  color: var(--color-fg-muted);
+  background-color: var(--color-canvas-default);
+  border: 1px solid var(--color-border-default);
 
   &:hover {
-    background-color: var(--color-btn-hover-bg);
+    background-color: var(--color-canvas-subtle);
+    color: var(--color-fg-default);
+    border-color: var(--color-border-muted);
   }
 }
 
@@ -591,7 +659,7 @@ button, a, input, select, textarea {
   border-color: var(--color-btn-danger-border);
 
   &:hover {
-    color: var(--color-btn-danger-hover-text);
+    color: #ffffff;
     background-color: var(--color-btn-danger-hover-bg);
     border-color: var(--color-btn-danger-hover-bg);
   }
@@ -800,7 +868,7 @@ button, a, input, select, textarea {
 }
 
 /* ==========================================================================
-   Tables & Data Presentation (GitHub Box-Row Style)
+   Tables & Data Presentation (Google Play Console Style)
    ========================================================================== */
 
 .table-responsive {
@@ -817,27 +885,29 @@ table.txn-table {
   font-size: 13px;
 
   thead th {
-    background-color: var(--color-canvas-subtle);
-    color: var(--color-text-muted);
+    background-color: var(--color-canvas-default);
+    color: var(--color-fg-muted);
     font-size: 12px;
-    font-weight: 600;
-    padding: 8px 16px;
+    font-weight: 500;
+    padding: 12px 16px;
     border-bottom: 1px solid var(--color-border-default);
     white-space: nowrap;
+    text-transform: capitalize;
   }
 
   tbody tr {
-    transition: background-color 0.1s ease;
+    transition: background-color 0.12s ease;
 
     &:hover {
       background-color: var(--color-canvas-subtle);
     }
 
     td {
-      padding: 10px 16px;
-      color: var(--color-text-main);
-      border-bottom: 1px solid var(--color-border-default);
+      padding: 14px 16px;
+      color: var(--color-fg-default);
+      border-bottom: 1px solid var(--color-border-subtle);
       vertical-align: middle;
+      font-size: 13px;
     }
   }
 }

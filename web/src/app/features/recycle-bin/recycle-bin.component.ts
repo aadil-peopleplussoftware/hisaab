@@ -31,7 +31,7 @@ import { ThemeService } from '../../core/services/theme.service';
             </div>
           </div>
           <p class="subtitle">
-            Items soft-deleted across all modules are safely preserved here. Restore them back to active ledgers anytime or purge permanently.
+            Safely inspect, restore, or permanently remove soft-deleted records across all financial modules.
           </p>
         </div>
 

@@ -2,29 +2,38 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { DashboardService } from './services/dashboard.service';
+import { DashboardService, PeriodFilterParams } from './services/dashboard.service';
 import { DashboardResponse, MonthlyTrend } from './models/dashboard.model';
 import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
 import { StatCardComponent } from '../../shared/components/stat-card/stat-card.component';
-import { MonthPickerComponent } from '../../shared/components/month-picker/month-picker.component';
+import { PeriodFilterComponent } from '../../shared/components/period-filter/period-filter.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, InrCurrencyPipe, StatCardComponent, MonthPickerComponent],
+  imports: [CommonModule, FormsModule, RouterLink, InrCurrencyPipe, StatCardComponent, PeriodFilterComponent],
   template: `
     <div class="dashboard-page">
-      <!-- Top Header & Month Navigator -->
-      <div class="dashboard-header">
-        <div class="title-section">
-          <h1 class="page-title">Financial Dashboard</h1>
-          <p class="subtitle">Complete personal balance sheet and monthly cashflow</p>
+      <!-- Dashboard Header (Google Console Typography, Authentic Hisaab Content) -->
+      <header class="console-header no-print">
+        <div class="console-header-left">
+          <h1 class="console-title">Financial Dashboard</h1>
+          <p class="console-subtitle">
+            Complete personal balance sheet, net worth tracking, and monthly cashflow.
+          </p>
         </div>
 
         <div class="header-picker-wrap">
-          <app-month-picker [initialMonth]="selectedMonth()" (monthChange)="onMonthPickerChange($event)" />
+          <a routerLink="/analytics" class="btn-analytics-shortcut" title="Open Module KPI Analytics Studio">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 3v18h18" />
+              <path d="m19 9-5 5-4-4-3 3" />
+            </svg>
+            <span>KPI Analytics Studio →</span>
+          </a>
+          <app-period-filter [initialFilter]="periodFilter()" (filterChange)="onPeriodFilterChange($event)" />
         </div>
-      </div>
+      </header>
 
       <!-- Loading State -->
       @if (loading()) {
@@ -43,6 +52,7 @@ import { MonthPickerComponent } from '../../shared/components/month-picker/month
       }
 
       @if (!loading() && dashboardData(); as d) {
+
         <!-- HERO CARD: Net Worth Balance Sheet -->
         <div class="net-worth-hero-card">
           <div class="hero-header">
@@ -165,19 +175,19 @@ import { MonthPickerComponent } from '../../shared/components/month-picker/month
         <!-- Monthly KPI Cards Grid -->
         <div class="kpi-grid">
           <app-stat-card
-            title="Monthly Income"
+            title="Total Income"
             [amount]="d.monthlyOverview.totalIncome"
-            subtitle="Earned in {{ formatMonthDisplay(selectedMonth()) }}"
+            subtitle="Recorded in {{ d.selectedMonth }}"
             variant="income"
           />
           <app-stat-card
-            title="Monthly Expenses"
+            title="Total Expenses"
             [amount]="d.monthlyOverview.totalExpense"
             subtitle="{{ d.monthlyOverview.transactionCount }} transactions recorded"
             variant="expense"
           />
           <app-stat-card
-            title="Monthly Net Savings"
+            title="Net Savings"
             [amount]="d.monthlyOverview.netSavings"
             subtitle="{{ d.monthlyOverview.savingsRatePercentage }}% savings rate"
             [variant]="d.monthlyOverview.netSavings >= 0 ? 'income' : 'expense'"
@@ -380,6 +390,63 @@ import { MonthPickerComponent } from '../../shared/components/month-picker/month
       flex-direction: column;
       gap: 1.5rem;
       padding-bottom: 3rem;
+      font-family: 'Google Sans', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    /* Google Play Console Home Header (Screenshot 4) */
+    /* Console / Dashboard Header */
+    .console-header {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+
+      @media (min-width: 768px) {
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: space-between;
+      }
+    }
+
+    .console-title {
+      font-size: 1.625rem; /* 26px */
+      font-weight: 400;
+      color: var(--color-text-main);
+      margin: 0 0 0.2rem 0;
+      letter-spacing: -0.01em;
+    }
+
+    .console-subtitle {
+      font-size: 0.84rem;
+      color: var(--color-text-muted);
+      margin: 0;
+    }
+
+    .header-picker-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-analytics-shortcut {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      height: 38px;
+      padding: 0 1rem;
+      border-radius: var(--radius-pill, 9999px);
+      background: var(--color-bg-card, #ffffff);
+      color: var(--color-accent-fg, #0b57d0);
+      border: 1px solid var(--color-border, #747775);
+      font-size: 0.84rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.15s ease;
+
+      &:hover {
+        background: var(--color-bg-hover, #f0f4f9);
+        border-color: var(--color-accent-fg, #0b57d0);
+      }
     }
 
     .dashboard-header {
@@ -1348,6 +1415,10 @@ export class DashboardComponent implements OnInit {
   private readonly dashboardService = inject(DashboardService);
 
   readonly selectedMonth = signal<string>(this.getCurrentMonthString());
+  readonly periodFilter = signal<PeriodFilterParams>({
+    periodType: 'month',
+    month: this.getCurrentMonthString()
+  });
   readonly dashboardData = signal<DashboardResponse | null>(null);
   readonly loading = signal<boolean>(false);
   readonly error = signal<string | null>(null);
@@ -1360,7 +1431,7 @@ export class DashboardComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
 
-    this.dashboardService.getDashboard(this.selectedMonth(), 6).subscribe({
+    this.dashboardService.getDashboard(this.periodFilter(), 6).subscribe({
       next: (data) => {
         this.dashboardData.set(data);
         this.loading.set(false);
@@ -1372,18 +1443,29 @@ export class DashboardComponent implements OnInit {
     });
   }
 
+  onPeriodFilterChange(filter: PeriodFilterParams): void {
+    this.periodFilter.set(filter);
+    if (filter.month) {
+      this.selectedMonth.set(filter.month);
+    }
+    this.loadDashboard();
+  }
+
   changeMonth(delta: number): void {
     const [year, month] = this.selectedMonth().split('-').map(Number);
     const date = new Date(year, month - 1 + delta, 1);
     const yStr = date.getFullYear().toString();
     const mStr = (date.getMonth() + 1).toString().padStart(2, '0');
-    this.selectedMonth.set(`${yStr}-${mStr}`);
+    const newMonth = `${yStr}-${mStr}`;
+    this.selectedMonth.set(newMonth);
+    this.periodFilter.set({ periodType: 'month', month: newMonth });
     this.loadDashboard();
   }
 
   onMonthPickerChange(newMonth: string): void {
     if (newMonth && newMonth !== this.selectedMonth()) {
       this.selectedMonth.set(newMonth);
+      this.periodFilter.set({ periodType: 'month', month: newMonth });
       this.loadDashboard();
     }
   }
@@ -1392,6 +1474,7 @@ export class DashboardComponent implements OnInit {
     const cur = this.getCurrentMonthString();
     if (this.selectedMonth() !== cur) {
       this.selectedMonth.set(cur);
+      this.periodFilter.set({ periodType: 'month', month: cur });
       this.loadDashboard();
     }
   }

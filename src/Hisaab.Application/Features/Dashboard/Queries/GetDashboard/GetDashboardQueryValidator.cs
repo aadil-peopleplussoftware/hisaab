@@ -8,7 +8,7 @@ public class GetDashboardQueryValidator : AbstractValidator<GetDashboardQuery>
     {
         RuleFor(x => x.Month)
             .Matches(@"^\d{4}-(0[1-9]|1[0-2])$")
-            .When(x => !string.IsNullOrWhiteSpace(x.Month))
+            .When(x => !string.IsNullOrWhiteSpace(x.Month) && (string.IsNullOrWhiteSpace(x.PeriodType) || x.PeriodType.Equals("month", StringComparison.OrdinalIgnoreCase)))
             .WithMessage("Month must be in 'yyyy-MM' format (e.g. 2026-10).");
 
         RuleFor(x => x.TrendMonths)

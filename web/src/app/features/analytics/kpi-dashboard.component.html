@@ -1,0 +1,1072 @@
+<div class="google-console-page">
+  <!-- Top Header (Google Play Console Clean Typography) -->
+  <header class="console-header no-print">
+    <div class="console-header-left">
+      <div class="header-badge-row">
+        <span class="console-badge-pill">ANALYTICS & DIAGNOSTICS STUDIO</span>
+        <span class="live-dot-pulse" title="Connected to live database"></span>
+      </div>
+      <h1 class="console-title">Module Performance & KPI Analytics</h1>
+      <p class="console-subtitle">
+        Unified capital diagnostics, operational margins, liquidity runway, and risk metrics across your personal and commercial finances.
+      </p>
+    </div>
+
+    <div class="console-header-actions">
+      <!-- Period Filter (All Time, Year, Month, Day, Custom) -->
+      <app-period-filter [initialFilter]="periodFilter()" (filterChange)="onPeriodFilterChange($event)" />
+
+      <!-- Refresh Live Data Button -->
+      <button
+        type="button"
+        class="btn-console-pill outlined"
+        (click)="loadAllKpiData()"
+        [disabled]="loading()"
+        title="Reload all module metrics"
+      >
+        <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="23 4 23 10 17 10"></polyline>
+          <polyline points="1 20 1 14 7 14"></polyline>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+        <span>{{ loading() ? 'Syncing...' : 'Refresh' }}</span>
+      </button>
+
+      <!-- Standard Dashboard Link -->
+      <a routerLink="/dashboard" class="btn-console-pill primary">
+        <span>Standard View →</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Segmented Module Switcher (Google Play Console Filter Bar) -->
+  <nav class="module-segmented-bar no-print" aria-label="Module KPI Navigation">
+    <div class="segmented-track">
+      @for (tab of moduleTabs; track tab.id) {
+        <button
+          type="button"
+          class="module-segment-btn"
+          [class.active]="activeModule() === tab.id"
+          (click)="selectModule(tab.id)"
+        >
+          <span class="segment-label">{{ tab.label }}</span>
+          <span class="segment-badge">{{ tab.badge }}</span>
+        </button>
+      }
+    </div>
+  </nav>
+
+  <!-- Loading State Indicator -->
+  @if (loading()) {
+    <div class="console-loading-card">
+      <div class="console-spinner"></div>
+      <div class="loading-text">
+        <h4>Synthesizing Financial KPIs...</h4>
+        <p>Crunching cashflows, portfolio returns, debt schedules, and operational ledgers.</p>
+      </div>
+    </div>
+  }
+
+  <!-- Error Alert -->
+  @if (error()) {
+    <div class="console-alert-card danger">
+      <div class="alert-content">
+        <strong>Error Loading Analytics:</strong> {{ error() }}
+      </div>
+      <button type="button" class="btn-console-pill outlined sm" (click)="loadAllKpiData()">
+        Retry
+      </button>
+    </div>
+  }
+
+  @if (!loading()) {
+    <!-- ======================================================== -->
+    <!-- ACTIVE MODULE DIAGNOSTIC BANNER (Google Console Banner)  -->
+    <!-- ======================================================== -->
+    <div class="diagnostic-banner-card">
+      <div class="diagnostic-left">
+        @switch (activeModule()) {
+          @case ('all') {
+            <div class="status-badge-chip success">
+              <span class="dot"></span>
+              <span>HEALTH SCORE: {{ overallHealthScore() }}/100</span>
+            </div>
+            <h3 class="diagnostic-title">Executive Balance Sheet & Capital Alignment</h3>
+            <p class="diagnostic-desc">
+              Your overall financial position is active with {{ runwayMonths() }} months of liquid cash runway.
+              Debt obligations are balanced against liquid assets and retirement reserves.
+            </p>
+          }
+          @case ('cashflow') {
+            <div class="status-badge-chip" [class]="cashflowHealthStatus().type">
+              <span class="dot"></span>
+              <span>{{ cashflowHealthStatus().label }}</span>
+            </div>
+            <h3 class="diagnostic-title">Monthly Cashflow & Inflow-Outflow Velocity</h3>
+            <p class="diagnostic-desc">{{ cashflowHealthStatus().message }}</p>
+          }
+          @case ('business') {
+            <div class="status-badge-chip" [class]="businessHealthStatus().type">
+              <span class="dot"></span>
+              <span>{{ businessHealthStatus().label }}</span>
+            </div>
+            <h3 class="diagnostic-title">Commercial Enterprise Margins & Invoicing Health</h3>
+            <p class="diagnostic-desc">{{ businessHealthStatus().message }}</p>
+          }
+          @case ('loans') {
+            <div class="status-badge-chip" [class]="loanHealthStatus().type">
+              <span class="dot"></span>
+              <span>{{ loanHealthStatus().label }}</span>
+            </div>
+            <h3 class="diagnostic-title">Credit Book & Debt Exposure Diagnostics</h3>
+            <p class="diagnostic-desc">{{ loanHealthStatus().message }}</p>
+          }
+          @case ('investments') {
+            <div class="status-badge-chip" [class]="investmentHealthStatus().type">
+              <span class="dot"></span>
+              <span>{{ investmentHealthStatus().label }}</span>
+            </div>
+            <h3 class="diagnostic-title">Portfolio Return & Wealth Accumulation Trajectory</h3>
+            <p class="diagnostic-desc">{{ investmentHealthStatus().message }}</p>
+          }
+          @case ('epfo') {
+            <div class="status-badge-chip" [class]="epfoHealthStatus().type">
+              <span class="dot"></span>
+              <span>{{ epfoHealthStatus().label }}</span>
+            </div>
+            <h3 class="diagnostic-title">Statutory Provident Fund & Retirement Guarantee</h3>
+            <p class="diagnostic-desc">{{ epfoHealthStatus().message }}</p>
+          }
+        }
+      </div>
+
+      <div class="diagnostic-right no-print">
+        @switch (activeModule()) {
+          @case ('all') {
+            <button type="button" class="btn-console-pill primary" (click)="selectModule('cashflow')">
+              <span>Inspect Cashflow →</span>
+            </button>
+          }
+          @case ('cashflow') {
+            <button type="button" class="btn-console-pill outlined" (click)="navigateToLedger('/transactions')">
+              <span>Open Transactions Ledger ↗</span>
+            </button>
+          }
+          @case ('business') {
+            <button type="button" class="btn-console-pill outlined" (click)="navigateToLedger('/business')">
+              <span>Manage Business Ventures ↗</span>
+            </button>
+          }
+          @case ('loans') {
+            <button type="button" class="btn-console-pill outlined" (click)="navigateToLedger('/loans')">
+              <span>Open Loans Manager ↗</span>
+            </button>
+          }
+          @case ('investments') {
+            <button type="button" class="btn-console-pill outlined" (click)="navigateToLedger('/investments')">
+              <span>Open Investment Portfolio ↗</span>
+            </button>
+          }
+          @case ('epfo') {
+            <button type="button" class="btn-console-pill outlined" (click)="navigateToLedger('/epfo')">
+              <span>View EPFO Passbook ↗</span>
+            </button>
+          }
+        }
+      </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- MODULE 1: ALL MODULES (EXECUTIVE 360° VIEW)             -->
+    <!-- ======================================================== -->
+    @if (activeModule() === 'all' && dashboardData(); as d) {
+      <!-- 4-Column Primary Performance Card -->
+      <section class="console-metrics-card">
+        <div class="metric-cell">
+          <span class="metric-label">TOTAL NET WORTH</span>
+          <div class="metric-value amount">{{ d.netWorth.totalNetWorth | inrCurrency }}</div>
+          <span class="metric-subtext text-success">
+            Assets: {{ d.netWorth.totalAssets | inrCurrency }}
+          </span>
+        </div>
+
+        <div class="metric-cell">
+          <span class="metric-label">MONTHLY SAVINGS RATE</span>
+          <div class="metric-value">
+            {{ d.monthlyOverview.savingsRatePercentage | number:'1.1-1' }}%
+          </div>
+          <span class="metric-subtext" [class.text-success]="d.monthlyOverview.netSavings >= 0" [class.text-danger]="d.monthlyOverview.netSavings < 0">
+            Net: {{ d.monthlyOverview.netSavings | inrCurrency }}
+          </span>
+        </div>
+
+        <div class="metric-cell">
+          <span class="metric-label">BUSINESS NET PROFIT</span>
+          <div class="metric-value amount">
+            {{ (businessData()?.consolidatedSummary?.netProfit || 0) | inrCurrency }}
+          </div>
+          <span class="metric-subtext">
+            Margin: {{ (businessData()?.consolidatedSummary?.profitMarginPercent || 0) | number:'1.1-1' }}%
+          </span>
+        </div>
+
+        <div class="metric-cell">
+          <span class="metric-label">PORTFOLIO RETURN</span>
+          <div class="metric-value" [class.text-success]="(investmentsData()?.summary?.overallGainLossPercentage || 0) >= 0">
+            {{ (investmentsData()?.summary?.overallGainLossPercentage || 0) > 0 ? '+' : '' }}{{ (investmentsData()?.summary?.overallGainLossPercentage || 0) | number:'1.2-2' }}%
+          </div>
+          <span class="metric-subtext">
+            Gain: {{ (investmentsData()?.summary?.totalGainLoss || 0) | inrCurrency }}
+          </span>
+        </div>
+      </section>
+
+      <!-- Secondary 4-Column Metric Grid -->
+      <section class="console-metrics-card secondary-grid">
+        <div class="metric-cell sm">
+          <span class="metric-label">LIQUID RUNWAY</span>
+          <div class="metric-value sm">{{ runwayMonths() }} Months</div>
+          <span class="metric-subtext">Cash: {{ d.netWorth.liquidCash | inrCurrency }}</span>
+        </div>
+
+        <div class="metric-cell sm">
+          <span class="metric-label">NET LOAN POSITION</span>
+          <div class="metric-value sm" [class.text-success]="(loansData()?.summary?.netPosition || 0) >= 0" [class.text-danger]="(loansData()?.summary?.netPosition || 0) < 0">
+            {{ (loansData()?.summary?.netPosition || 0) | inrCurrency }}
+          </div>
+          <span class="metric-subtext">Receivables − Payables</span>
+        </div>
+
+        <div class="metric-cell sm">
+          <span class="metric-label">EPFO RETIREMENT FUND</span>
+          <div class="metric-value sm amount">
+            {{ (epfoData()?.allTimeEpfBalance || 0) | inrCurrency }}
+          </div>
+          <span class="metric-subtext">Govt Compounding 8.25%</span>
+        </div>
+
+        <div class="metric-cell sm">
+          <span class="metric-label">TOTAL LIABILITIES</span>
+          <div class="metric-value sm text-danger">
+            {{ d.netWorth.totalLiabilities | inrCurrency }}
+          </div>
+          <span class="metric-subtext">Leverage: {{ (d.netWorth.totalAssets > 0 ? (d.netWorth.totalLiabilities / d.netWorth.totalAssets * 100) : 0) | number:'1.1-1' }}% of assets</span>
+        </div>
+      </section>
+
+      <!-- Cross-Module Diagnostic Scorecard Table (Google Play Console Style) -->
+      <section class="console-section-card">
+        <div class="section-card-header">
+          <div>
+            <h3 class="section-card-title">Module Health & Operational Scorecard</h3>
+            <p class="section-card-subtitle">Real-time status indicators and top KPIs aggregated across all functional ledgers.</p>
+          </div>
+        </div>
+
+        <div class="table-responsive">
+          <table class="console-table">
+            <thead>
+              <tr>
+                <th>Module Name</th>
+                <th>Diagnostic Status</th>
+                <th>Primary KPI</th>
+                <th>Secondary KPI</th>
+                <th>Health Index</th>
+                <th class="text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Row 1: Cashflow -->
+              <tr>
+                <td>
+                  <div class="module-title-cell">
+                    <span class="module-icon-pill">💳</span>
+                    <div>
+                      <strong>Transactions & Cashflow</strong>
+                      <span class="cell-sub">Personal Inflow/Outflow</span>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="status-badge-chip sm" [class]="cashflowHealthStatus().type">
+                    <span class="dot"></span>
+                    {{ cashflowHealthStatus().label }}
+                  </span>
+                </td>
+                <td>
+                  <div class="kpi-cell-val">{{ d.monthlyOverview.savingsRatePercentage | number:'1.1-1' }}%</div>
+                  <span class="cell-sub">Savings Rate</span>
+                </td>
+                <td>
+                  <div class="kpi-cell-val">{{ d.monthlyOverview.netSavings | inrCurrency }}</div>
+                  <span class="cell-sub">Net Surplus</span>
+                </td>
+                <td>
+                  <div class="progress-bar-wrap">
+                    <div class="progress-fill success" [style.width.%]="Math.min(100, Math.max(10, d.monthlyOverview.savingsRatePercentage * 2))"></div>
+                  </div>
+                </td>
+                <td class="text-right">
+                  <button type="button" class="btn-table-action" (click)="selectModule('cashflow')">
+                    Inspect
+                  </button>
+                </td>
+              </tr>
+
+              <!-- Row 2: Business -->
+              <tr>
+                <td>
+                  <div class="module-title-cell">
+                    <span class="module-icon-pill">💼</span>
+                    <div>
+                      <strong>Business Ventures</strong>
+                      <span class="cell-sub">Commercial Entities</span>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="status-badge-chip sm" [class]="businessHealthStatus().type">
+                    <span class="dot"></span>
+                    {{ businessHealthStatus().label }}
+                  </span>
+                </td>
+                <td>
+                  <div class="kpi-cell-val">{{ (businessData()?.consolidatedSummary?.netProfit || 0) | inrCurrency }}</div>
+                  <span class="cell-sub">Net Operating Profit</span>
+                </td>
+                <td>
+                  <div class="kpi-cell-val">{{ (businessData()?.consolidatedSummary?.profitMarginPercent || 0) | number:'1.1-1' }}%</div>
+                  <span class="cell-sub">Operating Margin</span>
+                </td>
+                <td>
+                  <div class="progress-bar-wrap">
+                    <div class="progress-fill primary" [style.width.%]="Math.min(100, Math.max(10, (businessData()?.consolidatedSummary?.profitMarginPercent || 0) * 2))"></div>
+                  </div>
+                </td>
+                <td class="text-right">
+                  <button type="button" class="btn-table-action" (click)="selectModule('business')">
+                    Inspect
+                  </button>
+                </td>
+              </tr>
+
+              <!-- Row 3: Loans -->
+              <tr>
+                <td>
+                  <div class="module-title-cell">
+                    <span class="module-icon-pill">⚖️</span>
+                    <div>
+                      <strong>Loans & Credit Book</strong>
+                      <span class="cell-sub">Lending & Borrowing</span>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="status-badge-chip sm" [class]="loanHealthStatus().type">
+                    <span class="dot"></span>
+                    {{ loanHealthStatus().label }}
+                  </span>
+                </td>
+                <td>
+                  <div class="kpi-cell-val" [class.text-success]="(loansData()?.summary?.netPosition || 0) >= 0">
+                    {{ (loansData()?.summary?.netPosition || 0) | inrCurrency }}
+                  </div>
+                  <span class="cell-sub">Net Position</span>
+                </td>
+                <td>
+                  <div class="kpi-cell-val">{{ (loansData()?.accounts?.length || 0) }} Active</div>
+                  <span class="cell-sub">Counterparties</span>
+                </td>
+                <td>
+                  <div class="progress-bar-wrap">
+                    <div class="progress-fill warning" [style.width.%]="75"></div>
+                  </div>
+                </td>
+                <td class="text-right">
+                  <button type="button" class="btn-table-action" (click)="selectModule('loans')">
+                    Inspect
+                  </button>
+                </td>
+              </tr>
+
+              <!-- Row 4: Investments -->
+              <tr>
+                <td>
+                  <div class="module-title-cell">
+                    <span class="module-icon-pill">📈</span>
+                    <div>
+                      <strong>Investments & Portfolio</strong>
+                      <span class="cell-sub">Stocks, Mutual Funds, Bullion</span>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="status-badge-chip sm" [class]="investmentHealthStatus().type">
+                    <span class="dot"></span>
+                    {{ investmentHealthStatus().label }}
+                  </span>
+                </td>
+                <td>
+                  <div class="kpi-cell-val" [class.text-success]="(investmentsData()?.summary?.overallGainLossPercentage || 0) >= 0">
+                    {{ (investmentsData()?.summary?.overallGainLossPercentage || 0) | number:'1.2-2' }}%
+                  </div>
+                  <span class="cell-sub">Total Return</span>
+                </td>
+                <td>
+                  <div class="kpi-cell-val">{{ (investmentsData()?.summary?.totalCurrentValue || 0) | inrCurrency }}</div>
+                  <span class="cell-sub">Current Value</span>
+                </td>
+                <td>
+                  <div class="progress-bar-wrap">
+                    <div class="progress-fill success" [style.width.%]="Math.min(100, Math.max(20, (investmentsData()?.summary?.overallGainLossPercentage || 0) * 4))"></div>
+                  </div>
+                </td>
+                <td class="text-right">
+                  <button type="button" class="btn-table-action" (click)="selectModule('investments')">
+                    Inspect
+                  </button>
+                </td>
+              </tr>
+
+              <!-- Row 5: EPFO -->
+              <tr>
+                <td>
+                  <div class="module-title-cell">
+                    <span class="module-icon-pill">🏛️</span>
+                    <div>
+                      <strong>EPFO Retirement Fund</strong>
+                      <span class="cell-sub">Statutory Compounding</span>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  <span class="status-badge-chip sm" [class]="epfoHealthStatus().type">
+                    <span class="dot"></span>
+                    {{ epfoHealthStatus().label }}
+                  </span>
+                </td>
+                <td>
+                  <div class="kpi-cell-val">{{ (epfoData()?.allTimeEpfBalance || 0) | inrCurrency }}</div>
+                  <span class="cell-sub">Total EPF Balance</span>
+                </td>
+                <td>
+                  <div class="kpi-cell-val">{{ (epfoData()?.allTimePensionBalance || 0) | inrCurrency }}</div>
+                  <span class="cell-sub">Pension Fund</span>
+                </td>
+                <td>
+                  <div class="progress-bar-wrap">
+                    <div class="progress-fill success" [style.width.%]="90"></div>
+                  </div>
+                </td>
+                <td class="text-right">
+                  <button type="button" class="btn-table-action" (click)="selectModule('epfo')">
+                    Inspect
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+
+    <!-- ======================================================== -->
+    <!-- MODULE 2: CASHFLOW & TRANSACTIONS                        -->
+    <!-- ======================================================== -->
+    @if (activeModule() === 'cashflow' && dashboardData(); as d) {
+      <!-- 4-Column Primary Metrics -->
+      <section class="console-metrics-card">
+        <div class="metric-cell">
+          <span class="metric-label">TOTAL MONTHLY INFLOW</span>
+          <div class="metric-value text-success amount">
+            {{ d.monthlyOverview.totalIncome | inrCurrency }}
+          </div>
+          <span class="metric-subtext">All verified receipts</span>
+        </div>
+
+        <div class="metric-cell">
+          <span class="metric-label">TOTAL MONTHLY OUTFLOW</span>
+          <div class="metric-value text-danger amount">
+            {{ d.monthlyOverview.totalExpense | inrCurrency }}
+          </div>
+          <span class="metric-subtext">Discretionary + Core</span>
+        </div>
+
+        <div class="metric-cell">
+          <span class="metric-label">NET CASH SAVINGS</span>
+          <div class="metric-value amount" [class.text-success]="d.monthlyOverview.netSavings >= 0" [class.text-danger]="d.monthlyOverview.netSavings < 0">
+            {{ d.monthlyOverview.netSavings | inrCurrency }}
+          </div>
+          <span class="metric-subtext">
+            {{ d.monthlyOverview.netSavings >= 0 ? 'Surplus retained' : 'Deficit burned' }}
+          </span>
+        </div>
+
+        <div class="metric-cell">
+          <span class="metric-label">SAVINGS RATE %</span>
+          <div class="metric-value">
+            {{ d.monthlyOverview.savingsRatePercentage | number:'1.1-1' }}%
+          </div>
+          <span class="metric-subtext">Benchmark: 20% to 30%</span>
+        </div>
+      </section>
+
+      <!-- Secondary 4-Column Metrics -->
+      <section class="console-metrics-card secondary-grid">
+        <div class="metric-cell sm">
+          <span class="metric-label">DAILY BURN RATE</span>
+          <div class="metric-value sm">{{ dailyBurnRate() | inrCurrency }}/day</div>
+          <span class="metric-subtext">Average daily expense</span>
+        </div>
+
+        <div class="metric-cell sm">
+          <span class="metric-label">LIQUID CASH BUFFER</span>
+          <div class="metric-value sm">{{ d.netWorth.liquidCash | inrCurrency }}</div>
+          <span class="metric-subtext">Immediate availability</span>
+        </div>
+
+        <div class="metric-cell sm">
+          <span class="metric-label">RUNWAY DURATION</span>
+          <div class="metric-value sm">{{ runwayMonths() }} Months</div>
+          <span class="metric-subtext">Zero-income survivability</span>
+        </div>
+
+        <div class="metric-cell sm">
+          <span class="metric-label">TRANSACTION VOLUME</span>
+          <div class="metric-value sm">{{ d.monthlyOverview.transactionCount }} Entries</div>
+          <span class="metric-subtext">In selected month</span>
+        </div>
+      </section>
+
+      <!-- Category Breakdown Grid -->
+      <div class="grid-2-col">
+        <!-- Top Expense Categories -->
+        <section class="console-section-card">
+          <div class="section-card-header">
+            <div>
+              <h3 class="section-card-title">Top Expense Allocations</h3>
+              <p class="section-card-subtitle">Major outflow drivers ranked by capital consumption.</p>
+            </div>
+          </div>
+
+          <div class="category-breakdown-list">
+            @for (cat of d.topExpenseCategories; track cat.categoryId) {
+              <div class="breakdown-item">
+                <div class="breakdown-meta">
+                  <span class="cat-name">{{ cat.categoryName }}</span>
+                  <span class="cat-amount">{{ cat.amount | inrCurrency }} ({{ cat.percentage | number:'1.1-1' }}%)</span>
+                </div>
+                <div class="progress-bar-wrap">
+                  <div class="progress-fill warning" [style.width.%]="cat.percentage"></div>
+                </div>
+              </div>
+            } @empty {
+              <div class="empty-state-p">No expense categorizations logged for this month.</div>
+            }
+          </div>
+        </section>
+
+        <!-- Top Income Categories -->
+        <section class="console-section-card">
+          <div class="section-card-header">
+            <div>
+              <h3 class="section-card-title">Top Inflow Sources</h3>
+              <p class="section-card-subtitle">Primary revenue streams credited during the cycle.</p>
+            </div>
+          </div>
+
+          <div class="category-breakdown-list">
+            @for (cat of d.topIncomeCategories; track cat.categoryId) {
+              <div class="breakdown-item">
+                <div class="breakdown-meta">
+                  <span class="cat-name">{{ cat.categoryName }}</span>
+                  <span class="cat-amount">{{ cat.amount | inrCurrency }} ({{ cat.percentage | number:'1.1-1' }}%)</span>
+                </div>
+                <div class="progress-bar-wrap">
+                  <div class="progress-fill success" [style.width.%]="cat.percentage"></div>
+                </div>
+              </div>
+            } @empty {
+              <div class="empty-state-p">No income categorizations logged for this month.</div>
+            }
+          </div>
+        </section>
+      </div>
+    }
+
+    <!-- ======================================================== -->
+    <!-- MODULE 3: BUSINESS & COMMERCIAL VENTURES                 -->
+    <!-- ======================================================== -->
+    @if (activeModule() === 'business' && businessData(); as b) {
+      @if (b.consolidatedSummary; as s) {
+        <!-- 4-Column Primary Metrics -->
+        <section class="console-metrics-card">
+          <div class="metric-cell">
+            <span class="metric-label">GROSS COMMERCIAL REVENUE</span>
+            <div class="metric-value text-success amount">
+              {{ s.grossRevenue | inrCurrency }}
+            </div>
+            <span class="metric-subtext">All active client invoices</span>
+          </div>
+
+          <div class="metric-cell">
+            <span class="metric-label">OPERATING EXPENDITURES</span>
+            <div class="metric-value text-danger amount">
+              {{ s.totalExpenses | inrCurrency }}
+            </div>
+            <span class="metric-subtext">COGS + Overheads + Vendor bills</span>
+          </div>
+
+          <div class="metric-cell">
+            <span class="metric-label">NET COMMERCIAL PROFIT</span>
+            <div class="metric-value amount" [class.text-success]="s.netProfit >= 0" [class.text-danger]="s.netProfit < 0">
+              {{ s.netProfit | inrCurrency }}
+            </div>
+            <span class="metric-subtext">Pre-tax retained operational profit</span>
+          </div>
+
+          <div class="metric-cell">
+            <span class="metric-label">OPERATING PROFIT MARGIN</span>
+            <div class="metric-value">
+              {{ s.profitMarginPercent | number:'1.1-1' }}%
+            </div>
+            <span class="metric-subtext">EBITDA efficiency ratio</span>
+          </div>
+        </section>
+
+        <!-- Secondary 4-Column Metrics -->
+        <section class="console-metrics-card secondary-grid">
+          <div class="metric-cell sm">
+            <span class="metric-label">ACCOUNTS RECEIVABLE</span>
+            <div class="metric-value sm">{{ s.accountsReceivable | inrCurrency }}</div>
+            <span class="metric-subtext">Pending client payments</span>
+          </div>
+
+          <div class="metric-cell sm">
+            <span class="metric-label">ACCOUNTS PAYABLE</span>
+            <div class="metric-value sm text-danger">{{ s.accountsPayable | inrCurrency }}</div>
+            <span class="metric-subtext">Vendor liabilities due</span>
+          </div>
+
+          <div class="metric-cell sm">
+            <span class="metric-label">OVERDUE INVOICES</span>
+            <div class="metric-value sm" [class.text-danger]="s.overdueInvoicesCount > 0">
+              {{ s.overdueInvoicesCount }} Overdue
+            </div>
+            <span class="metric-subtext">{{ s.pendingInvoicesCount }} total pending</span>
+          </div>
+
+          <div class="metric-cell sm">
+            <span class="metric-label">NET TAX LIABILITY</span>
+            <div class="metric-value sm">{{ s.netTaxLiability | inrCurrency }}</div>
+            <span class="metric-subtext">Collected − Paid GST buffer</span>
+          </div>
+        </section>
+
+        <!-- Active Business Ventures Table -->
+        <section class="console-section-card">
+          <div class="section-card-header">
+            <div>
+              <h3 class="section-card-title">Commercial Ventures Ledger</h3>
+              <p class="section-card-subtitle">Performance breakdown by legal entity and business line.</p>
+            </div>
+            <button type="button" class="btn-console-pill outlined sm" (click)="navigateToLedger('/business')">
+              Manage All
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="console-table">
+              <thead>
+                <tr>
+                  <th>Business Venture</th>
+                  <th>Type</th>
+                  <th>Revenue</th>
+                  <th>Expenses</th>
+                  <th>Net Profit</th>
+                  <th>Margin %</th>
+                  <th class="text-right">Ledger</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (biz of b.businesses; track biz.id) {
+                  <tr>
+                    <td>
+                      <div class="module-title-cell">
+                        <span class="venture-color-dot" [style.background-color]="biz.color || '#0b57d0'"></span>
+                        <div>
+                          <strong>{{ biz.name }}</strong>
+                          <span class="cell-sub">{{ biz.legalName || 'Registered Enterprise' }}</span>
+                        </div>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="table-type-pill">{{ biz.typeName }}</span>
+                    </td>
+                    <td class="text-success font-medium">
+                      {{ biz.totalRevenue | inrCurrency }}
+                    </td>
+                    <td class="text-danger font-medium">
+                      {{ biz.totalExpenses | inrCurrency }}
+                    </td>
+                    <td [class.text-success]="biz.netProfit >= 0" [class.text-danger]="biz.netProfit < 0" class="font-bold">
+                      {{ biz.netProfit | inrCurrency }}
+                    </td>
+                    <td>
+                      <span class="status-badge-chip sm" [class.success]="biz.profitMargin >= 20" [class.info]="biz.profitMargin >= 0 && biz.profitMargin < 20" [class.danger]="biz.profitMargin < 0">
+                        {{ biz.profitMargin | number:'1.1-1' }}%
+                      </span>
+                    </td>
+                    <td class="text-right">
+                      <button type="button" class="btn-table-action" (click)="navigateToLedger('/business')">
+                        Open
+                      </button>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="7" class="text-center py-4 text-muted">
+                      No business entities registered yet. Click 'Manage All' to add your first enterprise.
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+      }
+    }
+
+    <!-- ======================================================== -->
+    <!-- MODULE 4: LOANS & CREDIT BOOK                            -->
+    <!-- ======================================================== -->
+    @if (activeModule() === 'loans' && loansData(); as l) {
+      <!-- 4-Column Primary Metrics -->
+      <section class="console-metrics-card">
+        <div class="metric-cell">
+          <span class="metric-label">TOTAL LENT (GIVEN)</span>
+          <div class="metric-value text-success amount">
+            {{ l.summary.totalGivenOutstanding | inrCurrency }}
+          </div>
+          <span class="metric-subtext">Principal: {{ l.summary.totalGivenPrincipal | inrCurrency }}</span>
+        </div>
+
+        <div class="metric-cell">
+          <span class="metric-label">TOTAL BORROWED (TAKEN)</span>
+          <div class="metric-value text-danger amount">
+            {{ l.summary.totalTakenOutstanding | inrCurrency }}
+          </div>
+          <span class="metric-subtext">Principal: {{ l.summary.totalTakenPrincipal | inrCurrency }}</span>
+        </div>
+
+        <div class="metric-cell">
+          <span class="metric-label">NET LOAN POSITION</span>
+          <div class="metric-value amount" [class.text-success]="l.summary.netPosition >= 0" [class.text-danger]="l.summary.netPosition < 0">
+            {{ l.summary.netPosition | inrCurrency }}
+          </div>
+          <span class="metric-subtext">Receivables − Payables</span>
+        </div>
+
+        <div class="metric-cell">
+          <span class="metric-label">ACTIVE LOAN ACCOUNTS</span>
+          <div class="metric-value">
+            {{ l.summary.activeGivenCount + l.summary.activeTakenCount }} Active
+          </div>
+          <span class="metric-subtext">
+            {{ l.summary.activeGivenCount }} Given / {{ l.summary.activeTakenCount }} Taken
+          </span>
+        </div>
+      </section>
+
+      <!-- Secondary 4-Column Metrics -->
+      <section class="console-metrics-card secondary-grid">
+        <div class="metric-cell sm">
+          <span class="metric-label">SETTLED / CLOSED LOANS</span>
+          <div class="metric-value sm">{{ l.summary.closedCount }} Closed</div>
+          <span class="metric-subtext">Fully liquidated accounts</span>
+        </div>
+
+        <div class="metric-cell sm">
+          <span class="metric-label">TOTAL PARTIES</span>
+          <div class="metric-value sm">{{ l.accounts.length }} Counterparties</div>
+          <span class="metric-subtext">Active ledger relationships</span>
+        </div>
+
+        <div class="metric-cell sm">
+          <span class="metric-label">OUTSTANDING GIVEN RATIO</span>
+          <div class="metric-value sm">
+            {{ (l.summary.totalGivenPrincipal > 0 ? (l.summary.totalGivenOutstanding / l.summary.totalGivenPrincipal * 100) : 0) | number:'1.1-1' }}%
+          </div>
+          <span class="metric-subtext">Remaining to collect</span>
+        </div>
+
+        <div class="metric-cell sm">
+          <span class="metric-label">OUTSTANDING TAKEN RATIO</span>
+          <div class="metric-value sm text-danger">
+            {{ (l.summary.totalTakenPrincipal > 0 ? (l.summary.totalTakenOutstanding / l.summary.totalTakenPrincipal * 100) : 0) | number:'1.1-1' }}%
+          </div>
+          <span class="metric-subtext">Remaining to repay</span>
+        </div>
+      </section>
+
+      <!-- Counterparty Loan Accounts Snapshot -->
+      <section class="console-section-card">
+        <div class="section-card-header">
+          <div>
+            <h3 class="section-card-title">Active Loan Accounts & Due Dates</h3>
+            <p class="section-card-subtitle">Snapshot of all credit exposures, interest terms, and balance obligations.</p>
+          </div>
+          <button type="button" class="btn-console-pill outlined sm" (click)="navigateToLedger('/loans')">
+            Open Loans Center
+          </button>
+        </div>
+
+        <div class="table-responsive">
+          <table class="console-table">
+            <thead>
+              <tr>
+                <th>Account / Counterparty</th>
+                <th>Direction</th>
+                <th>Principal</th>
+                <th>Outstanding Balance</th>
+                <th>Interest Rate</th>
+                <th>Due Date</th>
+                <th class="text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (acc of l.accounts; track acc.id) {
+                <tr>
+                  <td>
+                    <div class="module-title-cell">
+                      <span class="module-icon-pill">{{ acc.direction === 1 ? '📤' : '📥' }}</span>
+                      <div>
+                        <strong>{{ acc.name }}</strong>
+                        <span class="cell-sub">{{ acc.counterparty }}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <span class="status-badge-chip sm" [class.success]="acc.direction === 1" [class.danger]="acc.direction === 2">
+                      {{ acc.direction === 1 ? 'Given (Asset)' : 'Taken (Debt)' }}
+                    </span>
+                  </td>
+                  <td>{{ acc.formattedPrincipal }}</td>
+                  <td class="font-bold" [class.text-success]="acc.direction === 1" [class.text-danger]="acc.direction === 2">
+                    {{ acc.formattedOutstandingBalance }}
+                  </td>
+                  <td>{{ acc.interestRate }}% {{ acc.interestTypeName }}</td>
+                  <td>{{ acc.dueDate ? (acc.dueDate | date:'mediumDate') : 'Open Ended' }}</td>
+                  <td class="text-right">
+                    <button type="button" class="btn-table-action" (click)="navigateToLedger('/loans/' + acc.id)">
+                      View
+                    </button>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td colspan="7" class="text-center py-4 text-muted">
+                    No loan accounts active currently.
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    }
+
+    <!-- ======================================================== -->
+    <!-- MODULE 5: INVESTMENTS & PORTFOLIO                        -->
+    <!-- ======================================================== -->
+    @if (activeModule() === 'investments' && investmentsData(); as inv) {
+      <!-- 4-Column Primary Metrics -->
+      <section class="console-metrics-card">
+        <div class="metric-cell">
+          <span class="metric-label">TOTAL INVESTED CAPITAL</span>
+          <div class="metric-value amount">
+            {{ inv.summary.totalInvested | inrCurrency }}
+          </div>
+          <span class="metric-subtext">Cumulative cost basis</span>
+        </div>
+
+        <div class="metric-cell">
+          <span class="metric-label">CURRENT PORTFOLIO VALUE</span>
+          <div class="metric-value text-primary amount">
+            {{ inv.summary.totalCurrentValue | inrCurrency }}
+          </div>
+          <span class="metric-subtext">Latest market valuation</span>
+        </div>
+
+        <div class="metric-cell">
+          <span class="metric-label">ABSOLUTE CAPITAL GAIN</span>
+          <div class="metric-value amount" [class.text-success]="inv.summary.totalGainLoss >= 0" [class.text-danger]="inv.summary.totalGainLoss < 0">
+            {{ inv.summary.totalGainLoss | inrCurrency }}
+          </div>
+          <span class="metric-subtext">Unrealized profit/loss</span>
+        </div>
+
+        <div class="metric-cell">
+          <span class="metric-label">OVERALL PORTFOLIO RETURN</span>
+          <div class="metric-value" [class.text-success]="inv.summary.overallGainLossPercentage >= 0" [class.text-danger]="inv.summary.overallGainLossPercentage < 0">
+            {{ inv.summary.overallGainLossPercentage > 0 ? '+' : '' }}{{ inv.summary.overallGainLossPercentage | number:'1.2-2' }}%
+          </div>
+          <span class="metric-subtext">Simple holding return</span>
+        </div>
+      </section>
+
+      <!-- Secondary 4-Column Metrics -->
+      <section class="console-metrics-card secondary-grid">
+        <div class="metric-cell sm">
+          <span class="metric-label">TOTAL DIVIDENDS EARNED</span>
+          <div class="metric-value sm text-success">{{ inv.summary.totalDividendEarned | inrCurrency }}</div>
+          <span class="metric-subtext">Passive cash payouts</span>
+        </div>
+
+        <div class="metric-cell sm">
+          <span class="metric-label">ACTIVE HOLDINGS COUNT</span>
+          <div class="metric-value sm">{{ inv.summary.totalHoldingsCount }} Securities</div>
+          <span class="metric-subtext">Across all asset types</span>
+        </div>
+
+        <div class="metric-cell sm">
+          <span class="metric-label">WEALTH MULTIPLIER</span>
+          <div class="metric-value sm">
+            {{ (inv.summary.totalInvested > 0 ? (inv.summary.totalCurrentValue / inv.summary.totalInvested) : 1) | number:'1.2-2' }}x
+          </div>
+          <span class="metric-subtext">Capital growth factor</span>
+        </div>
+
+        <div class="metric-cell sm">
+          <span class="metric-label">ALLOCATION DIVERSITY</span>
+          <div class="metric-value sm">{{ inv.allocations.length }} Asset Classes</div>
+          <span class="metric-subtext">Equity, Debt, Gold, PPF</span>
+        </div>
+      </section>
+
+      <!-- Asset Allocation Breakdown Grid -->
+      <section class="console-section-card">
+        <div class="section-card-header">
+          <div>
+            <h3 class="section-card-title">Asset Class Allocation Breakdown</h3>
+            <p class="section-card-subtitle">Diversification across asset types, risk profiles, and liquidity vehicles.</p>
+          </div>
+        </div>
+
+        <div class="allocation-cards-grid">
+          @for (alloc of inv.allocations; track alloc.type) {
+            <div class="allocation-card">
+              <div class="alloc-header">
+                <span class="alloc-title">{{ alloc.typeName }}</span>
+                <span class="alloc-badge">{{ alloc.percentageOfPortfolio | number:'1.1-1' }}%</span>
+              </div>
+              <div class="alloc-amount">{{ alloc.totalValue | inrCurrency }}</div>
+              <div class="alloc-holdings">{{ alloc.holdingCount }} Holding(s)</div>
+              <div class="progress-bar-wrap">
+                <div class="progress-fill primary" [style.width.%]="alloc.percentageOfPortfolio"></div>
+              </div>
+            </div>
+          } @empty {
+            <div class="empty-state-p">No asset allocations logged yet.</div>
+          }
+        </div>
+      </section>
+    }
+
+    <!-- ======================================================== -->
+    <!-- MODULE 6: EPFO PASSBOOK & RETIREMENT                     -->
+    <!-- ======================================================== -->
+    @if (activeModule() === 'epfo' && epfoData(); as epf) {
+      <!-- 4-Column Primary Metrics -->
+      <section class="console-metrics-card">
+        <div class="metric-cell">
+          <span class="metric-label">TOTAL EPF CORPUS</span>
+          <div class="metric-value text-success amount">
+            {{ epf.allTimeEpfBalance | inrCurrency }}
+          </div>
+          <span class="metric-subtext">Employee + Employer + Interest</span>
+        </div>
+
+        <div class="metric-cell">
+          <span class="metric-label">EMPLOYEE SHARE TOTAL</span>
+          <div class="metric-value amount">
+            {{ epf.summary.totalEmployeeShare | inrCurrency }}
+          </div>
+          <span class="metric-subtext">Direct monthly deductions</span>
+        </div>
+
+        <div class="metric-cell">
+          <span class="metric-label">EMPLOYER SHARE TOTAL</span>
+          <div class="metric-value amount">
+            {{ epf.summary.totalEmployerShare | inrCurrency }}
+          </div>
+          <span class="metric-subtext">Matching corporate share (3.67%)</span>
+        </div>
+
+        <div class="metric-cell">
+          <span class="metric-label">EPS PENSION CORPUS</span>
+          <div class="metric-value text-primary amount">
+            {{ epf.allTimePensionBalance | inrCurrency }}
+          </div>
+          <span class="metric-subtext">Pension fund (8.33% match)</span>
+        </div>
+      </section>
+
+      <!-- Secondary 4-Column Metrics -->
+      <section class="console-metrics-card secondary-grid">
+        <div class="metric-cell sm">
+          <span class="metric-label">COMPOUND INTEREST ACCRUED</span>
+          <div class="metric-value sm text-success">{{ epf.summary.totalInterest | inrCurrency }}</div>
+          <span class="metric-subtext">Govt statutory interest</span>
+        </div>
+
+        <div class="metric-cell sm">
+          <span class="metric-label">TOTAL WITHDRAWALS</span>
+          <div class="metric-value sm">{{ epf.summary.totalWithdrawals | inrCurrency }}</div>
+          <span class="metric-subtext">Advances / settlements</span>
+        </div>
+
+        <div class="metric-cell sm">
+          <span class="metric-label">ACTIVE CONTRIBUTION MONTHS</span>
+          <div class="metric-value sm">{{ epf.entries.length }} Months</div>
+          <span class="metric-subtext">Logged contribution records</span>
+        </div>
+
+        <div class="metric-cell sm">
+          <span class="metric-label">ANNUAL INTEREST RATE</span>
+          <div class="metric-value sm text-success">8.25% p.a.</div>
+          <span class="metric-subtext">Sovereign guaranteed</span>
+        </div>
+      </section>
+
+      <!-- Retirement Corpus Intelligence Card -->
+      <section class="console-section-card">
+        <div class="section-card-header">
+          <div>
+            <h3 class="section-card-title">Retirement Corpus Compounding Velocity</h3>
+            <p class="section-card-subtitle">EPFO balances compound tax-free under EEE regime for long-term financial independence.</p>
+          </div>
+          <button type="button" class="btn-console-pill outlined sm" (click)="navigateToLedger('/epfo')">
+            Open EPFO Ledger
+          </button>
+        </div>
+
+        <div class="epfo-compounding-details">
+          <div class="info-row">
+            <span class="info-label">Statutory Guarantee:</span>
+            <span class="info-value">Administered by the Ministry of Labour and Employment, Government of India.</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Closing Balance (Active Financial Year):</span>
+            <span class="info-value font-bold text-success">{{ epf.summary.closingBalance | inrCurrency }}</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Total Pension Reserve (EPS-95):</span>
+            <span class="info-value font-bold text-primary">{{ epf.allTimePensionBalance | inrCurrency }}</span>
+          </div>
+        </div>
+      </section>
+    }
+  }
+</div>
+

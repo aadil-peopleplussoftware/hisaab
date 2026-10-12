@@ -1,0 +1,186 @@
+<div class="period-filter-wrapper">
+  <!-- Mode Switcher Segmented Pills -->
+  <div class="mode-segmented-bar">
+    <button
+      type="button"
+      class="mode-btn"
+      [class.active]="activeMode() === 'all'"
+      (click)="setMode('all')"
+      title="View all historical records"
+    >
+      <span>All Time</span>
+    </button>
+
+    <button
+      type="button"
+      class="mode-btn"
+      [class.active]="activeMode() === 'year'"
+      (click)="setMode('year')"
+      title="Filter by calendar year"
+    >
+      <span>Year</span>
+    </button>
+
+    <button
+      type="button"
+      class="mode-btn"
+      [class.active]="activeMode() === 'month'"
+      (click)="setMode('month')"
+      title="Filter by month"
+    >
+      <span>Month</span>
+    </button>
+
+    <button
+      type="button"
+      class="mode-btn"
+      [class.active]="activeMode() === 'day'"
+      (click)="setMode('day')"
+      title="Filter by single day or today"
+    >
+      <span>Day</span>
+    </button>
+
+    <button
+      type="button"
+      class="mode-btn"
+      [class.active]="activeMode() === 'custom'"
+      (click)="setMode('custom')"
+      title="Filter by custom date range"
+    >
+      <span>Custom</span>
+    </button>
+  </div>
+
+  <!-- Contextual Stepper / Date Picker Controls -->
+  <div class="contextual-controls">
+    @switch (activeMode()) {
+      @case ('all') {
+        <div class="active-badge-pill all-time">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="2" y1="12" x2="22" y2="12"></line>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+          </svg>
+          <span>Lifetime (All Records)</span>
+        </div>
+      }
+
+      @case ('year') {
+        <div class="stepper-box">
+          <button type="button" class="btn-nav" (click)="prevYear()" aria-label="Previous Year">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+
+          <div class="stepper-select-wrap">
+            <select
+              class="stepper-select"
+              [ngModel]="selectedYear()"
+              (ngModelChange)="onYearSelect($event)"
+              aria-label="Select Year"
+            >
+              @for (y of availableYears; track y) {
+                <option [value]="y">Year {{ y }}</option>
+              }
+            </select>
+          </div>
+
+          <button type="button" class="btn-nav" (click)="nextYear()" aria-label="Next Year">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
+      }
+
+      @case ('month') {
+        <div class="stepper-box">
+          <button type="button" class="btn-nav" (click)="prevMonth()" aria-label="Previous Month">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+
+          <div class="stepper-input-wrap" title="Click to choose month">
+            <span class="stepper-label">{{ formatMonthLabel(selectedMonth()) }}</span>
+            <input
+              type="month"
+              [value]="selectedMonth()"
+              (change)="onMonthInputChange($event)"
+              class="native-hidden-input"
+              aria-label="Select month"
+            />
+          </div>
+
+          <button type="button" class="btn-nav" (click)="nextMonth()" aria-label="Next Month">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
+      }
+
+      @case ('day') {
+        <div class="stepper-box">
+          <button type="button" class="btn-nav" (click)="prevDay()" aria-label="Previous Day">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+
+          <div class="stepper-input-wrap" title="Click to choose specific date">
+            <span class="stepper-label">{{ formatDateLabel(selectedDate()) }}</span>
+            <input
+              type="date"
+              [value]="selectedDate()"
+              (change)="onDateInputChange($event)"
+              class="native-hidden-input"
+              aria-label="Select date"
+            />
+          </div>
+
+          <button type="button" class="btn-nav" (click)="nextDay()" aria-label="Next Day">
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+
+          <button type="button" class="btn-today-action" (click)="setToday()" title="Jump to Today">
+            Today
+          </button>
+        </div>
+      }
+
+      @case ('custom') {
+        <div class="custom-range-box">
+          <div class="range-field">
+            <span class="range-label">From</span>
+            <input
+              type="date"
+              class="range-input"
+              [ngModel]="customStartDate()"
+              (ngModelChange)="customStartDate.set($event); applyCustom()"
+              aria-label="From date"
+            />
+          </div>
+
+          <span class="range-sep">→</span>
+
+          <div class="range-field">
+            <span class="range-label">To</span>
+            <input
+              type="date"
+              class="range-input"
+              [ngModel]="customEndDate()"
+              (ngModelChange)="customEndDate.set($event); applyCustom()"
+              aria-label="To date"
+            />
+          </div>
+        </div>
+      }
+    }
+  </div>
+</div>
+

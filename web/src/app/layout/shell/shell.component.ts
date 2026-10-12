@@ -36,27 +36,36 @@ interface CommandItem {
       <aside class="desktop-sidebar no-print">
         <div class="sidebar-brand">
           <div class="brand-logo">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2">
-              <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+              <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" fill="#0b57d0"/>
+              <path d="M12 6v12M16 9h-5.5a2.5 2.5 0 0 0 0 5h5a2.5 2.5 0 0 1 0 5H8" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round"/>
             </svg>
           </div>
           <div class="brand-info">
             <span class="brand-title">Hisaab</span>
-            <span class="brand-tagline">Wealth & Cashflow</span>
+            <span class="brand-tagline">Personal Finance</span>
           </div>
         </div>
 
         <nav class="side-nav">
-          <div class="nav-section-label">OVERVIEW</div>
           <a routerLink="/dashboard" routerLinkActive="active" class="nav-item" title="Dashboard">
             <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'dashboard' }" />
             <span class="nav-label">Dashboard</span>
           </a>
 
-          <div class="nav-section-label">LEDGERS & ASSETS</div>
+          <a routerLink="/analytics" routerLinkActive="active" class="nav-item" title="KPI Analytics">
+            <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'analytics' }" />
+            <span class="nav-label">KPI Analytics</span>
+          </a>
+
           <a routerLink="/transactions" routerLinkActive="active" class="nav-item" title="Transactions">
             <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'transactions' }" />
             <span class="nav-label">Transactions</span>
+          </a>
+
+          <a routerLink="/business" routerLinkActive="active" class="nav-item" title="Business">
+            <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'business' }" />
+            <span class="nav-label">Business</span>
           </a>
 
           <a routerLink="/loans" routerLinkActive="active" class="nav-item" title="Loans">
@@ -64,28 +73,22 @@ interface CommandItem {
             <span class="nav-label">Loans</span>
           </a>
 
-          <a routerLink="/epfo" routerLinkActive="active" class="nav-item" title="EPFO Passbook">
-            <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'epfo' }" />
-            <span class="nav-label">EPFO Passbook</span>
-          </a>
-
           <a routerLink="/investments" routerLinkActive="active" class="nav-item" title="Investments">
             <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'investments' }" />
             <span class="nav-label">Investments</span>
           </a>
 
-          <a routerLink="/business" routerLinkActive="active" class="nav-item" title="Business & Ventures">
-            <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'business' }" />
-            <span class="nav-label">Business & Ventures</span>
+          <a routerLink="/epfo" routerLinkActive="active" class="nav-item" title="EPFO Passbook">
+            <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'epfo' }" />
+            <span class="nav-label">EPFO Passbook</span>
           </a>
 
-          <div class="nav-section-label">TOOLS & EXPORTS</div>
-          <a routerLink="/reports" routerLinkActive="active" class="nav-item" title="Reports & PDF">
+          <a routerLink="/reports" routerLinkActive="active" class="nav-item" title="Reports">
             <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'reports' }" />
-            <span class="nav-label">Reports & PDF</span>
+            <span class="nav-label">Reports</span>
           </a>
 
-          <a routerLink="/data-transfer" routerLinkActive="active" class="nav-item" title="Data Import & Export">
+          <a routerLink="/data-transfer" routerLinkActive="active" class="nav-item" title="Data Transfer">
             <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'datatransfer' }" />
             <span class="nav-label">Data Transfer</span>
           </a>
@@ -97,6 +100,8 @@ interface CommandItem {
               <span class="nav-badge-pill">{{ recycleBinService.moduleCounts().all }}</span>
             }
           </a>
+
+          <div class="sidebar-divider-line"></div>
 
           <a routerLink="/settings" routerLinkActive="active" class="nav-item" title="Settings">
             <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'settings' }" />
@@ -289,18 +294,23 @@ interface CommandItem {
             </button>
 
             <!-- Quick Data Transfer Link on Desktop -->
-            <a routerLink="/data-transfer" class="btn-import-quick desktop-only" title="Import / Export Data">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="7 10 12 15 17 10" />
-                <line x1="12" y1="15" x2="12" y2="3" />
+            <!-- Google Play Console Notifications Button (Screenshot Exact) -->
+            <button
+              type="button"
+              class="btn-notifications-pill"
+              (click)="themeService.toggleShortcuts()"
+              title="Notifications & Alerts"
+            >
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
               </svg>
-              <span>Data</span>
-            </a>
+              <span>Notifications</span>
+            </button>
 
             <!-- User Avatar or Sign In -->
             @if (authService.isAuthenticated()) {
-              <a routerLink="/profile" class="header-avatar" title="View Profile">
+              <a routerLink="/profile" class="header-avatar google-avatar" title="Developer Account">
                 <span>{{ (authService.currentUser()?.fullName || 'U')[0].toUpperCase() }}</span>
               </a>
             } @else {
@@ -481,6 +491,7 @@ interface CommandItem {
                 <div class="shortcuts-col">
                   <h4 class="shortcuts-category">Navigation (Press 'g' then key)</h4>
                   <div class="shortcut-item"><span>Dashboard</span><kbd>g d</kbd></div>
+                  <div class="shortcut-item"><span>KPI Analytics</span><kbd>g a</kbd></div>
                   <div class="shortcut-item"><span>Transactions</span><kbd>g t</kbd></div>
                   <div class="shortcut-item"><span>Loans</span><kbd>g l</kbd></div>
                   <div class="shortcut-item"><span>EPFO Passbook</span><kbd>g e</kbd></div>
@@ -691,6 +702,10 @@ interface CommandItem {
                 <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'dashboard' }" />
                 <span>Dashboard</span>
               </a>
+              <a routerLink="/analytics" (click)="closeMobileMenu()" class="drawer-link">
+                <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'analytics' }" />
+                <span>KPI Analytics</span>
+              </a>
               <a routerLink="/transactions" (click)="closeMobileMenu()" class="drawer-link">
                 <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'transactions' }" />
                 <span>Income & Expenses</span>
@@ -800,6 +815,9 @@ interface CommandItem {
                 @case ('dashboard') {
                   <path d="M3 4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V4zm10 0a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1h-6a1 1 0 0 1-1-1V4zm0 8a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1h-6a1 1 0 0 1-1-1v-8zM3 16a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-4z" />
                 }
+                @case ('analytics') {
+                  <path d="M19 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z" />
+                }
                 @case ('transactions') {
                   <path d="M2 5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5zm2 3h16V6H4v2zm0 4v7h16v-7H4z" />
                 }
@@ -840,6 +858,12 @@ interface CommandItem {
                     <rect width="7" height="5" x="14" y="3" rx="1" />
                     <rect width="7" height="9" x="14" y="12" rx="1" fill="currentColor" fill-opacity="0.25" />
                     <rect width="7" height="5" x="3" y="16" rx="1" />
+                  }
+                  @case ('analytics') {
+                    <rect width="18" height="18" x="3" y="3" rx="2" fill="currentColor" fill-opacity="0.2" />
+                    <line x1="18" y1="20" x2="18" y2="10" />
+                    <line x1="12" y1="20" x2="12" y2="4" />
+                    <line x1="6" y1="20" x2="6" y2="14" />
                   }
                   @case ('transactions') {
                     <rect width="20" height="14" x="2" y="5" rx="2" fill="currentColor" fill-opacity="0.2" />
@@ -900,6 +924,12 @@ interface CommandItem {
                   <rect width="7" height="9" x="14" y="12" rx="0.5" />
                   <rect width="7" height="5" x="3" y="16" rx="0.5" />
                 }
+                @case ('analytics') {
+                  <rect width="18" height="18" x="3" y="3" rx="1" />
+                  <line x1="18" y1="20" x2="18" y2="10" />
+                  <line x1="12" y1="20" x2="12" y2="4" />
+                  <line x1="6" y1="20" x2="6" y2="14" />
+                }
                 @case ('transactions') {
                   <rect width="20" height="14" x="2" y="5" rx="1.5" />
                   <line x1="2" y1="10" x2="22" y2="10" />
@@ -956,6 +986,10 @@ interface CommandItem {
                   <rect width="7" height="5" x="14" y="3" rx="1" />
                   <rect width="7" height="9" x="14" y="12" rx="1" />
                   <rect width="7" height="5" x="3" y="16" rx="1" />
+                }
+                @case ('analytics') {
+                  <path d="M3 3v18h18" />
+                  <path d="m19 9-5 5-4-4-3 3" />
                 }
                 @case ('transactions') {
                   <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
@@ -1100,19 +1134,19 @@ interface CommandItem {
         }
       }
 
-      /* Desktop Sidebar */
+      /* Desktop Sidebar (Theme-Reactive Google Play Console Style) */
       .desktop-sidebar {
         display: none;
-        width: 250px;
-        background: var(--color-bg-card);
-        border-right: 1px solid var(--color-border);
+        width: 256px;
+        background: var(--color-sidebar-bg, var(--color-bg-card));
+        border-right: 1px solid var(--color-sidebar-border, var(--color-border));
         flex-direction: column;
         position: sticky;
         top: 0;
         height: 100vh;
-        padding: 1.25rem 0.875rem;
+        padding: 1rem 0;
         z-index: 30;
-        transition: width 0.15s ease;
+        transition: width 0.15s ease, background-color 0.2s ease, border-color 0.2s ease;
 
         @media (min-width: 900px) {
           display: flex;
@@ -1123,25 +1157,23 @@ interface CommandItem {
         display: flex;
         align-items: center;
         gap: 0.75rem;
-        padding: 0.5rem 0.625rem 1.25rem;
-        border-bottom: 1px solid var(--color-border);
-        margin-bottom: 1rem;
+        padding: 0.25rem 1.25rem 1rem 1.5rem;
+        border-bottom: 1px solid var(--color-sidebar-border, var(--color-border-subtle));
+        margin-bottom: 0.75rem;
       }
 
       .brand-logo {
-        width: 36px;
-        height: 36px;
-        background: linear-gradient(135deg, #1f883d, #1a7f37);
-        color: #ffffff;
-        border-radius: var(--radius-md);
+        width: 34px;
+        height: 34px;
+        background: transparent;
+        border-radius: 8px;
         display: flex;
         align-items: center;
         justify-content: center;
-        box-shadow: 0 2px 4px rgba(31, 136, 61, 0.25);
 
         &.sm {
-          width: 28px;
-          height: 28px;
+          width: 26px;
+          height: 26px;
         }
       }
 
@@ -1152,59 +1184,65 @@ interface CommandItem {
 
       .brand-title {
         font-size: 1.15rem;
-        font-weight: 800;
+        font-weight: 500;
+        font-family: var(--font-family-google);
         color: var(--color-text-main);
-        letter-spacing: -0.02em;
+        letter-spacing: -0.015em;
         line-height: 1.2;
       }
 
       .brand-tagline {
         font-size: 0.72rem;
-        font-weight: 500;
+        font-weight: 400;
         color: var(--color-text-muted);
       }
 
       .side-nav {
         display: flex;
         flex-direction: column;
-        gap: 0.25rem;
+        gap: 2px;
         flex: 1;
         overflow-y: auto;
       }
 
-      .nav-section-label {
-        font-size: 0.6875rem;
-        font-weight: 700;
-        color: var(--color-text-subtle);
-        letter-spacing: 0.08em;
-        padding: 0.75rem 0.75rem 0.35rem;
+      .sidebar-divider-line {
+        height: 1px;
+        background: var(--color-sidebar-border, var(--color-border));
+        margin: 10px 16px;
       }
 
       .nav-item {
         display: flex;
         align-items: center;
-        gap: 0.75rem;
-        padding: 0.625rem 0.875rem;
-        border-radius: var(--radius-md);
+        gap: 1rem;
+        padding: 0 16px 0 24px;
+        height: 42px;
+        border-radius: 0 24px 24px 0;
+        margin-right: 12px;
         color: var(--color-text-secondary);
         text-decoration: none;
-        font-size: 0.875rem;
-        font-weight: 600;
-        min-height: 38px;
-        transition: all 0.12s ease;
+        font-size: 14px;
+        font-weight: 500;
+        font-family: var(--font-family-google);
+        transition: all 0.15s ease;
 
         &:hover {
-          background: var(--color-bg-subtle);
-          color: var(--color-text-main);
+          background: var(--color-nav-hover-bg, var(--color-bg-hover));
+          color: var(--color-nav-hover-fg, var(--color-text-main));
+
+          .nav-icon {
+            color: var(--color-nav-hover-fg, var(--color-text-main));
+          }
         }
 
         &.active {
-          background: var(--color-accent-subtle, rgba(9, 105, 218, 0.12));
-          color: var(--color-accent-fg, #0969da);
+          background: var(--color-nav-active-bg);
+          color: var(--color-nav-active-fg);
+          font-weight: 500;
 
           .nav-icon {
-            color: var(--color-accent-fg, #0969da);
-            stroke: var(--color-accent-fg, #0969da);
+            color: var(--color-nav-active-icon);
+            stroke: var(--color-nav-active-icon);
           }
         }
 
@@ -1212,18 +1250,17 @@ interface CommandItem {
           margin-left: auto;
           font-size: 0.6875rem;
           font-weight: 700;
-          padding: 0.15rem 0.45rem;
+          padding: 0.15rem 0.5rem;
           border-radius: 9999px;
-          background: rgba(239, 68, 68, 0.15);
-          color: #dc2626;
-          border: 1px solid rgba(239, 68, 68, 0.3);
+          background: var(--color-notif-bg);
+          color: var(--color-notif-fg);
           line-height: 1;
         }
       }
 
       .nav-icon {
-        width: 18px;
-        height: 18px;
+        width: 20px;
+        height: 20px;
         flex-shrink: 0;
         color: var(--color-text-muted);
         transition: all 0.12s ease;
@@ -1533,37 +1570,42 @@ interface CommandItem {
         }
       }
 
-      .btn-import-quick {
+      .btn-notifications-pill {
         display: inline-flex;
         align-items: center;
-        gap: 5px;
-        padding: 4px 10px;
-        border-radius: var(--radius-md);
-        border: 1px solid var(--color-border);
-        background: var(--color-canvas-subtle);
-        color: var(--color-text-main);
-        font-size: 12px;
+        gap: 6px;
+        padding: 6px 14px;
+        background: #fce8e6;
+        color: #c5221f;
+        border: none;
+        border-radius: 9999px;
+        font-size: 13px;
         font-weight: 500;
-        text-decoration: none;
-        transition: all 0.12s ease;
+        cursor: pointer;
+        transition: all 0.15s ease;
+
+        svg {
+          color: #c5221f;
+        }
 
         &:hover {
-          border-color: var(--color-accent-fg);
+          background: #fad2cf;
         }
       }
 
       .header-avatar {
-        width: 30px;
-        height: 30px;
+        width: 32px;
+        height: 32px;
         border-radius: 50%;
-        background: var(--color-primary);
+        background: #0b57d0;
         color: #ffffff;
-        font-weight: 700;
-        font-size: 0.8rem;
+        font-weight: 500;
+        font-size: 13px;
         display: flex;
         align-items: center;
         justify-content: center;
         text-decoration: none;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
       }
 
       .btn-signin-nav {
@@ -2117,12 +2159,13 @@ interface CommandItem {
       .mobile-drawer-panel {
         width: 280px;
         height: 100%;
-        background: var(--color-bg-card);
-        border-right: 1px solid var(--color-border);
+        background: var(--color-sidebar-bg, var(--color-bg-card));
+        border-right: 1px solid var(--color-sidebar-border, var(--color-border));
         display: flex;
         flex-direction: column;
         padding: 1.25rem 1rem;
         animation: slideIn 0.2s cubic-bezier(0.33, 1, 0.68, 1);
+        transition: background-color 0.2s ease, border-color 0.2s ease;
       }
 
       .drawer-header {
@@ -2130,7 +2173,7 @@ interface CommandItem {
         align-items: center;
         justify-content: space-between;
         padding-bottom: 1rem;
-        border-bottom: 1px solid var(--color-border);
+        border-bottom: 1px solid var(--color-sidebar-border, var(--color-border));
         margin-bottom: 1rem;
       }
 
@@ -2174,13 +2217,21 @@ interface CommandItem {
         gap: 0.75rem;
         padding: 0.625rem 0.75rem;
         border-radius: var(--radius-md);
-        color: var(--color-text-main);
+        color: var(--color-text-secondary);
         text-decoration: none;
         font-size: 0.875rem;
-        font-weight: 600;
+        font-weight: 500;
+        transition: all 0.15s ease;
 
         &:hover {
-          background: var(--color-bg-subtle);
+          background: var(--color-nav-hover-bg, var(--color-bg-hover));
+          color: var(--color-text-main);
+        }
+
+        &.active {
+          background: var(--color-nav-active-bg);
+          color: var(--color-nav-active-fg);
+          font-weight: 600;
         }
       }
 
@@ -2300,6 +2351,12 @@ export class ShellComponent implements OnInit {
       title: 'Go to Financial Dashboard',
       category: 'Navigation',
       action: () => this.router.navigate(['/dashboard'])
+    },
+    {
+      id: 'goto-analytics',
+      title: 'Go to KPI Analytics & Diagnostics',
+      category: 'Navigation',
+      action: () => this.router.navigate(['/analytics'])
     },
     {
       id: 'goto-transactions',
@@ -2554,6 +2611,9 @@ export class ShellComponent implements OnInit {
       switch (event.key.toLowerCase()) {
         case 'd':
           this.router.navigate(['/dashboard']);
+          break;
+        case 'a':
+          this.router.navigate(['/analytics']);
           break;
         case 't':
           this.router.navigate(['/transactions']);
