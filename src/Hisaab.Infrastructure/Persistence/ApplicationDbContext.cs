@@ -29,6 +29,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<MappingProfile> MappingProfiles => Set<MappingProfile>();
     public DbSet<BusinessEntity> Businesses => Set<BusinessEntity>();
     public DbSet<BusinessTransaction> BusinessTransactions => Set<BusinessTransaction>();
+    public DbSet<UserDeletionSetting> DeletionSettings => Set<UserDeletionSetting>();
 
     public ApplicationDbContext(
         DbContextOptions<ApplicationDbContext> options,
@@ -47,6 +48,13 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
         base.OnModelCreating(builder);
 
         builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+
+        builder.Entity<UserDeletionSetting>(b =>
+        {
+            b.ToTable("user_deletion_settings");
+            b.HasKey(x => x.Id);
+            b.HasIndex(x => x.UserId).IsUnique();
+        });
 
         // Global conventions & filters
         foreach (var entityType in builder.Model.GetEntityTypes())

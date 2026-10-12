@@ -28,6 +28,7 @@ public static class DependencyInjection
         services.AddScoped<IAuditService, AuditService>();
         services.AddScoped<IDataTransferService, DataTransferService>();
         services.AddScoped<IEmailService, EmailService>();
+        services.AddScoped<IDeletionPermissionService, DeletionPermissionService>();
 
         // QuestPDF Community License for non-commercial/enterprise open use
         QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;

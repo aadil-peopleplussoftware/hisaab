@@ -6,6 +6,7 @@ import { Category, MonthlySummary, Transaction, TransactionType } from './models
 import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
 import { MonthPickerComponent } from '../../shared/components/month-picker/month-picker.component';
 import { StatCardComponent } from '../../shared/components/stat-card/stat-card.component';
+import { DeletionPermissionsService } from '../../core/services/deletion-permissions.service';
 
 @Component({
   selector: 'app-transactions',
@@ -737,6 +738,7 @@ import { StatCardComponent } from '../../shared/components/stat-card/stat-card.c
 export class TransactionsComponent implements OnInit {
   private readonly transactionsService = inject(TransactionsService);
   private readonly fb = inject(FormBuilder);
+  public readonly deletionPermissionsService = inject(DeletionPermissionsService);
 
   readonly transactions = signal<Transaction[]>([]);
   readonly categories = signal<Category[]>([]);
@@ -889,9 +891,19 @@ export class TransactionsComponent implements OnInit {
   }
 
   onDelete(id: string): void {
-    if (confirm('Are you sure you want to delete this transaction?')) {
+    if (!this.deletionPermissionsService.canDelete('transactions')) {
+      alert('Deletion is disabled for Transactions in Settings. Please turn it ON under Settings > Deletion Controls.');
+      return;
+    }
+    if (confirm('Are you sure you want to delete this transaction? It will be moved to the Recycle Bin.')) {
       this.transactionsService.deleteTransaction(id).subscribe({
-        next: () => this.loadTransactions()
+        next: () => {
+          this.loadTransactions();
+        },
+        error: (err) => {
+          const msg = err?.error?.message || err?.error?.error || 'Failed to delete transaction.';
+          alert(msg);
+        }
       });
     }
   }

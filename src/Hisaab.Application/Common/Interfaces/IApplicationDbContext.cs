@@ -19,6 +19,7 @@ public interface IApplicationDbContext
     DbSet<MappingProfile> MappingProfiles { get; }
     DbSet<BusinessEntity> Businesses { get; }
     DbSet<BusinessTransaction> BusinessTransactions { get; }
+    DbSet<UserDeletionSetting> DeletionSettings { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

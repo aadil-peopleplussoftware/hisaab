@@ -79,6 +79,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/data-transfer/data-transfer.component').then(m => m.DataTransferComponent)
       },
       {
+        path: 'recycle-bin',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/recycle-bin/recycle-bin.component').then(m => m.RecycleBinComponent)
+      },
+      {
         path: 'settings',
         canActivate: [authGuard],
         loadComponent: () => import('./features/settings/settings.component').then(m => m.SettingsComponent)

@@ -16,6 +16,7 @@ import {
 } from '../models/loan.model';
 import { InrCurrencyPipe } from '../../../shared/pipes/inr-currency.pipe';
 import { StatCardComponent } from '../../../shared/components/stat-card/stat-card.component';
+import { DeletionPermissionsService } from '../../../core/services/deletion-permissions.service';
 
 @Component({
   selector: 'app-loan-detail',
@@ -892,6 +893,7 @@ export class LoanDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly loansService = inject(LoansService);
+  private readonly deletionPermissionsService = inject(DeletionPermissionsService);
   private readonly fb = inject(FormBuilder);
 
   readonly detail = signal<LoanAccountDetail | null>(null);
@@ -961,10 +963,15 @@ export class LoanDetailComponent implements OnInit {
   }
 
   confirmDeleteLoan(): void {
+    if (!this.deletionPermissionsService.canDelete('loans')) {
+      alert('Deletion is disabled for Loans in Settings. Enable it in Settings > Deletion Controls to delete this loan.');
+      return;
+    }
+
     const current = this.detail();
     if (!current) return;
 
-    if (confirm(`Are you sure you want to delete the loan "${current.account.name}"? This will also remove its transaction history.`)) {
+    if (confirm(`Are you sure you want to delete the loan "${current.account.name}"? This will move it to the Recycle Bin.`)) {
       this.loansService.deleteLoan(current.account.id).subscribe({
         next: () => {
           this.router.navigate(['/loans']);
@@ -1018,10 +1025,15 @@ export class LoanDetailComponent implements OnInit {
   }
 
   deleteTransaction(txnId: string): void {
+    if (!this.deletionPermissionsService.canDelete('loans')) {
+      alert('Deletion is disabled for Loans in Settings. Enable it in Settings > Deletion Controls to delete this transaction.');
+      return;
+    }
+
     const current = this.detail();
     if (!current) return;
 
-    if (confirm('Are you sure you want to delete this transaction?')) {
+    if (confirm('Are you sure you want to delete this transaction? It will be moved to the Recycle Bin.')) {
       this.loansService.deleteTransaction(current.account.id, txnId).subscribe({
         next: () => {
           this.loadDetail(current.account.id);

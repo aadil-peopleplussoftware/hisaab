@@ -6,6 +6,7 @@ import { ThemeService, ThemeName, IconStyle, SidebarPosition, DisplayCurrency } 
 import { AuthService } from '../../core/services/auth.service';
 import { TransactionsService } from '../../features/transactions/services/transactions.service';
 import { Category, CreateTransactionPayload, TransactionType } from '../../features/transactions/models/transaction.model';
+import { RecycleBinService } from '../../features/recycle-bin/services/recycle-bin.service';
 
 interface NavItem {
   route: string;
@@ -87,6 +88,14 @@ interface CommandItem {
           <a routerLink="/data-transfer" routerLinkActive="active" class="nav-item" title="Data Import & Export">
             <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'datatransfer' }" />
             <span class="nav-label">Data Transfer</span>
+          </a>
+
+          <a routerLink="/recycle-bin" routerLinkActive="active" class="nav-item" title="Recycle Bin">
+            <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'recyclebin' }" />
+            <span class="nav-label">Recycle Bin</span>
+            @if (recycleBinService.moduleCounts().all > 0) {
+              <span class="nav-badge-pill">{{ recycleBinService.moduleCounts().all }}</span>
+            }
           </a>
 
           <a routerLink="/settings" routerLinkActive="active" class="nav-item" title="Settings">
@@ -710,6 +719,13 @@ interface CommandItem {
                 <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'datatransfer' }" />
                 <span>Data Transfer</span>
               </a>
+              <a routerLink="/recycle-bin" (click)="closeMobileMenu()" class="drawer-link">
+                <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'recyclebin' }" />
+                <span>Recycle Bin</span>
+                @if (recycleBinService.moduleCounts().all > 0) {
+                  <span class="nav-badge-pill">{{ recycleBinService.moduleCounts().all }}</span>
+                }
+              </a>
               <a routerLink="/settings" (click)="closeMobileMenu()" class="drawer-link">
                 <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'settings' }" />
                 <span>Settings</span>
@@ -805,6 +821,9 @@ interface CommandItem {
                 @case ('datatransfer') {
                   <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l5-5 5 5h-3z" />
                 }
+                @case ('recyclebin') {
+                  <path d="M16 6V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2H3v2h2l1.2 13.2A2 2 0 0 0 8.2 23h7.6a2 2 0 0 0 2-1.8L19 8h2V6h-5zm-6-2h4v2h-4V4zm6 17H8l-1.1-13h10.2L16 21z" />
+                }
                 @case ('settings') {
                   <path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm8.94 3a8.97 8.97 0 0 0-.46-1.74l2.1-1.63-2-3.46-2.52 1a8.96 8.96 0 0 0-1.52-.88L16.2 1.6h-4l-.44 2.69c-.54.24-1.05.54-1.52.88l-2.52-1-2 3.46 2.1 1.63A8.97 8.97 0 0 0 7.36 11l-2.69.44v4l2.69.44c.12.6.28 1.18.46 1.74l-2.1 1.63 2 3.46 2.52-1c.47.34.98.64 1.52.88l.44 2.69h4l.44-2.69c.54-.24 1.05-.54 1.52-.88l2.52 1 2-3.46-2.1-1.63c.18-.56.34-1.14.46-1.74l2.69-.44v-4l-2.69-.44z" />
                 }
@@ -855,6 +874,13 @@ interface CommandItem {
                   @case ('datatransfer') {
                     <rect width="18" height="18" x="3" y="3" rx="2" fill="currentColor" fill-opacity="0.18" />
                     <path d="M12 7v10M8 11l4-4 4 4" />
+                  }
+                  @case ('recyclebin') {
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6" fill="currentColor" fill-opacity="0.2" />
+                    <polyline points="3 6 5 6 21 6" />
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                    <line x1="10" y1="11" x2="10" y2="17" />
+                    <line x1="14" y1="11" x2="14" y2="17" />
                   }
                   @case ('settings') {
                     <circle cx="12" cy="12" r="8" fill="currentColor" fill-opacity="0.2" />
@@ -908,6 +934,12 @@ interface CommandItem {
                   <polyline points="7 10 12 15 17 10" />
                   <line x1="12" y1="15" x2="12" y2="3" />
                 }
+                @case ('recyclebin') {
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                  <line x1="10" y1="11" x2="10" y2="17" />
+                  <line x1="14" y1="11" x2="14" y2="17" />
+                }
                 @case ('settings') {
                   <circle cx="12" cy="12" r="3" />
                   <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
@@ -958,6 +990,12 @@ interface CommandItem {
                   <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
                   <polyline points="7 10 12 15 17 10" />
                   <line x1="12" y1="15" x2="12" y2="3" />
+                }
+                @case ('recyclebin') {
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                  <line x1="10" y1="11" x2="10" y2="17" />
+                  <line x1="14" y1="11" x2="14" y2="17" />
                 }
                 @case ('settings') {
                   <circle cx="12" cy="12" r="3" />
@@ -1168,6 +1206,18 @@ interface CommandItem {
             color: var(--color-accent-fg, #0969da);
             stroke: var(--color-accent-fg, #0969da);
           }
+        }
+
+        .nav-badge-pill {
+          margin-left: auto;
+          font-size: 0.6875rem;
+          font-weight: 700;
+          padding: 0.15rem 0.45rem;
+          border-radius: 9999px;
+          background: rgba(239, 68, 68, 0.15);
+          color: #dc2626;
+          border: 1px solid rgba(239, 68, 68, 0.3);
+          line-height: 1;
         }
       }
 
@@ -2220,6 +2270,7 @@ interface CommandItem {
 export class ShellComponent implements OnInit {
   readonly themeService = inject(ThemeService);
   readonly authService = inject(AuthService);
+  readonly recycleBinService = inject(RecycleBinService);
   private readonly transactionsService = inject(TransactionsService);
   private readonly router = inject(Router);
 
@@ -2291,6 +2342,12 @@ export class ShellComponent implements OnInit {
       title: 'Go to Data Import & Export',
       category: 'Navigation',
       action: () => this.router.navigate(['/data-transfer'])
+    },
+    {
+      id: 'goto-recycle-bin',
+      title: 'Go to Recycle Bin (Trash)',
+      category: 'Navigation',
+      action: () => this.router.navigate(['/recycle-bin'])
     },
     {
       id: 'goto-settings',

@@ -1,18 +1,20 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { SettingsService } from './services/settings.service';
 import { AdminUser, AuditLogItem, SystemHealth, UserProfile } from './models/settings.model';
 import { ThemeService } from '../../core/services/theme.service';
 import { AuthService } from '../../core/services/auth.service';
 import { TransactionsService } from '../transactions/services/transactions.service';
 import { Category, TransactionType } from '../transactions/models/transaction.model';
+import { HttpClient } from '@angular/common/http';
+import { DeletionPermissionsService, DeletionPermissions } from '../../core/services/deletion-permissions.service';
 
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterModule],
   template: `
     <div class="settings-page">
       <div class="page-header">
@@ -70,6 +72,20 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
             <line x1="12" y1="15" x2="12" y2="3" />
           </svg>
           <span>Data Backup & Export</span>
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
+          [class.active]="activeTab() === 'deletion-rights'"
+          (click)="setTab('deletion-rights')"
+        >
+          <svg class="tab-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6" />
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+            <line x1="10" y1="11" x2="10" y2="17" />
+            <line x1="14" y1="11" x2="14" y2="17" />
+          </svg>
+          <span>Deletion Controls</span>
         </button>
         <button
           type="button"
@@ -433,7 +449,17 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
                 @for (c of expenseCategories(); track c.id) {
                   <span class="cat-chip">
                     <span class="chip-color" [style.background-color]="c.color"></span>
-                    {{ c.name }}
+                    <span>{{ c.name }}</span>
+                    @if (!c.isSystem) {
+                      <button
+                        type="button"
+                        class="btn-delete-cat"
+                        (click)="deleteCategory(c)"
+                        title="Delete custom category"
+                      >
+                        ✕
+                      </button>
+                    }
                   </span>
                 }
               </div>
@@ -446,7 +472,17 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
                 @for (c of incomeCategories(); track c.id) {
                   <span class="cat-chip">
                     <span class="chip-color" [style.background-color]="c.color"></span>
-                    {{ c.name }}
+                    <span>{{ c.name }}</span>
+                    @if (!c.isSystem) {
+                      <button
+                        type="button"
+                        class="btn-delete-cat"
+                        (click)="deleteCategory(c)"
+                        title="Delete custom category"
+                      >
+                        ✕
+                      </button>
+                    }
                   </span>
                 }
               </div>
@@ -514,6 +550,206 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
                 </svg>
                 <span>{{ exporting() === 'excel' ? 'Exporting...' : 'Export Master Workbook' }}</span>
               </button>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- TAB: Deletion Rights & Permissions -->
+      @if (activeTab() === 'deletion-rights') {
+        <div class="card-section">
+          <div class="card-title-row">
+            <div>
+              <div class="title-with-icon">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                </svg>
+                <h3>Module Deletion Controls & Rights</h3>
+              </div>
+              <p class="section-desc">
+                Configure module-level delete permissions. When a module's switch is turned OFF, delete operations are strictly locked across the interface and API to prevent accidental data loss.
+              </p>
+            </div>
+            <div class="quick-header-tools">
+              <a routerLink="/recycle-bin" class="btn-recycle-link" title="Open Recycle Bin">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6" />
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                </svg>
+                <span>View Recycle Bin (Trash) →</span>
+              </a>
+            </div>
+          </div>
+
+          <!-- Explanatory Protection Banner -->
+          <div class="info-alert-box">
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="16" x2="12" y2="12" />
+              <line x1="12" y1="8" x2="12.01" y2="8" />
+            </svg>
+            <div>
+              <strong>Multi-Layer Deletion Protection</strong>
+              <p>
+                When a module's switch is <strong>ON</strong>, deleting items is permitted; deleted items are safely moved to the <strong>Recycle Bin</strong> where they can be restored or permanently purged. When turned <strong>OFF</strong>, deletion buttons are locked and backend API endpoints immediately block deletion attempts.
+              </p>
+            </div>
+          </div>
+
+          <!-- Quick Actions Bar -->
+          <div class="perm-quick-actions">
+            <button type="button" class="btn-sm-action" (click)="setAllPermissions(true)">
+              ✓ Allow All Deletions
+            </button>
+            <button type="button" class="btn-sm-action" (click)="setAllPermissions(false)">
+              🔒 Lock All Deletions (High Security)
+            </button>
+          </div>
+
+          <!-- 6 Module Switches Grid -->
+          <div class="modules-perm-grid">
+            <!-- 1. Transactions -->
+            <div class="perm-module-card" [class.allowed]="deletionPerms().transactions" [class.blocked]="!deletionPerms().transactions">
+              <div class="perm-card-content">
+                <div class="module-icon-wrap icon-tx">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="1" x2="12" y2="23" />
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                  </svg>
+                </div>
+                <div class="perm-meta">
+                  <div class="perm-title-row">
+                    <h4>Transactions (Ledgers)</h4>
+                    <span class="perm-status-badge" [class.on]="deletionPerms().transactions">
+                      {{ deletionPerms().transactions ? 'ALLOWED' : 'BLOCKED' }}
+                    </span>
+                  </div>
+                  <p>Allows deleting individual income inflow and expense outflow records.</p>
+                </div>
+              </div>
+              <div class="toggle-pill" [class.on]="deletionPerms().transactions" (click)="togglePermission('transactions')">
+                {{ deletionPerms().transactions ? 'ON' : 'OFF' }}
+              </div>
+            </div>
+
+            <!-- 2. Categories -->
+            <div class="perm-module-card" [class.allowed]="deletionPerms().categories" [class.blocked]="!deletionPerms().categories">
+              <div class="perm-card-content">
+                <div class="module-icon-wrap icon-cat">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+                    <line x1="7" y1="7" x2="7.01" y2="7" />
+                  </svg>
+                </div>
+                <div class="perm-meta">
+                  <div class="perm-title-row">
+                    <h4>Categories</h4>
+                    <span class="perm-status-badge" [class.on]="deletionPerms().categories">
+                      {{ deletionPerms().categories ? 'ALLOWED' : 'BLOCKED' }}
+                    </span>
+                  </div>
+                  <p>Allows deleting user-created custom income and expense categories.</p>
+                </div>
+              </div>
+              <div class="toggle-pill" [class.on]="deletionPerms().categories" (click)="togglePermission('categories')">
+                {{ deletionPerms().categories ? 'ON' : 'OFF' }}
+              </div>
+            </div>
+
+            <!-- 3. Loans -->
+            <div class="perm-module-card" [class.allowed]="deletionPerms().loans" [class.blocked]="!deletionPerms().loans">
+              <div class="perm-card-content">
+                <div class="module-icon-wrap icon-loans">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="5" width="20" height="14" rx="2" />
+                    <line x1="2" y1="10" x2="22" y2="10" />
+                  </svg>
+                </div>
+                <div class="perm-meta">
+                  <div class="perm-title-row">
+                    <h4>Loans & Credit</h4>
+                    <span class="perm-status-badge" [class.on]="deletionPerms().loans">
+                      {{ deletionPerms().loans ? 'ALLOWED' : 'BLOCKED' }}
+                    </span>
+                  </div>
+                  <p>Allows deleting credit contracts, loan accounts, and repayment logs.</p>
+                </div>
+              </div>
+              <div class="toggle-pill" [class.on]="deletionPerms().loans" (click)="togglePermission('loans')">
+                {{ deletionPerms().loans ? 'ON' : 'OFF' }}
+              </div>
+            </div>
+
+            <!-- 4. EPFO -->
+            <div class="perm-module-card" [class.allowed]="deletionPerms().epfo" [class.blocked]="!deletionPerms().epfo">
+              <div class="perm-card-content">
+                <div class="module-icon-wrap icon-epfo">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                  </svg>
+                </div>
+                <div class="perm-meta">
+                  <div class="perm-title-row">
+                    <h4>EPFO Passbook</h4>
+                    <span class="perm-status-badge" [class.on]="deletionPerms().epfo">
+                      {{ deletionPerms().epfo ? 'ALLOWED' : 'BLOCKED' }}
+                    </span>
+                  </div>
+                  <p>Allows deleting monthly Provident Fund contribution history.</p>
+                </div>
+              </div>
+              <div class="toggle-pill" [class.on]="deletionPerms().epfo" (click)="togglePermission('epfo')">
+                {{ deletionPerms().epfo ? 'ON' : 'OFF' }}
+              </div>
+            </div>
+
+            <!-- 5. Investments -->
+            <div class="perm-module-card" [class.allowed]="deletionPerms().investments" [class.blocked]="!deletionPerms().investments">
+              <div class="perm-card-content">
+                <div class="module-icon-wrap icon-inv">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
+                    <polyline points="16 7 22 7 22 13" />
+                  </svg>
+                </div>
+                <div class="perm-meta">
+                  <div class="perm-title-row">
+                    <h4>Investments & Portfolio</h4>
+                    <span class="perm-status-badge" [class.on]="deletionPerms().investments">
+                      {{ deletionPerms().investments ? 'ALLOWED' : 'BLOCKED' }}
+                    </span>
+                  </div>
+                  <p>Allows deleting investment holdings, equities, mutual funds, and trades.</p>
+                </div>
+              </div>
+              <div class="toggle-pill" [class.on]="deletionPerms().investments" (click)="togglePermission('investments')">
+                {{ deletionPerms().investments ? 'ON' : 'OFF' }}
+              </div>
+            </div>
+
+            <!-- 6. Business -->
+            <div class="perm-module-card" [class.allowed]="deletionPerms().business" [class.blocked]="!deletionPerms().business">
+              <div class="perm-card-content">
+                <div class="module-icon-wrap icon-biz">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
+                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
+                  </svg>
+                </div>
+                <div class="perm-meta">
+                  <div class="perm-title-row">
+                    <h4>Business & Ventures</h4>
+                    <span class="perm-status-badge" [class.on]="deletionPerms().business">
+                      {{ deletionPerms().business ? 'ALLOWED' : 'BLOCKED' }}
+                    </span>
+                  </div>
+                  <p>Allows deleting registered business profiles and commercial transaction invoices.</p>
+                </div>
+              </div>
+              <div class="toggle-pill" [class.on]="deletionPerms().business" (click)="togglePermission('business')">
+                {{ deletionPerms().business ? 'ON' : 'OFF' }}
+              </div>
             </div>
           </div>
         </div>
@@ -587,6 +823,33 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
 
           <!-- Subview 1: Users -->
           @if (adminView() === 'users') {
+            <div class="admin-users-toolbar">
+              <div class="status-filter-pills">
+                <span class="filter-lbl">Status:</span>
+                <button
+                  type="button"
+                  class="pill-btn-sm"
+                  [class.active]="adminUserStatusFilter() === 'active'"
+                  (click)="adminUserStatusFilter.set('active')">
+                  ● Active (Default)
+                </button>
+                <button
+                  type="button"
+                  class="pill-btn-sm"
+                  [class.active]="adminUserStatusFilter() === 'all'"
+                  (click)="adminUserStatusFilter.set('all')">
+                  All
+                </button>
+                <button
+                  type="button"
+                  class="pill-btn-sm"
+                  [class.active]="adminUserStatusFilter() === 'inactive'"
+                  (click)="adminUserStatusFilter.set('inactive')">
+                  Inactive / Deleted
+                </button>
+              </div>
+            </div>
+
             <div class="table-responsive">
               <table class="admin-table">
                 <thead>
@@ -599,7 +862,7 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
                   </tr>
                 </thead>
                 <tbody>
-                  @for (u of adminUsers(); track u.id) {
+                  @for (u of filteredAdminUsers(); track u.id) {
                     <tr>
                       <td class="bold">{{ u.email }}</td>
                       <td>{{ u.fullName }}</td>
@@ -610,6 +873,11 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
                           {{ u.isDeleted ? 'Deleted' : (u.isActive ? 'Active' : 'Inactive') }}
                         </span>
                       </td>
+                    </tr>
+                  }
+                  @if (filteredAdminUsers().length === 0) {
+                    <tr>
+                      <td colspan="5" class="table-empty-row">No users found matching status filter.</td>
                     </tr>
                   }
                 </tbody>
@@ -1068,6 +1336,23 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
       background: var(--color-bg-subtle, #f3f4f6);
       border: 1px solid var(--color-border);
       color: var(--color-text-main);
+
+      .btn-delete-cat {
+        background: none;
+        border: none;
+        color: var(--color-text-muted);
+        cursor: pointer;
+        font-size: 0.75rem;
+        padding: 0 0.2rem;
+        margin-left: 0.25rem;
+        border-radius: 4px;
+        line-height: 1;
+
+        &:hover {
+          color: #ef4444;
+          background: rgba(239, 68, 68, 0.15);
+        }
+      }
     }
 
     .chip-color {
@@ -1201,6 +1486,49 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
         background: #4f46e5;
         color: #ffffff;
         border-color: #4f46e5;
+      }
+    }
+
+    .admin-users-toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 0.85rem;
+
+      .status-filter-pills {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+
+        .filter-lbl {
+          font-size: 0.75rem;
+          font-weight: 700;
+          color: var(--color-text-muted);
+          text-transform: uppercase;
+          margin-right: 0.25rem;
+        }
+
+        .pill-btn-sm {
+          padding: 0.25rem 0.65rem;
+          border-radius: 9999px;
+          border: 1px solid var(--color-border);
+          background: var(--color-bg-subtle);
+          color: var(--color-text-muted);
+          font-size: 0.78rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.15s ease;
+
+          &:hover {
+            color: var(--color-text-main);
+          }
+
+          &.active {
+            background: #10b981;
+            border-color: #10b981;
+            color: #ffffff;
+          }
+        }
       }
     }
 
@@ -1634,16 +1962,185 @@ import { Category, TransactionType } from '../transactions/models/transaction.mo
         color: #10b981;
       }
     }
+
+    .btn-recycle-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.5rem 0.85rem;
+      border-radius: 8px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      background: rgba(239, 68, 68, 0.1);
+      color: #dc2626;
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      text-decoration: none;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: #dc2626;
+        color: #fff;
+      }
+    }
+
+    .info-alert-box {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 1rem 1.25rem;
+      border-radius: 10px;
+      background: rgba(79, 70, 229, 0.08);
+      border: 1px solid rgba(79, 70, 229, 0.2);
+      color: var(--color-text-main);
+      margin-bottom: 1.25rem;
+
+      svg {
+        flex-shrink: 0;
+        margin-top: 0.15rem;
+        color: #4f46e5;
+      }
+
+      strong {
+        display: block;
+        font-size: 0.875rem;
+        font-weight: 700;
+        color: #4f46e5;
+        margin-bottom: 0.25rem;
+      }
+
+      p {
+        margin: 0;
+        font-size: 0.8125rem;
+        color: var(--color-text-muted);
+        line-height: 1.45;
+      }
+    }
+
+    .perm-quick-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+
+      .btn-sm-action {
+        padding: 0.4rem 0.8rem;
+        border-radius: 6px;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        background: var(--color-bg-base);
+        border: 1px solid var(--color-border);
+        color: var(--color-text-main);
+        cursor: pointer;
+        transition: all 0.15s ease;
+
+        &:hover {
+          border-color: var(--color-primary);
+          color: var(--color-primary);
+        }
+      }
+    }
+
+    .modules-perm-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1rem;
+    }
+
+    .perm-module-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      border-radius: 12px;
+      background: var(--color-bg-base);
+      border: 1px solid var(--color-border);
+      transition: all 0.2s ease;
+
+      &.allowed {
+        border-left: 4px solid #10b981;
+      }
+
+      &.blocked {
+        border-left: 4px solid #ef4444;
+      }
+
+      .perm-card-content {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.875rem;
+        flex: 1;
+
+        .module-icon-wrap {
+          width: 38px;
+          height: 38px;
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+
+          &.icon-tx { background: rgba(16, 185, 129, 0.15); color: #10b981; }
+          &.icon-cat { background: rgba(236, 72, 153, 0.15); color: #ec4899; }
+          &.icon-loans { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
+          &.icon-epfo { background: rgba(37, 99, 235, 0.15); color: #2563eb; }
+          &.icon-inv { background: rgba(139, 92, 246, 0.15); color: #8b5cf6; }
+          &.icon-biz { background: rgba(79, 70, 229, 0.15); color: #4f46e5; }
+        }
+
+        .perm-meta {
+          flex: 1;
+
+          .perm-title-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.25rem;
+
+            h4 {
+              margin: 0;
+              font-size: 0.9375rem;
+              font-weight: 700;
+              color: var(--color-text-main);
+            }
+
+            .perm-status-badge {
+              font-size: 0.65rem;
+              font-weight: 800;
+              padding: 0.15rem 0.45rem;
+              border-radius: 4px;
+              background: rgba(239, 68, 68, 0.15);
+              color: #dc2626;
+
+              &.on {
+                background: rgba(16, 185, 129, 0.15);
+                color: #059669;
+              }
+            }
+          }
+
+          p {
+            margin: 0;
+            font-size: 0.775rem;
+            color: var(--color-text-muted);
+            line-height: 1.4;
+          }
+        }
+      }
+    }
   `]
 })
 export class SettingsComponent implements OnInit {
   private readonly settingsService = inject(SettingsService);
   private readonly transactionsService = inject(TransactionsService);
   private readonly router = inject(Router);
+  private readonly http = inject(HttpClient);
   readonly themeService = inject(ThemeService);
   readonly authService = inject(AuthService);
+  public readonly deletionPermissionsService = inject(DeletionPermissionsService);
+  public readonly deletionPerms = this.deletionPermissionsService.permissions;
 
-  readonly activeTab = signal<'preferences' | 'appearance' | 'categories' | 'export' | 'privacy' | 'admin'>('preferences');
+  readonly activeTab = signal<'preferences' | 'appearance' | 'categories' | 'export' | 'deletion-rights' | 'privacy' | 'admin'>('preferences');
   readonly profile = signal<UserProfile | null>(null);
   readonly categories = signal<Category[]>([]);
   readonly saving = signal<boolean>(false);
@@ -1671,6 +2168,17 @@ export class SettingsComponent implements OnInit {
   // Admin section
   readonly adminView = signal<'users' | 'audit' | 'health'>('users');
   readonly adminUsers = signal<AdminUser[]>([]);
+  readonly adminUserStatusFilter = signal<'active' | 'all' | 'inactive'>('active');
+  readonly filteredAdminUsers = computed(() => {
+    const list = this.adminUsers();
+    const filter = this.adminUserStatusFilter();
+    if (filter === 'active') {
+      return list.filter(u => u.isActive && !u.isDeleted);
+    } else if (filter === 'inactive') {
+      return list.filter(u => !u.isActive || u.isDeleted);
+    }
+    return list;
+  });
   readonly auditLogs = signal<AuditLogItem[]>([]);
   readonly systemHealth = signal<SystemHealth | null>(null);
   auditSearch = '';
@@ -1688,11 +2196,48 @@ export class SettingsComponent implements OnInit {
     this.loadCategories();
   }
 
-  setTab(tab: 'preferences' | 'appearance' | 'categories' | 'export' | 'privacy' | 'admin'): void {
+  setTab(tab: 'preferences' | 'appearance' | 'categories' | 'export' | 'deletion-rights' | 'privacy' | 'admin'): void {
     this.activeTab.set(tab);
     if (tab === 'admin') {
       this.loadAdminData();
     }
+  }
+
+  togglePermission(module: keyof DeletionPermissions): void {
+    const current = this.deletionPerms();
+    const updatedVal = !current[module];
+    const payload = { [module]: updatedVal };
+    this.deletionPermissionsService.updatePermissions(payload).subscribe({
+      next: () => {
+        this.alertMessage.set(`Deletion for ${module.toUpperCase()} is now ${updatedVal ? 'ON (Allowed)' : 'OFF (Blocked)'}.`);
+        this.isAlertError.set(false);
+      },
+      error: () => {
+        this.alertMessage.set('Failed to update deletion permission on server.');
+        this.isAlertError.set(true);
+      }
+    });
+  }
+
+  setAllPermissions(allow: boolean): void {
+    const payload: DeletionPermissions = {
+      transactions: allow,
+      categories: allow,
+      loans: allow,
+      epfo: allow,
+      investments: allow,
+      business: allow
+    };
+    this.deletionPermissionsService.updatePermissions(payload).subscribe({
+      next: () => {
+        this.alertMessage.set(`All modules deletion permissions set to ${allow ? 'ALLOWED (ON)' : 'LOCKED (OFF)'}.`);
+        this.isAlertError.set(false);
+      },
+      error: () => {
+        this.alertMessage.set('Failed to update deletion permissions.');
+        this.isAlertError.set(true);
+      }
+    });
   }
 
   loadPreferences(): void {
@@ -1717,6 +2262,28 @@ export class SettingsComponent implements OnInit {
     this.transactionsService.getCategories().subscribe({
       next: (cats) => this.categories.set(cats)
     });
+  }
+
+  deleteCategory(cat: Category): void {
+    if (!this.deletionPermissionsService.canDelete('categories')) {
+      this.alertMessage.set('Deletion is disabled for Categories in Settings. Please turn it ON in Deletion Controls.');
+      this.isAlertError.set(true);
+      return;
+    }
+    if (confirm(`Move category "${cat.name}" to Recycle Bin?`)) {
+      this.http.delete(`/api/v1/categories/${cat.id}`).subscribe({
+        next: () => {
+          this.alertMessage.set(`Category "${cat.name}" moved to Recycle Bin.`);
+          this.isAlertError.set(false);
+          this.loadCategories();
+        },
+        error: (err) => {
+          const msg = err?.error?.message || err?.error?.error || 'Failed to delete category.';
+          this.alertMessage.set(msg);
+          this.isAlertError.set(true);
+        }
+      });
+    }
   }
 
   savePreferences(): void {

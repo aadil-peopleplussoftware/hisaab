@@ -57,36 +57,64 @@ import { StatCardComponent } from '../../shared/components/stat-card/stat-card.c
       </div>
 
       <!-- Filter Tabs & Search Toolbar -->
+      <!-- Filter Tabs & Search Toolbar -->
       <div class="toolbar card no-print">
-        <div class="type-pills">
-          <button
-            type="button"
-            class="pill-btn"
-            [class.active]="selectedTab() === 'all'"
-            (click)="setTab('all')">
-            All
-          </button>
-          <button
-            type="button"
-            class="pill-btn pill-given"
-            [class.active]="selectedTab() === 'given'"
-            (click)="setTab('given')">
-            Given (Lent)
-          </button>
-          <button
-            type="button"
-            class="pill-btn pill-taken"
-            [class.active]="selectedTab() === 'taken'"
-            (click)="setTab('taken')">
-            Taken (Borrowed)
-          </button>
-          <button
-            type="button"
-            class="pill-btn pill-closed"
-            [class.active]="selectedTab() === 'closed'"
-            (click)="setTab('closed')">
-            Closed
-          </button>
+        <div class="toolbar-filters">
+          <div class="type-pills">
+            <button
+              type="button"
+              class="pill-btn"
+              [class.active]="selectedDirection() === 'all'"
+              (click)="setDirection('all')">
+              All Flows
+            </button>
+            <button
+              type="button"
+              class="pill-btn pill-given"
+              [class.active]="selectedDirection() === 'given'"
+              (click)="setDirection('given')">
+              Given (Lent)
+            </button>
+            <button
+              type="button"
+              class="pill-btn pill-taken"
+              [class.active]="selectedDirection() === 'taken'"
+              (click)="setDirection('taken')">
+              Taken (Borrowed)
+            </button>
+          </div>
+
+          <div class="status-filter-wrap">
+            <span class="status-filter-label">Status:</span>
+            <div class="status-pills">
+              <button
+                type="button"
+                class="status-btn status-btn-active"
+                [class.active]="selectedStatus() === 'active'"
+                (click)="setStatus('active')"
+                title="Active Ongoing Loans (Default)">
+                <span class="dot dot-active"></span>
+                <span>Active</span>
+              </button>
+              <button
+                type="button"
+                class="status-btn status-btn-closed"
+                [class.active]="selectedStatus() === 'closed'"
+                (click)="setStatus('closed')"
+                title="Closed & Settled Loans">
+                <span class="dot dot-closed"></span>
+                <span>Closed</span>
+              </button>
+              <button
+                type="button"
+                class="status-btn status-btn-all"
+                [class.active]="selectedStatus() === 'all'"
+                (click)="setStatus('all')"
+                title="All Loans (Active and Closed)">
+                <span>All</span>
+              </button>
+            </div>
+          </div>
         </div>
 
         <div class="filter-controls">
@@ -120,11 +148,26 @@ import { StatCardComponent } from '../../shared/components/stat-card/stat-card.c
               <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
             </svg>
           </div>
-          <h3>No loans recorded yet</h3>
-          <p>Record loans you have given to friends or borrowed amounts with interest tracking.</p>
-          <button type="button" class="btn-primary mt-4" (click)="openCreateModal()">
-            Create Your First Loan
-          </button>
+          @if (selectedStatus() === 'active') {
+            <h3>No active loans found</h3>
+            <p>You have no ongoing active loans in this view. Record a new loan or check closed loans.</p>
+          } @else if (selectedStatus() === 'closed') {
+            <h3>No closed loans found</h3>
+            <p>No settled or closed loans matching this filter.</p>
+          } @else {
+            <h3>No loans recorded yet</h3>
+            <p>Record loans you have given to friends or borrowed amounts with interest tracking.</p>
+          }
+          <div class="empty-actions mt-4">
+            <button type="button" class="btn-primary" (click)="openCreateModal()">
+              + New Loan
+            </button>
+            @if (selectedStatus() === 'active') {
+              <button type="button" class="btn-outline ml-2" (click)="setStatus('all')">
+                View All Loans
+              </button>
+            }
+          </div>
         </div>
       }
 
@@ -476,10 +519,93 @@ import { StatCardComponent } from '../../shared/components/stat-card/stat-card.c
       }
     }
 
+    .toolbar-filters {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
     .type-pills {
       display: flex;
       gap: 0.5rem;
       flex-wrap: wrap;
+    }
+
+    .status-filter-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--color-bg-subtle, rgba(148, 163, 184, 0.08));
+      padding: 0.25rem 0.35rem 0.25rem 0.75rem;
+      border-radius: 9999px;
+      border: 1px solid var(--color-border);
+    }
+
+    .status-filter-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--color-text-muted);
+    }
+
+    .status-pills {
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .status-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.35rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      border: none;
+      background: transparent;
+      color: var(--color-text-muted);
+      cursor: pointer;
+      min-height: 32px;
+      transition: all 0.15s ease-in-out;
+
+      .dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        display: inline-block;
+      }
+
+      .dot-active {
+        background: #10b981;
+        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25);
+      }
+
+      .dot-closed {
+        background: #94a3b8;
+      }
+
+      &:hover:not(.active) {
+        color: var(--color-text-main);
+        background: rgba(148, 163, 184, 0.15);
+      }
+
+      &.active {
+        background: var(--color-bg-card, #ffffff);
+        color: var(--color-text-main);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+
+      &.status-btn-active.active {
+        color: #059669;
+        font-weight: 700;
+      }
+
+      &.status-btn-closed.active {
+        color: #475569;
+      }
     }
 
     .pill-btn {
@@ -948,7 +1074,8 @@ export class LoansComponent implements OnInit {
   readonly submitting = signal<boolean>(false);
   readonly showCreateModal = signal<boolean>(false);
 
-  readonly selectedTab = signal<'all' | 'given' | 'taken' | 'closed'>('all');
+  readonly selectedDirection = signal<'all' | 'given' | 'taken'>('all');
+  readonly selectedStatus = signal<'active' | 'closed' | 'all'>('active');
   readonly searchTerm = signal<string>('');
 
   readonly loanForm = this.fb.group({
@@ -971,15 +1098,16 @@ export class LoansComponent implements OnInit {
     this.loading.set(true);
 
     let direction: LoanDirection | null = null;
-    let status: LoanStatus | null = null;
-
-    if (this.selectedTab() === 'given') {
+    if (this.selectedDirection() === 'given') {
       direction = LoanDirection.Given;
-      status = LoanStatus.Active;
-    } else if (this.selectedTab() === 'taken') {
+    } else if (this.selectedDirection() === 'taken') {
       direction = LoanDirection.Taken;
+    }
+
+    let status: LoanStatus | null = null;
+    if (this.selectedStatus() === 'active') {
       status = LoanStatus.Active;
-    } else if (this.selectedTab() === 'closed') {
+    } else if (this.selectedStatus() === 'closed') {
       status = LoanStatus.Closed;
     }
 
@@ -999,8 +1127,27 @@ export class LoansComponent implements OnInit {
     });
   }
 
+  setDirection(direction: 'all' | 'given' | 'taken'): void {
+    this.selectedDirection.set(direction);
+    this.loadLoans();
+  }
+
+  setStatus(status: 'active' | 'closed' | 'all'): void {
+    this.selectedStatus.set(status);
+    this.loadLoans();
+  }
+
   setTab(tab: 'all' | 'given' | 'taken' | 'closed'): void {
-    this.selectedTab.set(tab);
+    if (tab === 'closed') {
+      this.selectedStatus.set('closed');
+      this.selectedDirection.set('all');
+    } else if (tab === 'given' || tab === 'taken') {
+      this.selectedDirection.set(tab);
+      this.selectedStatus.set('active');
+    } else {
+      this.selectedDirection.set('all');
+      this.selectedStatus.set('active');
+    }
     this.loadLoans();
   }
 

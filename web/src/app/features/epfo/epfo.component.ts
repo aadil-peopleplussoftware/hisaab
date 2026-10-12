@@ -11,6 +11,7 @@ import {
 } from './models/epf.model';
 import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
 import { StatCardComponent } from '../../shared/components/stat-card/stat-card.component';
+import { DeletionPermissionsService } from '../../core/services/deletion-permissions.service';
 
 @Component({
   selector: 'app-epfo',
@@ -761,6 +762,7 @@ import { StatCardComponent } from '../../shared/components/stat-card/stat-card.c
 })
 export class EpfoComponent implements OnInit {
   private readonly epfoService = inject(EpfoService);
+  private readonly deletionPermissionsService = inject(DeletionPermissionsService);
   private readonly fb = inject(FormBuilder);
 
   readonly entries = signal<EpfEntry[]>([]);
@@ -900,7 +902,12 @@ export class EpfoComponent implements OnInit {
   }
 
   confirmDelete(entry: EpfEntry): void {
-    if (confirm(`Are you sure you want to delete the EPF entry for ${entry.monthLabel}?`)) {
+    if (!this.deletionPermissionsService.canDelete('epfo')) {
+      alert('Deletion is disabled for EPFO in Settings. Enable it in Settings > Deletion Controls to delete this entry.');
+      return;
+    }
+
+    if (confirm(`Are you sure you want to delete the EPF entry for ${entry.monthLabel}? It will be moved to the Recycle Bin.`)) {
       this.epfoService.deleteEpfEntry(entry.id).subscribe({
         next: () => {
           this.loadData();

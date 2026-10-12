@@ -12,6 +12,7 @@ import {
 } from '../models/investment.model';
 import { InrCurrencyPipe } from '../../../shared/pipes/inr-currency.pipe';
 import { StatCardComponent } from '../../../shared/components/stat-card/stat-card.component';
+import { DeletionPermissionsService } from '../../../core/services/deletion-permissions.service';
 
 @Component({
   selector: 'app-holding-detail',
@@ -798,6 +799,7 @@ export class HoldingDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly investmentsService = inject(InvestmentsService);
+  private readonly deletionPermissionsService = inject(DeletionPermissionsService);
   private readonly fb = inject(FormBuilder);
 
   readonly detail = signal<HoldingDetail | null>(null);
@@ -906,10 +908,15 @@ export class HoldingDetailComponent implements OnInit {
   }
 
   deleteTransaction(txnId: string): void {
+    if (!this.deletionPermissionsService.canDelete('investments')) {
+      alert('Deletion is disabled for Investments in Settings. Enable it in Settings > Deletion Controls to delete this transaction.');
+      return;
+    }
+
     const current = this.detail();
     if (!current) return;
 
-    if (confirm('Are you sure you want to delete this transaction?')) {
+    if (confirm('Are you sure you want to delete this transaction? It will be moved to the Recycle Bin.')) {
       this.investmentsService.deleteTransaction(current.holding.id, txnId).subscribe({
         next: () => {
           this.loadDetail(current.holding.id);
@@ -1007,10 +1014,15 @@ export class HoldingDetailComponent implements OnInit {
   }
 
   confirmDeleteHolding(): void {
+    if (!this.deletionPermissionsService.canDelete('investments')) {
+      alert('Deletion is disabled for Investments in Settings. Enable it in Settings > Deletion Controls to delete this holding.');
+      return;
+    }
+
     const current = this.detail();
     if (!current) return;
 
-    if (confirm(`Are you sure you want to delete ${current.holding.name}? This will remove all associated transactions.`)) {
+    if (confirm(`Are you sure you want to delete ${current.holding.name}? This will move the holding and its transactions to the Recycle Bin.`)) {
       this.investmentsService.deleteHolding(current.holding.id).subscribe({
         next: () => {
           this.router.navigate(['/investments']);

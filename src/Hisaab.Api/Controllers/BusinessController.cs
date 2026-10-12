@@ -47,8 +47,17 @@ public class BusinessController : ApiControllerBase
 
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> DeleteBusiness(Guid id, CancellationToken cancellationToken)
     {
+        if (!await CheckDeletePermissionAsync("Business", cancellationToken))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new {
+                error = "DeletionDisabled",
+                message = "Deletion is disabled for Business in Settings. Please enable it under Settings > Deletion Controls."
+            });
+        }
+
         await Mediator.Send(new DeleteBusinessCommand(id), cancellationToken);
         return NoContent();
     }
@@ -113,8 +122,17 @@ public class BusinessController : ApiControllerBase
 
     [HttpDelete("transactions/{id:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     public async Task<IActionResult> DeleteTransaction(Guid id, CancellationToken cancellationToken)
     {
+        if (!await CheckDeletePermissionAsync("Business", cancellationToken))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new {
+                error = "DeletionDisabled",
+                message = "Deletion is disabled for Business in Settings. Please enable it under Settings > Deletion Controls."
+            });
+        }
+
         await Mediator.Send(new DeleteBusinessTransactionCommand(id), cancellationToken);
         return NoContent();
     }

@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
 import { ThemeService } from '../../core/services/theme.service';
+import { DeletionPermissionsService } from '../../core/services/deletion-permissions.service';
 import { BusinessService } from './services/business.service';
 import {
   Business,
@@ -1873,6 +1874,7 @@ import {
 })
 export class BusinessComponent implements OnInit {
   private readonly businessService = inject(BusinessService);
+  private readonly deletionPermissionsService = inject(DeletionPermissionsService);
   readonly themeService = inject(ThemeService);
 
   readonly brandColors = ['#2563eb', '#8b5cf6', '#10b981', '#f59e0b', '#ec4899', '#06b6d4', '#64748b'];
@@ -2106,7 +2108,12 @@ export class BusinessComponent implements OnInit {
   }
 
   deleteBusiness(id: string): void {
-    if (!confirm('Are you sure you want to delete this business? All transactions under it will be deleted.')) {
+    if (!this.deletionPermissionsService.canDelete('business')) {
+      alert('Deletion is disabled for Business in Settings. Enable it in Settings > Deletion Controls to delete this venture.');
+      return;
+    }
+
+    if (!confirm('Are you sure you want to delete this business? All transactions under it will be moved to the Recycle Bin.')) {
       return;
     }
 
@@ -2245,7 +2252,12 @@ export class BusinessComponent implements OnInit {
   }
 
   deleteTransaction(id: string): void {
-    if (!confirm('Are you sure you want to delete this entry?')) return;
+    if (!this.deletionPermissionsService.canDelete('business')) {
+      alert('Deletion is disabled for Business in Settings. Enable it in Settings > Deletion Controls to delete this entry.');
+      return;
+    }
+
+    if (!confirm('Are you sure you want to delete this entry? It will be moved to the Recycle Bin.')) return;
 
     this.businessService.deleteTransaction(id).subscribe({
       next: () => this.loadData(),

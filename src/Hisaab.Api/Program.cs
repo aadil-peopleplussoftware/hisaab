@@ -145,6 +145,21 @@ using (var scope = app.Services.CreateScope())
             CREATE INDEX IF NOT EXISTS ""IX_business_transactions_UserId_BusinessId_TransactionDate"" ON business_transactions (""UserId"", ""BusinessId"", ""TransactionDate"");
             CREATE INDEX IF NOT EXISTS ""IX_business_transactions_UserId_Type"" ON business_transactions (""UserId"", ""Type"");
             CREATE INDEX IF NOT EXISTS ""IX_business_transactions_UserId_PaymentStatus"" ON business_transactions (""UserId"", ""PaymentStatus"");
+
+            CREATE TABLE IF NOT EXISTS user_deletion_settings (
+                ""Id"" uuid NOT NULL,
+                ""UserId"" uuid NOT NULL,
+                ""Transactions"" boolean NOT NULL DEFAULT true,
+                ""Categories"" boolean NOT NULL DEFAULT true,
+                ""Loans"" boolean NOT NULL DEFAULT true,
+                ""Epfo"" boolean NOT NULL DEFAULT true,
+                ""Investments"" boolean NOT NULL DEFAULT true,
+                ""Business"" boolean NOT NULL DEFAULT true,
+                ""UpdatedAtUtc"" timestamp with time zone NOT NULL,
+                CONSTRAINT ""PK_user_deletion_settings"" PRIMARY KEY (""Id"")
+            );
+
+            CREATE UNIQUE INDEX IF NOT EXISTS ""IX_user_deletion_settings_UserId"" ON user_deletion_settings (""UserId"");
         ");
     }
     catch
