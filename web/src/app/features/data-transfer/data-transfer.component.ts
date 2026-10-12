@@ -342,7 +342,7 @@ interface ModuleOption {
                   class="btn-primary"
                   [disabled]="isValidating()"
                   (click)="saveAndValidate()">
-                  {{ isValidating() ? 'Validating Preview...' : 'Validate & Preview (50 rows) →' }}
+                  {{ isValidating() ? 'Validating Preview...' : 'Validate & Preview All Rows →' }}
                 </button>
               </div>
             </div>
@@ -358,7 +358,7 @@ interface ModuleOption {
               <div class="metrics-row">
                 <div class="metric-box">
                   <span class="m-val">{{ validationResult()!.totalRowsPreviewed }}</span>
-                  <span class="m-label">Preview Rows</span>
+                  <span class="m-label">Total Data Rows</span>
                 </div>
                 <div class="metric-box success">
                   <span class="m-val">{{ validationResult()!.validCount }}</span>
@@ -444,7 +444,7 @@ interface ModuleOption {
                   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" class="mr-1">
                     <polyline points="20 6 9 17 4 12"/>
                   </svg>
-                  <span>{{ isCommitting() ? 'Importing Data...' : 'Confirm & Import to Database' }}</span>
+                  <span>{{ isCommitting() ? 'Importing Data...' : ('Confirm & Import ' + validationResult()!.validCount + ' Records to Database') }}</span>
                 </button>
               </div>
             </div>

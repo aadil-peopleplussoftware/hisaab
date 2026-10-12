@@ -33,4 +33,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="Hisaab.UnitTests" />
+  </ItemGroup>
+
 </Project>
