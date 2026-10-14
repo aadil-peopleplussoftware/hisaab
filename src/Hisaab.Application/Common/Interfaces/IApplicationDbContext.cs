@@ -20,6 +20,8 @@ public interface IApplicationDbContext
     DbSet<BusinessEntity> Businesses { get; }
     DbSet<BusinessTransaction> BusinessTransactions { get; }
     DbSet<UserDeletionSetting> DeletionSettings { get; }
+    DbSet<FinancialGoal> FinancialGoals { get; }
+    DbSet<GoalContribution> GoalContributions { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

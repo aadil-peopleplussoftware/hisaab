@@ -155,11 +155,68 @@ using (var scope = app.Services.CreateScope())
                 ""Epfo"" boolean NOT NULL DEFAULT true,
                 ""Investments"" boolean NOT NULL DEFAULT true,
                 ""Business"" boolean NOT NULL DEFAULT true,
+                ""Goals"" boolean NOT NULL DEFAULT true,
                 ""UpdatedAtUtc"" timestamp with time zone NOT NULL,
                 CONSTRAINT ""PK_user_deletion_settings"" PRIMARY KEY (""Id"")
             );
 
+            ALTER TABLE user_deletion_settings ADD COLUMN IF NOT EXISTS ""Goals"" boolean NOT NULL DEFAULT true;
+
             CREATE UNIQUE INDEX IF NOT EXISTS ""IX_user_deletion_settings_UserId"" ON user_deletion_settings (""UserId"");
+
+            CREATE TABLE IF NOT EXISTS financial_goals (
+                ""Id"" uuid NOT NULL,
+                ""UserId"" uuid NOT NULL,
+                ""Title"" character varying(200) NOT NULL,
+                ""Description"" character varying(1000),
+                ""Category"" integer NOT NULL DEFAULT 10,
+                ""TargetAmount"" numeric(18,2) NOT NULL,
+                ""CurrentAmount"" numeric(18,2) NOT NULL DEFAULT 0,
+                ""TargetDate"" timestamp with time zone,
+                ""Priority"" integer NOT NULL DEFAULT 2,
+                ""Status"" integer NOT NULL DEFAULT 1,
+                ""Color"" character varying(30),
+                ""Icon"" character varying(50),
+                ""CreatedAtUtc"" timestamp with time zone NOT NULL,
+                ""UpdatedAtUtc"" timestamp with time zone,
+                ""CreatedBy"" uuid,
+                ""UpdatedBy"" uuid,
+                ""RowVersion"" bigint NOT NULL DEFAULT 0,
+                ""IsDeleted"" boolean NOT NULL DEFAULT false,
+                ""DeletedAtUtc"" timestamp with time zone,
+                ""DeletedBy"" uuid,
+                ""ImportBatchId"" uuid,
+                CONSTRAINT ""PK_financial_goals"" PRIMARY KEY (""Id"")
+            );
+
+            CREATE INDEX IF NOT EXISTS ""IX_financial_goals_UserId_Status"" ON financial_goals (""UserId"", ""Status"");
+            CREATE INDEX IF NOT EXISTS ""IX_financial_goals_UserId_Category"" ON financial_goals (""UserId"", ""Category"");
+            CREATE INDEX IF NOT EXISTS ""IX_financial_goals_UserId_Priority"" ON financial_goals (""UserId"", ""Priority"");
+            CREATE INDEX IF NOT EXISTS ""IX_financial_goals_UserId_TargetDate"" ON financial_goals (""UserId"", ""TargetDate"");
+
+            CREATE TABLE IF NOT EXISTS goal_contributions (
+                ""Id"" uuid NOT NULL,
+                ""GoalId"" uuid NOT NULL,
+                ""UserId"" uuid NOT NULL,
+                ""Amount"" numeric(18,2) NOT NULL,
+                ""ContributionDate"" timestamp with time zone NOT NULL,
+                ""Source"" character varying(150),
+                ""Notes"" character varying(500),
+                ""CreatedAtUtc"" timestamp with time zone NOT NULL,
+                ""UpdatedAtUtc"" timestamp with time zone,
+                ""CreatedBy"" uuid,
+                ""UpdatedBy"" uuid,
+                ""RowVersion"" bigint NOT NULL DEFAULT 0,
+                ""IsDeleted"" boolean NOT NULL DEFAULT false,
+                ""DeletedAtUtc"" timestamp with time zone,
+                ""DeletedBy"" uuid,
+                ""ImportBatchId"" uuid,
+                CONSTRAINT ""PK_goal_contributions"" PRIMARY KEY (""Id""),
+                CONSTRAINT ""FK_goal_contributions_financial_goals_GoalId"" FOREIGN KEY (""GoalId"") REFERENCES financial_goals (""Id"") ON DELETE CASCADE
+            );
+
+            CREATE INDEX IF NOT EXISTS ""IX_goal_contributions_GoalId_ContributionDate"" ON goal_contributions (""GoalId"", ""ContributionDate"");
+            CREATE INDEX IF NOT EXISTS ""IX_goal_contributions_UserId_ContributionDate"" ON goal_contributions (""UserId"", ""ContributionDate"");
         ");
     }
     catch

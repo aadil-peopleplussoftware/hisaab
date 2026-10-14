@@ -30,6 +30,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<BusinessEntity> Businesses => Set<BusinessEntity>();
     public DbSet<BusinessTransaction> BusinessTransactions => Set<BusinessTransaction>();
     public DbSet<UserDeletionSetting> DeletionSettings => Set<UserDeletionSetting>();
+    public DbSet<FinancialGoal> FinancialGoals => Set<FinancialGoal>();
+    public DbSet<GoalContribution> GoalContributions => Set<GoalContribution>();
 
     public ApplicationDbContext(
         DbContextOptions<ApplicationDbContext> options,

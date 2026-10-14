@@ -10,6 +10,7 @@ public class UserDeletionSetting
     public bool Epfo { get; set; } = true;
     public bool Investments { get; set; } = true;
     public bool Business { get; set; } = true;
+    public bool Goals { get; set; } = true;
     public DateTime UpdatedAtUtc { get; set; } = DateTime.UtcNow;
 }
 

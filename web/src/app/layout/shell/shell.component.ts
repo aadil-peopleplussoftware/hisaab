@@ -74,6 +74,11 @@ interface CommandItem {
             <span class="nav-label">Loans</span>
           </a>
 
+          <a routerLink="/goals" routerLinkActive="active" class="nav-item" title="Dreams & Goals">
+            <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'goals' }" />
+            <span class="nav-label">Dreams & Goals</span>
+          </a>
+
           <a routerLink="/investments" routerLinkActive="active" class="nav-item" title="Investments">
             <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'investments' }" />
             <span class="nav-label">Investments</span>
@@ -715,6 +720,10 @@ interface CommandItem {
                 <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'loans' }" />
                 <span>Loans</span>
               </a>
+              <a routerLink="/goals" (click)="closeMobileMenu()" class="drawer-link">
+                <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'goals' }" />
+                <span>Dreams & Goals</span>
+              </a>
               <a routerLink="/epfo" (click)="closeMobileMenu()" class="drawer-link">
                 <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'epfo' }" />
                 <span>EPFO Passbook</span>
@@ -825,6 +834,9 @@ interface CommandItem {
                 @case ('loans') {
                   <path d="M12 2a1 1 0 0 1 1 1v1.07A7.002 7.002 0 0 1 19 11v1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2.14A7.003 7.003 0 0 1 13 20.93V22a1 1 0 1 1-2 0v-1.07A7.002 7.002 0 0 1 5 16H3a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1h2v-1a7.002 7.002 0 0 1 6-6.93V3a1 1 0 0 1 1-1zm0 4a5 5 0 1 0 0 10 5 5 0 0 0 0-10z" />
                 }
+                @case ('goals') {
+                  <path d="M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2zm0 16a6 6 0 1 1 6-6 6.006 6.006 0 0 1-6 6zm0-8a2 2 0 1 0 2 2 2 2 0 0 0-2-2z" />
+                }
                 @case ('epfo') {
                   <path d="M12 2L2 7v2h20V7L12 2zM4 11v7h3v-7H4zm6 0v7h4v-7h-4zm7 0v7h3v-7h-3zM2 20v2h20v-2H2z" />
                 }
@@ -874,6 +886,11 @@ interface CommandItem {
                   @case ('loans') {
                     <circle cx="12" cy="12" r="9" fill="currentColor" fill-opacity="0.2" />
                     <path d="M12 7v10M9 9h6" />
+                  }
+                  @case ('goals') {
+                    <circle cx="12" cy="12" r="9" fill="currentColor" fill-opacity="0.2" />
+                    <circle cx="12" cy="12" r="5" stroke="currentColor" stroke-width="1.8" />
+                    <circle cx="12" cy="12" r="1.5" fill="currentColor" />
                   }
                   @case ('epfo') {
                     <rect width="18" height="18" x="3" y="3" rx="2" fill="currentColor" fill-opacity="0.2" />
@@ -941,6 +958,11 @@ interface CommandItem {
                   <line x1="12" y1="8" x2="12" y2="16" />
                   <line x1="9" y1="10" x2="15" y2="10" />
                 }
+                @case ('goals') {
+                  <circle cx="12" cy="12" r="9" />
+                  <circle cx="12" cy="12" r="5" />
+                  <circle cx="12" cy="12" r="1.5" />
+                }
                 @case ('epfo') {
                   <rect width="18" height="18" x="3" y="3" rx="1" />
                   <path d="M7 8h10M7 12h10M7 16h6" />
@@ -1001,6 +1023,11 @@ interface CommandItem {
                   <path d="M7 21h10" />
                   <path d="M12 3v18" />
                   <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2" />
+                }
+                @case ('goals') {
+                  <circle cx="12" cy="12" r="9" />
+                  <circle cx="12" cy="12" r="5" />
+                  <circle cx="12" cy="12" r="1.5" />
                 }
                 @case ('epfo') {
                   <rect width="18" height="18" x="3" y="3" rx="2" />
@@ -2388,6 +2415,12 @@ export class ShellComponent implements OnInit {
       title: 'Go to Business & Ventures',
       category: 'Navigation',
       action: () => this.router.navigate(['/business'])
+    },
+    {
+      id: 'goto-goals',
+      title: 'Go to Dreams & Goals Planner',
+      category: 'Navigation',
+      action: () => this.router.navigate(['/goals'])
     },
     {
       id: 'goto-reports',

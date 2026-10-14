@@ -9,6 +9,7 @@ export interface DeletionPermissions {
   epfo: boolean;
   investments: boolean;
   business: boolean;
+  goals: boolean;
 }
 
 @Injectable({
@@ -24,7 +25,8 @@ export class DeletionPermissionsService {
     loans: true,
     epfo: true,
     investments: true,
-    business: true
+    business: true,
+    goals: true
   });
 
   public isLoaded = signal<boolean>(false);
@@ -44,7 +46,8 @@ export class DeletionPermissionsService {
             loans: perms.loans ?? true,
             epfo: perms.epfo ?? true,
             investments: perms.investments ?? true,
-            business: perms.business ?? true
+            business: perms.business ?? true,
+            goals: perms.goals ?? true
           });
           this.isLoaded.set(true);
         }

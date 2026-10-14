@@ -59,3 +59,33 @@ public enum InvestmentTransactionKind
     Sell = 2,
     Dividend = 3
 }
+
+public enum GoalCategory
+{
+    EmergencyFund = 1,
+    DreamHome = 2,
+    Vehicle = 3,
+    Vacation = 4,
+    Gadget = 5,
+    Wedding = 6,
+    Education = 7,
+    Retirement = 8,
+    Business = 9,
+    Other = 10
+}
+
+public enum GoalStatus
+{
+    InProgress = 1,
+    Achieved = 2,
+    Paused = 3,
+    Abandoned = 4
+}
+
+public enum GoalPriority
+{
+    Low = 1,
+    Medium = 2,
+    High = 3,
+    Urgent = 4
+}

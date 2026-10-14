@@ -995,6 +995,31 @@ import { DeletionPermissionsService, DeletionPermissions } from '../../core/serv
                 {{ deletionPerms().business ? 'ON' : 'OFF' }}
               </div>
             </div>
+
+            <!-- 7. Dreams & Goals -->
+            <div class="perm-module-card" [class.allowed]="deletionPerms().goals" [class.blocked]="!deletionPerms().goals">
+              <div class="perm-card-content">
+                <div class="module-icon-wrap" style="background: rgba(245, 158, 11, 0.15); color: #f59e0b;">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10" />
+                    <circle cx="12" cy="12" r="6" />
+                    <circle cx="12" cy="12" r="2" />
+                  </svg>
+                </div>
+                <div class="perm-info">
+                  <div class="perm-title-row">
+                    <h4>Dreams & Goals</h4>
+                    <span class="perm-status-badge" [class.on]="deletionPerms().goals">
+                      {{ deletionPerms().goals ? 'ALLOWED' : 'BLOCKED' }}
+                    </span>
+                  </div>
+                  <p>Allows deleting financial milestone goals and their savings contributions history.</p>
+                </div>
+              </div>
+              <div class="toggle-pill" [class.on]="deletionPerms().goals" (click)="togglePermission('goals')">
+                {{ deletionPerms().goals ? 'ON' : 'OFF' }}
+              </div>
+            </div>
           </div>
         </div>
       }
@@ -3086,7 +3111,8 @@ export class SettingsComponent implements OnInit {
       loans: allow,
       epfo: allow,
       investments: allow,
-      business: allow
+      business: allow,
+      goals: allow
     };
     this.deletionPermissionsService.updatePermissions(payload).subscribe({
       next: () => {
