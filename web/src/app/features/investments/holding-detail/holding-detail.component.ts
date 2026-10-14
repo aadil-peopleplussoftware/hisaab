@@ -13,6 +13,7 @@ import {
 import { InrCurrencyPipe } from '../../../shared/pipes/inr-currency.pipe';
 import { StatCardComponent } from '../../../shared/components/stat-card/stat-card.component';
 import { DeletionPermissionsService } from '../../../core/services/deletion-permissions.service';
+import { ThemeService } from '../../../core/services/theme.service';
 
 @Component({
   selector: 'app-holding-detail',
@@ -801,6 +802,7 @@ export class HoldingDetailComponent implements OnInit {
   private readonly investmentsService = inject(InvestmentsService);
   private readonly deletionPermissionsService = inject(DeletionPermissionsService);
   private readonly fb = inject(FormBuilder);
+  public readonly themeService = inject(ThemeService);
 
   readonly detail = signal<HoldingDetail | null>(null);
   readonly loading = signal<boolean>(true);
@@ -897,6 +899,7 @@ export class HoldingDetailComponent implements OnInit {
 
     this.investmentsService.createTransaction(current.holding.id, payload).subscribe({
       next: (res) => {
+        this.themeService.playSuccessSound();
         this.detail.set(res);
         this.submitting.set(false);
         this.closeAddTxnModal();
@@ -919,6 +922,7 @@ export class HoldingDetailComponent implements OnInit {
     if (confirm('Are you sure you want to delete this transaction? It will be moved to the Recycle Bin.')) {
       this.investmentsService.deleteTransaction(current.holding.id, txnId).subscribe({
         next: () => {
+          this.themeService.playDeleteSound();
           this.loadDetail(current.holding.id);
         }
       });
@@ -958,6 +962,7 @@ export class HoldingDetailComponent implements OnInit {
 
     this.investmentsService.updateHolding(current.holding.id, payload).subscribe({
       next: (res) => {
+        this.themeService.playSuccessSound();
         this.detail.set(res);
         this.submitting.set(false);
         this.closeUpdateValModal();
@@ -1003,6 +1008,7 @@ export class HoldingDetailComponent implements OnInit {
 
     this.investmentsService.updateHolding(current.holding.id, payload).subscribe({
       next: (res) => {
+        this.themeService.playSuccessSound();
         this.detail.set(res);
         this.submitting.set(false);
         this.closeEditModal();
@@ -1025,6 +1031,7 @@ export class HoldingDetailComponent implements OnInit {
     if (confirm(`Are you sure you want to delete ${current.holding.name}? This will move the holding and its transactions to the Recycle Bin.`)) {
       this.investmentsService.deleteHolding(current.holding.id).subscribe({
         next: () => {
+          this.themeService.playDeleteSound();
           this.router.navigate(['/investments']);
         }
       });

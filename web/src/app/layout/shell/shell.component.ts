@@ -1,7 +1,8 @@
 import { Component, HostListener, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { filter } from 'rxjs/operators';
 import { ThemeService, ThemeName, IconStyle, SidebarPosition, DisplayCurrency } from '../../core/services/theme.service';
 import { AuthService } from '../../core/services/auth.service';
 import { TransactionsService } from '../../features/transactions/services/transactions.service';
@@ -2411,6 +2412,36 @@ export class ShellComponent implements OnInit {
       title: 'Go to System Settings',
       category: 'Navigation',
       action: () => this.router.navigate(['/settings'])
+    },
+    {
+      id: 'theme-google-play',
+      title: 'Switch to Google Play Console Light',
+      category: 'Theme',
+      action: () => this.themeService.setTheme('google-play-light')
+    },
+    {
+      id: 'theme-apple',
+      title: 'Switch to Apple Cupertino Clean',
+      category: 'Theme',
+      action: () => this.themeService.setTheme('apple-cupertino')
+    },
+    {
+      id: 'theme-linear',
+      title: 'Switch to Linear Minimalist Slate',
+      category: 'Theme',
+      action: () => this.themeService.setTheme('linear-slate')
+    },
+    {
+      id: 'theme-emerald-mint',
+      title: 'Switch to Emerald Prosperity Mint',
+      category: 'Theme',
+      action: () => this.themeService.setTheme('emerald-mint')
+    },
+    {
+      id: 'theme-nord-light',
+      title: 'Switch to Nordic Polar Snow',
+      category: 'Theme',
+      action: () => this.themeService.setTheme('nord-light')
     },
     {
       id: 'theme-light',

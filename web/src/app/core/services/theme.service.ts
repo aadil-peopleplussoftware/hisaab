@@ -1,10 +1,22 @@
 import { Injectable, signal, computed, effect } from '@angular/core';
 
-export type ThemeName = 'github-light' | 'github-dark' | 'nord' | 'midnight-emerald' | 'sepia-paper';
+export type ThemeName =
+  | 'google-play-light'
+  | 'apple-cupertino'
+  | 'linear-slate'
+  | 'emerald-mint'
+  | 'nord-light'
+  | 'github-light'
+  | 'sepia-paper'
+  | 'github-dark'
+  | 'nord'
+  | 'midnight-emerald';
 export type IconStyle = 'linear' | 'filled' | 'duotone' | 'monoline';
 export type SidebarPosition = 'left' | 'right' | 'top' | 'collapsed';
 export type DensityMode = 'comfortable' | 'compact';
 export type DisplayCurrency = 'INR' | 'USD' | 'EUR' | 'GBP' | 'AED';
+export type FontFamily = 'jakarta' | 'inter' | 'system';
+export type RadiusPreset = 'sharp' | 'modern' | 'rounded' | 'pill';
 
 export interface ThemeDefinition {
   id: ThemeName;
@@ -33,6 +45,20 @@ export interface CurrencyOption {
   symbol: string;
   name: string;
   rateToInr: number; // e.g. 1 INR = 0.0116 USD
+}
+
+export interface FontOption {
+  id: FontFamily;
+  name: string;
+  description: string;
+  sample: string;
+}
+
+export interface RadiusOption {
+  id: RadiusPreset;
+  name: string;
+  description: string;
+  samplePx: string;
 }
 
 @Injectable({
@@ -66,6 +92,10 @@ export class ThemeService {
   // Multi-currency display preference
   readonly displayCurrency = signal<DisplayCurrency>('INR');
 
+  // Typography and Corner Radius Presets
+  readonly fontFamily = signal<FontFamily>('jakarta');
+  readonly radiusPreset = signal<RadiusPreset>('modern');
+
   // Modal dialog states
   readonly isCommandPaletteOpen = signal<boolean>(false);
   readonly isCustomizerOpen = signal<boolean>(false);
@@ -85,11 +115,53 @@ export class ThemeService {
 
   readonly availableThemes: ThemeDefinition[] = [
     {
+      id: 'google-play-light',
+      name: 'Google Play Console',
+      category: 'light',
+      description: 'Material 3 clean white canvas with Google Play blue accents and soft pill navigation',
+      previewColors: ['#ffffff', '#f8fafd', '#0b57d0', '#137333']
+    },
+    {
+      id: 'apple-cupertino',
+      name: 'Apple Cupertino Clean',
+      category: 'light',
+      description: 'San Francisco minimal pure white with iOS system surfaces and Cupertino system blue',
+      previewColors: ['#ffffff', '#f5f5f7', '#0071e3', '#34c759']
+    },
+    {
+      id: 'linear-slate',
+      name: 'Linear Minimalist Slate',
+      category: 'light',
+      description: 'Modern fintech slate canvas with crisp indigo accents and high-legibility typography',
+      previewColors: ['#ffffff', '#f8fafc', '#6366f1', '#10b981']
+    },
+    {
+      id: 'emerald-mint',
+      name: 'Emerald Prosperity Mint',
+      category: 'light',
+      description: 'Refreshing wealth & prosperity palette with vibrant mint tones and emerald accents',
+      previewColors: ['#ffffff', '#f0fdf4', '#10b981', '#059669']
+    },
+    {
+      id: 'nord-light',
+      name: 'Nordic Polar Snow',
+      category: 'light',
+      description: 'Clean Arctic polar snow surface with icy glacier cyan and cool steel slate',
+      previewColors: ['#ffffff', '#eceff4', '#5e81ac', '#88c0d0']
+    },
+    {
       id: 'github-light',
       name: 'GitHub Primer Light',
       category: 'light',
       description: 'Clean high-contrast canvas with GitHub green accents and crisp 1px borders',
       previewColors: ['#ffffff', '#f6f8fa', '#1f883d', '#0969da']
+    },
+    {
+      id: 'sepia-paper',
+      name: 'Warm Sepia & Paper',
+      category: 'light',
+      description: 'Comfortable, paper-warm parchment reducing eye fatigue in long sessions',
+      previewColors: ['#fdfaf3', '#f4eee1', '#b85d19', '#2d2b28']
     },
     {
       id: 'github-dark',
@@ -103,21 +175,62 @@ export class ThemeService {
       name: 'Nordic Arctic Frost',
       category: 'dark',
       description: 'World-renowned polar night palette with icy cyan and frost accents',
-      previewColors: ['#242933', '#2e3440', '#88c0d0', '#eceff4']
+      previewColors: ['#2e3440', '#242933', '#88c0d0', '#eceff4']
     },
     {
       id: 'midnight-emerald',
       name: 'Midnight Emerald Wealth',
       category: 'dark',
       description: 'Luxury financial terminal with deep obsidian and vibrant emerald',
-      previewColors: ['#06090e', '#0b111e', '#10b981', '#38bdf8']
+      previewColors: ['#0b111e', '#06090e', '#10b981', '#38bdf8']
+    }
+  ];
+
+  readonly availableFonts: FontOption[] = [
+    {
+      id: 'jakarta',
+      name: 'Plus Jakarta Sans',
+      description: 'Clean, modern geometric sans-serif built for fintech dashboards',
+      sample: '₹1,45,280.00 — Hisaab Financial'
     },
     {
-      id: 'sepia-paper',
-      name: 'Warm Sepia & Paper',
-      category: 'light',
-      description: 'Comfortable, paper-warm parchment reducing eye fatigue in long sessions',
-      previewColors: ['#f4eee1', '#fdfaf3', '#b85d19', '#2d2b28']
+      id: 'inter',
+      name: 'Inter Display',
+      description: 'World standard computer font designed specifically for user interfaces',
+      sample: '₹1,45,280.00 — Hisaab Financial'
+    },
+    {
+      id: 'system',
+      name: 'Native System UI',
+      description: 'Zero-latency system font stack (San Francisco on macOS, Segoe UI on Windows)',
+      sample: '₹1,45,280.00 — Hisaab Financial'
+    }
+  ];
+
+  readonly availableRadii: RadiusOption[] = [
+    {
+      id: 'sharp',
+      name: 'Sharp Enterprise',
+      description: '4px compact corners — financial terminal style',
+      samplePx: '4px'
+    },
+    {
+      id: 'modern',
+      name: 'Modern Precision',
+      description: '8px balanced corners — GitHub & Stripe standard',
+      samplePx: '8px'
+    },
+    {
+      id: 'rounded',
+      name: 'Smooth Rounded',
+      description: '14px soft contours — Linear & Apple design',
+      samplePx: '14px'
+    },
+    {
+      id: 'pill',
+      name: 'Pill / Bubble',
+      description: '22px organic capsules — Material 3 standard',
+      samplePx: '22px'
     }
   ];
 
@@ -219,6 +332,20 @@ export class ThemeService {
       const sfx = this.soundEffects();
       localStorage.setItem('hisaab_sound_effects', sfx ? 'true' : 'false');
     });
+
+    effect(() => {
+      const font = this.fontFamily();
+      document.documentElement.setAttribute('data-font', font);
+      localStorage.setItem('hisaab_font', font);
+    });
+
+    effect(() => {
+      const rad = this.radiusPreset();
+      document.documentElement.setAttribute('data-radius', rad);
+      localStorage.setItem('hisaab_radius', rad);
+    });
+
+    this.initGlobalSoundListener();
   }
 
   private initFromStorage(): void {
@@ -233,7 +360,7 @@ export class ThemeService {
       }
     } else {
       const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-      this.currentTheme.set(prefersDark ? 'github-dark' : 'github-light');
+      this.currentTheme.set(prefersDark ? 'github-dark' : 'google-play-light');
     }
 
     const savedIcon = localStorage.getItem('hisaab_icon_style') as IconStyle | null;
@@ -259,6 +386,12 @@ export class ThemeService {
 
     const savedSfx = localStorage.getItem('hisaab_sound_effects');
     if (savedSfx === 'true') this.soundEffects.set(true);
+
+    const savedFont = localStorage.getItem('hisaab_font') as FontFamily | null;
+    if (savedFont) this.fontFamily.set(savedFont);
+
+    const savedRadius = localStorage.getItem('hisaab_radius') as RadiusPreset | null;
+    if (savedRadius) this.radiusPreset.set(savedRadius);
   }
 
   setTheme(theme: ThemeName): void {
@@ -296,6 +429,16 @@ export class ThemeService {
 
   setDisplayCurrency(curr: DisplayCurrency): void {
     this.displayCurrency.set(curr);
+    this.playClickSound();
+  }
+
+  setFontFamily(font: FontFamily): void {
+    this.fontFamily.set(font);
+    this.playClickSound();
+  }
+
+  setRadiusPreset(rad: RadiusPreset): void {
+    this.radiusPreset.set(rad);
     this.playClickSound();
   }
 
@@ -364,63 +507,203 @@ export class ThemeService {
   }
 
   // --- Tasteful Web Audio Haptic Feedback Synthesizer ---
-  playClickSound(): void {
-    if (!this.soundEffects()) return;
+  private lastClickTime = 0;
+
+  /**
+   * Global capture-phase click listener that guarantees audio feedback on every
+   * screen, page, modal, and control, even if child components call stopPropagation().
+   */
+  private initGlobalSoundListener(): void {
+    if (typeof window === 'undefined') return;
+
+    window.addEventListener(
+      'click',
+      (event: MouseEvent) => {
+        if (!this.soundEffects()) return;
+
+        const target = event.target as HTMLElement | null;
+        if (!target) return;
+
+        // Skip typing click in standard text inputs
+        if (
+          (target.tagName === 'INPUT' && !['checkbox', 'radio', 'button', 'submit', 'reset', 'range', 'date', 'month'].includes((target as HTMLInputElement).type)) ||
+          target.tagName === 'TEXTAREA'
+        ) {
+          return;
+        }
+
+        // Check interactive selector match
+        const interactive = target.closest(
+          'button, a, select, input[type="checkbox"], input[type="radio"], input[type="button"], input[type="submit"], input[type="date"], input[type="month"], [role="button"], [role="tab"], [role="switch"], [role="checkbox"], [role="menuitem"], [role="option"], ' +
+          '.btn, .btn-primary, .btn-outline, .btn-secondary, .btn-danger, .btn-console-pill, .btn-action, .btn-table-action, .btn-nav, .btn-icon, .btn-today-action, .btn-retry, .btn-analytics-shortcut, ' +
+          '.seg-btn, .mode-btn, .module-segment-btn, .pill-btn, .status-btn, .nav-item, .bottom-nav-item, .drawer-link, .tab-item, .tab-btn, .chip, .balance-pill, ' +
+          '.setting-switch-card, .toggle-pill, .badge-item, .category-filter-item, .table-row-clickable, .theme-card, .icon-style-card, .sidebar-pos-card, .sidebar-select-card, .currency-select-card, ' +
+          '.user-chip, .stepper-box, .stat-card, .command-item, .quick-action-btn, .card-clickable, .dropdown-item, .close-btn, .btn-close, .period-pill'
+        );
+
+        if (interactive) {
+          this.playClickSound();
+          return;
+        }
+
+        // Fallback: check if target or immediate parent has cursor pointer
+        try {
+          const style = window.getComputedStyle(target);
+          if (style && style.cursor === 'pointer') {
+            this.playClickSound();
+            return;
+          }
+          if (target.parentElement) {
+            const parentStyle = window.getComputedStyle(target.parentElement);
+            if (parentStyle && parentStyle.cursor === 'pointer') {
+              this.playClickSound();
+            }
+          }
+        } catch {
+          // ignore computedStyle issues
+        }
+      },
+      { capture: true }
+    );
+  }
+
+  private getAudioContext(): AudioContext | null {
     try {
       if (!this.audioCtx) {
-        this.audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+        if (AudioContextClass) {
+          this.audioCtx = new AudioContextClass();
+        }
       }
-      if (this.audioCtx.state === 'suspended') {
+      if (this.audioCtx && this.audioCtx.state === 'suspended') {
         this.audioCtx.resume();
       }
-      const osc = this.audioCtx.createOscillator();
-      const gain = this.audioCtx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(600, this.audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(800, this.audioCtx.currentTime + 0.04);
-      gain.gain.setValueAtTime(0.05, this.audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, this.audioCtx.currentTime + 0.04);
-      osc.connect(gain);
-      gain.connect(this.audioCtx.destination);
-      osc.start();
-      osc.stop(this.audioCtx.currentTime + 0.04);
+      return this.audioCtx;
     } catch {
-      // AudioContext unavailable or blocked by browser autoplay policy
+      return null;
     }
+  }
+
+  /** Subtle tactile UI click feedback for buttons, pills, toggles, and controls */
+  playClickSound(): void {
+    if (!this.soundEffects()) return;
+
+    // Throttle clicks within 30ms to prevent double-firing
+    const nowMs = performance.now();
+    if (nowMs - this.lastClickTime < 30) return;
+    this.lastClickTime = nowMs;
+
+    try {
+      const ctx = this.getAudioContext();
+      if (!ctx) return;
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(820, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(420, ctx.currentTime + 0.025);
+
+      gain.gain.setValueAtTime(0.045, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.025);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.025);
+    } catch {
+      // AudioContext unavailable or blocked by browser policy
+    }
+  }
+
+  /** Soft smooth transition tap when navigating between screens or routes */
+  playNavSound(): void {
+    if (!this.soundEffects()) return;
+    try {
+      const ctx = this.getAudioContext();
+      if (!ctx) return;
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(620, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(320, ctx.currentTime + 0.035);
+
+      gain.gain.setValueAtTime(0.03, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.035);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.035);
+    } catch {
+      // AudioContext unavailable
+    }
+  }
+
+  /** Harmonious ascending chime on successful record creation, import, or update */
+  playSuccessSound(): void {
+    this.playChimeSound();
   }
 
   playChimeSound(): void {
     if (!this.soundEffects()) return;
     try {
-      if (!this.audioCtx) {
-        this.audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-      }
-      if (this.audioCtx.state === 'suspended') {
-        this.audioCtx.resume();
-      }
-      const now = this.audioCtx.currentTime;
-      const osc1 = this.audioCtx.createOscillator();
-      const osc2 = this.audioCtx.createOscillator();
-      const gain = this.audioCtx.createGain();
+      const ctx = this.getAudioContext();
+      if (!ctx) return;
 
-      osc1.type = 'sine';
-      osc1.frequency.setValueAtTime(523.25, now); // C5
-      osc1.frequency.setValueAtTime(659.25, now + 0.08); // E5
+      const now = ctx.currentTime;
+      const notes = [523.25, 659.25, 783.99]; // C5, E5, G5 major triad
 
-      osc2.type = 'sine';
-      osc2.frequency.setValueAtTime(1046.5, now + 0.08); // C6
+      notes.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
 
-      gain.gain.setValueAtTime(0.08, now);
-      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now + idx * 0.06);
 
-      osc1.connect(gain);
-      osc2.connect(gain);
-      gain.connect(this.audioCtx.destination);
+        const startTime = now + idx * 0.06;
+        const endTime = startTime + 0.22;
 
-      osc1.start(now);
-      osc2.start(now + 0.08);
-      osc1.stop(now + 0.3);
-      osc2.stop(now + 0.3);
+        gain.gain.setValueAtTime(0.06, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, endTime);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(startTime);
+        osc.stop(endTime);
+      });
+    } catch {
+      // AudioContext unavailable
+    }
+  }
+
+  /** Low-pitch descending feedback when trashing, deleting, or canceling an item */
+  playDeleteSound(): void {
+    if (!this.soundEffects()) return;
+    try {
+      const ctx = this.getAudioContext();
+      if (!ctx) return;
+
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(380, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(180, ctx.currentTime + 0.06);
+
+      gain.gain.setValueAtTime(0.05, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.start();
+      osc.stop(ctx.currentTime + 0.06);
     } catch {
       // AudioContext unavailable
     }

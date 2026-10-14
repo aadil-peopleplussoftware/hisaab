@@ -6,6 +6,7 @@ import { Category, MonthlySummary, Transaction, TransactionType } from './models
 import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
 import { MonthPickerComponent } from '../../shared/components/month-picker/month-picker.component';
 import { DeletionPermissionsService } from '../../core/services/deletion-permissions.service';
+import { ThemeService } from '../../core/services/theme.service';
 
 @Component({
   selector: 'app-transactions',
@@ -361,6 +362,7 @@ export class TransactionsComponent implements OnInit {
   private readonly transactionsService = inject(TransactionsService);
   private readonly fb = inject(FormBuilder);
   public readonly deletionPermissionsService = inject(DeletionPermissionsService);
+  public readonly themeService = inject(ThemeService);
 
   readonly transactions = signal<Transaction[]>([]);
   readonly categories = signal<Category[]>([]);
@@ -494,6 +496,7 @@ export class TransactionsComponent implements OnInit {
     if (this.editingId()) {
       this.transactionsService.updateTransaction(this.editingId()!, payload).subscribe({
         next: () => {
+          this.themeService.playSuccessSound();
           this.isSaving.set(false);
           this.closeModal();
           this.loadTransactions();
@@ -503,6 +506,7 @@ export class TransactionsComponent implements OnInit {
     } else {
       this.transactionsService.createTransaction(payload).subscribe({
         next: () => {
+          this.themeService.playSuccessSound();
           this.isSaving.set(false);
           this.closeModal();
           this.loadTransactions();
@@ -520,6 +524,7 @@ export class TransactionsComponent implements OnInit {
     if (confirm('Are you sure you want to delete this transaction? It will be moved to the Recycle Bin.')) {
       this.transactionsService.deleteTransaction(id).subscribe({
         next: () => {
+          this.themeService.playDeleteSound();
           this.loadTransactions();
         },
         error: (err) => {

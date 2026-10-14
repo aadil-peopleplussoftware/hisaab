@@ -36,10 +36,15 @@ public class LoanAccountConfiguration : IEntityTypeConfiguration<LoanAccount>
             .HasForeignKey(t => t.LoanAccountId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder.Property(l => l.Priority)
+            .HasDefaultValue(Hisaab.Domain.Enums.LoanPriority.Medium)
+            .IsRequired();
+
         // Required indexes from Section 3
         builder.HasIndex(l => new { l.UserId, l.StartDate });
         builder.HasIndex(l => new { l.UserId, l.Status });
         builder.HasIndex(l => new { l.UserId, l.Direction });
+        builder.HasIndex(l => new { l.UserId, l.Priority });
     }
 }
 

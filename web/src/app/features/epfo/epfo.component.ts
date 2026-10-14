@@ -12,6 +12,7 @@ import {
 import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
 import { StatCardComponent } from '../../shared/components/stat-card/stat-card.component';
 import { DeletionPermissionsService } from '../../core/services/deletion-permissions.service';
+import { ThemeService } from '../../core/services/theme.service';
 
 @Component({
   selector: 'app-epfo',
@@ -204,54 +205,56 @@ import { DeletionPermissionsService } from '../../core/services/deletion-permiss
           <table class="epf-table">
             <thead>
               <tr>
-                <th>Month</th>
-                <th class="text-right">Employee (12%)</th>
-                <th class="text-right">Employer (3.67%)</th>
-                <th class="text-right">Pension (8.33%)</th>
-                <th class="text-right">Interest</th>
-                <th class="text-right">Withdrawal</th>
-                <th class="text-right">Net Inflow</th>
-                <th class="text-right">Running EPF Balance</th>
-                <th class="text-right no-print">Actions</th>
+                <th class="col-month">Month</th>
+                <th class="text-right col-num">Employee (12%)</th>
+                <th class="text-right col-num">Employer (3.67%)</th>
+                <th class="text-right col-num">Pension (8.33%)</th>
+                <th class="text-right col-num">Interest</th>
+                <th class="text-right col-num">Withdrawal</th>
+                <th class="text-right col-num">Net Inflow</th>
+                <th class="text-right col-num">Running EPF Balance</th>
+                <th class="text-right col-actions no-print">Actions</th>
               </tr>
             </thead>
             <tbody>
               @for (entry of entries(); track entry.id) {
-                <tr>
-                  <td>
+                <tr class="table-row">
+                  <td class="col-month">
                     <div class="month-cell font-bold">{{ entry.monthLabel }}</div>
                     @if (entry.note) {
-                      <div class="note-subtext">{{ entry.note }}</div>
+                      <div class="note-subtext" [title]="entry.note">{{ entry.note }}</div>
                     }
                   </td>
-                  <td class="text-right tabular-nums">{{ entry.employeeShare | inrCurrency }}</td>
-                  <td class="text-right tabular-nums">{{ entry.employerShare | inrCurrency }}</td>
-                  <td class="text-right tabular-nums text-muted">{{ entry.pensionShare | inrCurrency }}</td>
-                  <td class="text-right tabular-nums text-green">
+                  <td class="text-right tabular-nums col-num">{{ entry.employeeShare | inrCurrency }}</td>
+                  <td class="text-right tabular-nums col-num">{{ entry.employerShare | inrCurrency }}</td>
+                  <td class="text-right tabular-nums col-num text-muted">{{ entry.pensionShare | inrCurrency }}</td>
+                  <td class="text-right tabular-nums col-num text-green">
                     {{ entry.interest > 0 ? ('+' + (entry.interest | inrCurrency)) : '—' }}
                   </td>
-                  <td class="text-right tabular-nums text-danger">
+                  <td class="text-right tabular-nums col-num text-danger">
                     {{ entry.withdrawal > 0 ? ('-' + (entry.withdrawal | inrCurrency)) : '—' }}
                   </td>
-                  <td class="text-right tabular-nums font-semibold text-teal">
+                  <td class="text-right tabular-nums col-num font-semibold text-teal">
                     +{{ entry.netInflow | inrCurrency }}
                   </td>
-                  <td class="text-right tabular-nums font-bold text-main">
+                  <td class="text-right tabular-nums col-num font-bold text-main">
                     {{ entry.runningBalance | inrCurrency }}
                   </td>
-                  <td class="text-right no-print">
-                    <button type="button" class="btn-icon" title="Edit entry" (click)="openEditModal(entry)">
-                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                      </svg>
-                    </button>
-                    <button type="button" class="btn-icon-danger" title="Delete entry" (click)="confirmDelete(entry)">
-                      <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="3 6 5 6 21 6"/>
-                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
-                      </svg>
-                    </button>
+                  <td class="text-right col-actions no-print">
+                    <div class="actions-wrap">
+                      <button type="button" class="btn-icon" title="Edit entry" (click)="openEditModal(entry)">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                      </button>
+                      <button type="button" class="btn-icon-danger" title="Delete entry" (click)="confirmDelete(entry)">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                          <polyline points="3 6 5 6 21 6"/>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        </svg>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               }
@@ -444,20 +447,8 @@ import { DeletionPermissionsService } from '../../core/services/deletion-permiss
 
     .summary-grid {
       display: grid;
-      grid-template-columns: 1fr;
-      gap: 1rem;
-    }
-
-    @media (min-width: 640px) {
-      .summary-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media (min-width: 1024px) {
-      .summary-grid {
-        grid-template-columns: repeat(5, 1fr);
-      }
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 0.875rem;
     }
 
     /* Mobile Entries */
@@ -476,6 +467,10 @@ import { DeletionPermissionsService } from '../../core/services/deletion-permiss
     .desktop-table-container {
       display: none;
       overflow-x: auto;
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-xs);
     }
 
     @media (min-width: 768px) {
@@ -516,6 +511,7 @@ import { DeletionPermissionsService } from '../../core/services/deletion-permiss
       border-radius: 9999px;
       font-size: 0.8125rem;
       font-weight: 700;
+      white-space: nowrap;
     }
 
     .badge-inflow {
@@ -547,6 +543,7 @@ import { DeletionPermissionsService } from '../../core/services/deletion-permiss
     .sub-val {
       font-weight: 500;
       color: var(--color-text-main);
+      white-space: nowrap;
     }
 
     .entry-actions {
@@ -574,29 +571,74 @@ import { DeletionPermissionsService } from '../../core/services/deletion-permiss
     /* Desktop Table */
     .epf-table {
       width: 100%;
+      min-width: 1050px;
       border-collapse: collapse;
       text-align: left;
     }
 
     .epf-table th {
-      padding: 0.875rem 1rem;
-      font-size: 0.75rem;
-      font-weight: 600;
+      padding: 0.85rem 1rem;
+      font-size: 0.725rem;
+      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--color-text-muted);
       border-bottom: 1px solid var(--color-border);
+      background: var(--color-bg-subtle);
+      white-space: nowrap;
     }
 
     .epf-table td {
-      padding: 1rem;
+      padding: 0.85rem 1rem;
       font-size: 0.875rem;
       border-bottom: 1px solid var(--color-border);
+      vertical-align: middle;
+      color: var(--color-text-main);
+    }
+
+    .table-row:hover {
+      background-color: var(--color-bg-subtle);
+    }
+
+    .col-month {
+      min-width: 150px;
+      max-width: 240px;
+    }
+
+    .col-num {
+      white-space: nowrap !important;
+      font-variant-numeric: tabular-nums lining-nums;
+      font-feature-settings: 'tnum' 1, 'lnum' 1;
+    }
+
+    .month-cell {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--color-text-main);
+      white-space: nowrap;
     }
 
     .note-subtext {
       font-size: 0.75rem;
       color: var(--color-text-muted);
+      margin-top: 0.2rem;
+      max-width: 220px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .col-actions {
+      white-space: nowrap !important;
+      width: 84px;
+    }
+
+    .actions-wrap {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0.35rem;
+      white-space: nowrap;
     }
 
     .text-teal { color: #0d9488; }
@@ -607,18 +649,43 @@ import { DeletionPermissionsService } from '../../core/services/deletion-permiss
 
     .btn-icon {
       background: transparent;
-      border: none;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
       cursor: pointer;
-      font-size: 1rem;
-      padding: 0.25rem 0.4rem;
+      color: var(--color-text-muted);
+      padding: 0.35rem 0.45rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+      min-height: 32px;
+      min-width: 32px;
+    }
+
+    .btn-icon:hover {
+      background: var(--color-bg-subtle);
+      color: var(--color-text-main);
+      border-color: var(--color-border-subtle);
     }
 
     .btn-icon-danger {
       background: transparent;
-      border: none;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
       cursor: pointer;
-      font-size: 1rem;
-      padding: 0.25rem 0.4rem;
+      color: #ef4444;
+      padding: 0.35rem 0.45rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+      min-height: 32px;
+      min-width: 32px;
+    }
+
+    .btn-icon-danger:hover {
+      background: #fee2e2;
+      border-color: #fca5a5;
     }
 
     /* Modals */
@@ -764,6 +831,7 @@ export class EpfoComponent implements OnInit {
   private readonly epfoService = inject(EpfoService);
   private readonly deletionPermissionsService = inject(DeletionPermissionsService);
   private readonly fb = inject(FormBuilder);
+  public readonly themeService = inject(ThemeService);
 
   readonly entries = signal<EpfEntry[]>([]);
   readonly summary = signal<EpfYearlySummary | null>(null);
@@ -886,6 +954,7 @@ export class EpfoComponent implements OnInit {
 
     action$.subscribe({
       next: (res) => {
+        this.themeService.playSuccessSound();
         this.entries.set(res.entries);
         this.summary.set(res.summary);
         this.availableYears.set(res.availableYears);
@@ -910,6 +979,7 @@ export class EpfoComponent implements OnInit {
     if (confirm(`Are you sure you want to delete the EPF entry for ${entry.monthLabel}? It will be moved to the Recycle Bin.`)) {
       this.epfoService.deleteEpfEntry(entry.id).subscribe({
         next: () => {
+          this.themeService.playDeleteSound();
           this.loadData();
         }
       });

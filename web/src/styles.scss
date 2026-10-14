@@ -5,8 +5,8 @@
 
 :root {
   /* Typography - Google Sans & Roboto Font Stack */
-  --font-family-base: 'Google Sans', 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-  --font-family-google: 'Google Sans', 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-family-base: 'Plus Jakarta Sans', 'Google Sans', 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-family-google: 'Plus Jakarta Sans', 'Google Sans', 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
   --font-family-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 
   /* Google Play Console Light Palette */
@@ -466,6 +466,491 @@
   --color-notif-fg: #b85d19;
 }
 
+/* Theme: Google Play Console Light */
+[data-theme='google-play-light'] {
+  --color-canvas-default: #ffffff;
+  --color-canvas-subtle: #f8fafd;
+  --color-canvas-surface: #f0f4f9;
+  --color-border-default: #e0e2e5;
+  --color-border-muted: #e7eaed;
+  --color-border-subtle: #f1f3f4;
+  --color-fg-default: #1f1f1f;
+  --color-fg-muted: #444746;
+  --color-fg-subtle: #5f6368;
+  --color-fg-disabled: #8e918f;
+
+  --color-accent-fg: #0b57d0;
+  --color-accent-emphasis: #0b57d0;
+  --color-accent-subtle: #d3e3fd;
+  --color-accent-hover: #0842a0;
+
+  --color-nav-active-bg: #d3e3fd;
+  --color-nav-active-fg: #041e49;
+  --color-nav-active-icon: #0b57d0;
+  --color-nav-hover-bg: #f1f3f4;
+  --color-nav-hover-fg: #1f1f1f;
+  --color-sidebar-bg: #ffffff;
+  --color-sidebar-border: #e0e2e5;
+
+  --color-btn-text: #0b57d0;
+  --color-btn-bg: #ffffff;
+  --color-btn-border: #747775;
+  --color-btn-hover-bg: #f1f3f4;
+  --color-btn-hover-border: #747775;
+  --color-btn-active-bg: #e1e3e1;
+
+  --color-btn-primary-text: #ffffff;
+  --color-btn-primary-bg: #0b57d0;
+  --color-btn-primary-border: #0b57d0;
+  --color-btn-primary-hover-bg: #0842a0;
+
+  --color-btn-danger-text: #c5221f;
+  --color-btn-danger-bg: #fce8e6;
+  --color-btn-danger-border: #fad2cf;
+  --color-btn-danger-hover-bg: #c5221f;
+  --color-btn-danger-hover-text: #ffffff;
+
+  --color-notif-bg: #fce8e6;
+  --color-notif-fg: #c5221f;
+
+  --color-income: #137333;
+  --color-income-bg: #e6f4ea;
+  --color-income-border: #ceead6;
+  --color-expense: #c5221f;
+  --color-expense-bg: #fce8e6;
+  --color-expense-border: #fad2cf;
+  --color-loan: #b06000;
+  --color-loan-bg: #fef7e0;
+  --color-loan-border: #feefc3;
+  --color-investment: #0b57d0;
+  --color-investment-bg: #d3e3fd;
+  --color-investment-border: #a8c7fa;
+  --color-epf: #007b83;
+  --color-epf-bg: #e0f2f1;
+  --color-epf-border: #b2dfdb;
+
+  --color-bg-app: #ffffff;
+  --color-bg-card: #ffffff;
+  --color-bg-subtle: #f8fafd;
+  --color-bg-hover: #f1f3f4;
+  --color-border: #e0e2e5;
+  --color-border-subtle: #f1f3f4;
+  --color-text-main: #1f1f1f;
+  --color-text-secondary: #444746;
+  --color-text-muted: #5f6368;
+  --color-text-subtle: #747775;
+  --color-primary: #0b57d0;
+  --color-primary-hover: #0842a0;
+  --color-primary-active: #041e49;
+  --color-primary-light: #d3e3fd;
+  --color-primary-contrast: #ffffff;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.08);
+  --bg-surface: #ffffff;
+  --color-bg-main: #ffffff;
+  --text-primary: #1f1f1f;
+  --text-secondary: #444746;
+  --border-color: #e0e2e5;
+  --primary: #0b57d0;
+  --primary-hover: #0842a0;
+}
+
+/* Theme: Apple Cupertino Clean */
+[data-theme='apple-cupertino'] {
+  --color-canvas-default: #ffffff;
+  --color-canvas-subtle: #f5f5f7;
+  --color-canvas-surface: #e5e5ea;
+  --color-border-default: #d1d1d6;
+  --color-border-muted: #e5e5ea;
+  --color-border-subtle: #f2f2f7;
+  --color-fg-default: #1d1d1f;
+  --color-fg-muted: #515154;
+  --color-fg-subtle: #86868b;
+  --color-fg-disabled: #aeaeb2;
+
+  --color-accent-fg: #0071e3;
+  --color-accent-emphasis: #0071e3;
+  --color-accent-subtle: rgba(0, 113, 227, 0.12);
+  --color-accent-hover: #0077ed;
+
+  --color-nav-active-bg: rgba(0, 113, 227, 0.12);
+  --color-nav-active-fg: #0071e3;
+  --color-nav-active-icon: #0071e3;
+  --color-nav-hover-bg: #f2f2f7;
+  --color-nav-hover-fg: #1d1d1f;
+  --color-sidebar-bg: #ffffff;
+  --color-sidebar-border: #e5e5ea;
+
+  --color-btn-text: #0071e3;
+  --color-btn-bg: #f5f5f7;
+  --color-btn-border: #d1d1d6;
+  --color-btn-hover-bg: #e5e5ea;
+  --color-btn-hover-border: #0071e3;
+  --color-btn-active-bg: #d1d1d6;
+
+  --color-btn-primary-text: #ffffff;
+  --color-btn-primary-bg: #0071e3;
+  --color-btn-primary-border: #0071e3;
+  --color-btn-primary-hover-bg: #0077ed;
+
+  --color-btn-danger-text: #ff3b30;
+  --color-btn-danger-bg: #ffefef;
+  --color-btn-danger-border: #ffd2d0;
+  --color-btn-danger-hover-bg: #ff3b30;
+  --color-btn-danger-hover-text: #ffffff;
+
+  --color-notif-bg: #ffefef;
+  --color-notif-fg: #ff3b30;
+
+  --color-income: #34c759;
+  --color-income-bg: rgba(52, 199, 89, 0.12);
+  --color-income-border: #bcf0c8;
+  --color-expense: #ff3b30;
+  --color-expense-bg: rgba(255, 59, 48, 0.12);
+  --color-expense-border: #ffd2d0;
+  --color-loan: #ff9500;
+  --color-loan-bg: rgba(255, 149, 0, 0.12);
+  --color-loan-border: #ffe1b3;
+  --color-investment: #5856d6;
+  --color-investment-bg: rgba(88, 86, 214, 0.12);
+  --color-investment-border: #d6d5f7;
+  --color-epf: #00c7be;
+  --color-epf-bg: rgba(0, 199, 190, 0.12);
+  --color-epf-border: #b3f2ee;
+
+  --color-bg-app: #f5f5f7;
+  --color-bg-card: #ffffff;
+  --color-bg-subtle: #f5f5f7;
+  --color-bg-hover: #ebebf0;
+  --color-border: #e5e5ea;
+  --color-border-subtle: #f2f2f7;
+  --color-text-main: #1d1d1f;
+  --color-text-secondary: #515154;
+  --color-text-muted: #86868b;
+  --color-text-subtle: #aeaeb2;
+  --color-primary: #0071e3;
+  --color-primary-hover: #0077ed;
+  --color-primary-active: #005bb5;
+  --color-primary-light: rgba(0, 113, 227, 0.12);
+  --color-primary-contrast: #ffffff;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.07);
+  --bg-surface: #ffffff;
+  --color-bg-main: #ffffff;
+  --text-primary: #1d1d1f;
+  --text-secondary: #515154;
+  --border-color: #e5e5ea;
+  --primary: #0071e3;
+  --primary-hover: #0077ed;
+}
+
+/* Theme: Linear Minimalist Slate */
+[data-theme='linear-slate'] {
+  --color-canvas-default: #ffffff;
+  --color-canvas-subtle: #f8fafc;
+  --color-canvas-surface: #f1f5f9;
+  --color-border-default: #e2e8f0;
+  --color-border-muted: #cbd5e1;
+  --color-border-subtle: #f1f5f9;
+  --color-fg-default: #0f172a;
+  --color-fg-muted: #475569;
+  --color-fg-subtle: #64748b;
+  --color-fg-disabled: #94a3b8;
+
+  --color-accent-fg: #6366f1;
+  --color-accent-emphasis: #4f46e5;
+  --color-accent-subtle: rgba(99, 102, 241, 0.12);
+  --color-accent-hover: #4338ca;
+
+  --color-nav-active-bg: rgba(99, 102, 241, 0.12);
+  --color-nav-active-fg: #4f46e5;
+  --color-nav-active-icon: #6366f1;
+  --color-nav-hover-bg: #f1f5f9;
+  --color-nav-hover-fg: #0f172a;
+  --color-sidebar-bg: #ffffff;
+  --color-sidebar-border: #e2e8f0;
+
+  --color-btn-text: #4f46e5;
+  --color-btn-bg: #f8fafc;
+  --color-btn-border: #e2e8f0;
+  --color-btn-hover-bg: #f1f5f9;
+  --color-btn-hover-border: #6366f1;
+  --color-btn-active-bg: #e2e8f0;
+
+  --color-btn-primary-text: #ffffff;
+  --color-btn-primary-bg: #6366f1;
+  --color-btn-primary-border: #4f46e5;
+  --color-btn-primary-hover-bg: #4f46e5;
+
+  --color-btn-danger-text: #ef4444;
+  --color-btn-danger-bg: #fef2f2;
+  --color-btn-danger-border: #fecaca;
+  --color-btn-danger-hover-bg: #ef4444;
+  --color-btn-danger-hover-text: #ffffff;
+
+  --color-notif-bg: #fef2f2;
+  --color-notif-fg: #ef4444;
+
+  --color-income: #10b981;
+  --color-income-bg: rgba(16, 185, 129, 0.12);
+  --color-income-border: #a7f3d0;
+  --color-expense: #ef4444;
+  --color-expense-bg: rgba(239, 68, 68, 0.12);
+  --color-expense-border: #fecaca;
+  --color-loan: #f59e0b;
+  --color-loan-bg: rgba(245, 158, 11, 0.12);
+  --color-loan-border: #fde68a;
+  --color-investment: #3b82f6;
+  --color-investment-bg: rgba(59, 130, 246, 0.12);
+  --color-investment-border: #bfdbfe;
+  --color-epf: #06b6d4;
+  --color-epf-bg: rgba(6, 182, 212, 0.12);
+  --color-epf-border: #a5f3fc;
+
+  --color-bg-app: #f8fafc;
+  --color-bg-card: #ffffff;
+  --color-bg-subtle: #f8fafc;
+  --color-bg-hover: #f1f5f9;
+  --color-border: #e2e8f0;
+  --color-border-subtle: #f1f5f9;
+  --color-text-main: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-muted: #64748b;
+  --color-text-subtle: #94a3b8;
+  --color-primary: #6366f1;
+  --color-primary-hover: #4f46e5;
+  --color-primary-active: #4338ca;
+  --color-primary-light: rgba(99, 102, 241, 0.12);
+  --color-primary-contrast: #ffffff;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+  --bg-surface: #ffffff;
+  --color-bg-main: #ffffff;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --border-color: #e2e8f0;
+  --primary: #6366f1;
+  --primary-hover: #4f46e5;
+}
+
+/* Theme: Emerald Prosperity Mint */
+[data-theme='emerald-mint'] {
+  --color-canvas-default: #ffffff;
+  --color-canvas-subtle: #f0fdf4;
+  --color-canvas-surface: #dcfce7;
+  --color-border-default: #bbf7d0;
+  --color-border-muted: #86efac;
+  --color-border-subtle: #f0fdf4;
+  --color-fg-default: #064e3b;
+  --color-fg-muted: #065f46;
+  --color-fg-subtle: #047857;
+  --color-fg-disabled: #6ee7b7;
+
+  --color-accent-fg: #10b981;
+  --color-accent-emphasis: #059669;
+  --color-accent-subtle: rgba(16, 185, 129, 0.15);
+  --color-accent-hover: #047857;
+
+  --color-nav-active-bg: #dcfce7;
+  --color-nav-active-fg: #065f46;
+  --color-nav-active-icon: #059669;
+  --color-nav-hover-bg: #f0fdf4;
+  --color-nav-hover-fg: #064e3b;
+  --color-sidebar-bg: #ffffff;
+  --color-sidebar-border: #bbf7d0;
+
+  --color-btn-text: #059669;
+  --color-btn-bg: #f0fdf4;
+  --color-btn-border: #86efac;
+  --color-btn-hover-bg: #dcfce7;
+  --color-btn-hover-border: #059669;
+  --color-btn-active-bg: #bbf7d0;
+
+  --color-btn-primary-text: #ffffff;
+  --color-btn-primary-bg: #059669;
+  --color-btn-primary-border: #047857;
+  --color-btn-primary-hover-bg: #047857;
+
+  --color-btn-danger-text: #dc2626;
+  --color-btn-danger-bg: #fef2f2;
+  --color-btn-danger-border: #fecaca;
+  --color-btn-danger-hover-bg: #dc2626;
+  --color-btn-danger-hover-text: #ffffff;
+
+  --color-notif-bg: #fef2f2;
+  --color-notif-fg: #dc2626;
+
+  --color-income: #059669;
+  --color-income-bg: #dcfce7;
+  --color-income-border: #86efac;
+  --color-expense: #dc2626;
+  --color-expense-bg: #fef2f2;
+  --color-expense-border: #fecaca;
+  --color-loan: #d97706;
+  --color-loan-bg: #fef3c7;
+  --color-loan-border: #fde68a;
+  --color-investment: #0284c7;
+  --color-investment-bg: #e0f2fe;
+  --color-investment-border: #bae6fd;
+  --color-epf: #0d9488;
+  --color-epf-bg: #ccfbf1;
+  --color-epf-border: #99f6e4;
+
+  --color-bg-app: #f7fee7;
+  --color-bg-card: #ffffff;
+  --color-bg-subtle: #f0fdf4;
+  --color-bg-hover: #dcfce7;
+  --color-border: #bbf7d0;
+  --color-border-subtle: #f0fdf4;
+  --color-text-main: #064e3b;
+  --color-text-secondary: #065f46;
+  --color-text-muted: #047857;
+  --color-text-subtle: #10b981;
+  --color-primary: #059669;
+  --color-primary-hover: #047857;
+  --color-primary-active: #064e3b;
+  --color-primary-light: #dcfce7;
+  --color-primary-contrast: #ffffff;
+  --shadow-sm: 0 1px 3px rgba(6, 78, 59, 0.08);
+  --shadow-md: 0 4px 10px rgba(6, 78, 59, 0.1);
+  --bg-surface: #ffffff;
+  --color-bg-main: #ffffff;
+  --text-primary: #064e3b;
+  --text-secondary: #065f46;
+  --border-color: #bbf7d0;
+  --primary: #059669;
+  --primary-hover: #047857;
+}
+
+/* Theme: Nordic Polar Snow (Nord Light) */
+[data-theme='nord-light'] {
+  --color-canvas-default: #ffffff;
+  --color-canvas-subtle: #eceff4;
+  --color-canvas-surface: #e5e9f0;
+  --color-border-default: #d8dee9;
+  --color-border-muted: #e5e9f0;
+  --color-border-subtle: #eceff4;
+  --color-fg-default: #2e3440;
+  --color-fg-muted: #3b4252;
+  --color-fg-subtle: #4c566a;
+  --color-fg-disabled: #d8dee9;
+
+  --color-accent-fg: #5e81ac;
+  --color-accent-emphasis: #81a1c1;
+  --color-accent-subtle: rgba(94, 129, 172, 0.15);
+  --color-accent-hover: #4c566a;
+
+  --color-nav-active-bg: rgba(94, 129, 172, 0.15);
+  --color-nav-active-fg: #5e81ac;
+  --color-nav-active-icon: #5e81ac;
+  --color-nav-hover-bg: #e5e9f0;
+  --color-nav-hover-fg: #2e3440;
+  --color-sidebar-bg: #ffffff;
+  --color-sidebar-border: #d8dee9;
+
+  --color-btn-text: #2e3440;
+  --color-btn-bg: #eceff4;
+  --color-btn-border: #d8dee9;
+  --color-btn-hover-bg: #e5e9f0;
+  --color-btn-hover-border: #5e81ac;
+  --color-btn-active-bg: #d8dee9;
+
+  --color-btn-primary-text: #ffffff;
+  --color-btn-primary-bg: #5e81ac;
+  --color-btn-primary-border: #5e81ac;
+  --color-btn-primary-hover-bg: #4c6a92;
+
+  --color-btn-danger-text: #bf616a;
+  --color-btn-danger-bg: #eceff4;
+  --color-btn-danger-border: rgba(191, 97, 106, 0.3);
+  --color-btn-danger-hover-bg: #bf616a;
+  --color-btn-danger-hover-text: #ffffff;
+
+  --color-notif-bg: rgba(191, 97, 106, 0.15);
+  --color-notif-fg: #bf616a;
+
+  --color-income: #a3be8c;
+  --color-income-bg: rgba(163, 190, 140, 0.18);
+  --color-income-border: #a3be8c;
+  --color-expense: #bf616a;
+  --color-expense-bg: rgba(191, 97, 106, 0.18);
+  --color-expense-border: #bf616a;
+  --color-loan: #ebcb8b;
+  --color-loan-bg: rgba(235, 203, 139, 0.18);
+  --color-loan-border: #ebcb8b;
+  --color-investment: #81a1c1;
+  --color-investment-bg: rgba(129, 161, 193, 0.18);
+  --color-investment-border: #81a1c1;
+  --color-epf: #8fbcbb;
+  --color-epf-bg: rgba(143, 188, 187, 0.18);
+  --color-epf-border: #8fbcbb;
+
+  --color-bg-app: #f8fafc;
+  --color-bg-card: #ffffff;
+  --color-bg-subtle: #eceff4;
+  --color-bg-hover: #e5e9f0;
+  --color-border: #d8dee9;
+  --color-border-subtle: #eceff4;
+  --color-text-main: #2e3440;
+  --color-text-secondary: #3b4252;
+  --color-text-muted: #4c566a;
+  --color-text-subtle: #d8dee9;
+  --color-primary: #5e81ac;
+  --color-primary-hover: #4c6a92;
+  --color-primary-active: #2e3440;
+  --color-primary-light: rgba(94, 129, 172, 0.15);
+  --color-primary-contrast: #ffffff;
+  --shadow-sm: 0 1px 3px rgba(46, 52, 64, 0.06);
+  --shadow-md: 0 4px 8px rgba(46, 52, 64, 0.08);
+  --bg-surface: #ffffff;
+  --color-bg-main: #ffffff;
+  --text-primary: #2e3440;
+  --text-secondary: #3b4252;
+  --border-color: #d8dee9;
+  --primary: #5e81ac;
+  --primary-hover: #4c6a92;
+}
+
+/* Typography Font Presets */
+[data-font='jakarta'] {
+  --font-family-base: 'Plus Jakarta Sans', 'Google Sans', 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-family-google: 'Plus Jakarta Sans', 'Google Sans', 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+[data-font='inter'] {
+  --font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-family-google: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+[data-font='system'] {
+  --font-family-base: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-family-google: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Corner Radius Presets */
+[data-radius='sharp'] {
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+}
+[data-radius='modern'] {
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+}
+[data-radius='rounded'] {
+  --radius-xs: 6px;
+  --radius-sm: 12px;
+  --radius-md: 18px;
+  --radius-lg: 24px;
+}
+[data-radius='pill'] {
+  --radius-xs: 8px;
+  --radius-sm: 16px;
+  --radius-md: 24px;
+  --radius-lg: 32px;
+}
+
 /* ==========================================================================
    Advanced Studio Modifiers: Privacy Eye & Density & Layouts
    ========================================================================== */
@@ -557,10 +1042,12 @@ p {
 
 /* Tabular Financial Figures */
 .amount, .tabular-nums, [data-amount] {
-  font-family: var(--font-family-mono);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
+  font-family: var(--font-family-base);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: 'tnum' 1, 'lnum' 1;
+  letter-spacing: -0.01em;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 /* ==========================================================================

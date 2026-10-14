@@ -12,6 +12,7 @@ import {
 } from './models/investment.model';
 import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
 import { StatCardComponent } from '../../shared/components/stat-card/stat-card.component';
+import { ThemeService } from '../../core/services/theme.service';
 
 @Component({
   selector: 'app-investments',
@@ -836,6 +837,7 @@ export class InvestmentsComponent implements OnInit {
   private readonly investmentsService = inject(InvestmentsService);
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
+  public readonly themeService = inject(ThemeService);
 
   readonly holdings = signal<Holding[]>([]);
   readonly summary = signal<PortfolioSummary | null>(null);
@@ -929,6 +931,7 @@ export class InvestmentsComponent implements OnInit {
 
     this.investmentsService.createHolding(payload).subscribe({
       next: (res) => {
+        this.themeService.playSuccessSound();
         this.submitting.set(false);
         this.closeCreateModal();
         this.router.navigate(['/investments', res.holding.id]);

@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
+import { ThemeService } from '../../../core/services/theme.service';
 
 type LoginTab = 'password' | 'otp' | 'google' | 'forgot';
 
@@ -1517,6 +1518,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  public readonly themeService = inject(ThemeService);
 
   readonly activeTab = signal<LoginTab>('password');
 
@@ -1580,6 +1582,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
     this.authService.login({ email: email!, password: password! }).subscribe({
       next: () => {
+        this.themeService.playSuccessSound();
         this.isLoading.set(false);
         this.router.navigate(['/dashboard']);
       },
@@ -1667,6 +1670,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
     this.authService.verifyOtp(this.otpContact.trim(), code).subscribe({
       next: () => {
+        this.themeService.playSuccessSound();
         this.isLoading.set(false);
         this.router.navigate(['/dashboard']);
       },
@@ -1692,6 +1696,7 @@ export class LoginComponent implements OnInit, OnDestroy {
       fullName: fullName.charAt(0).toUpperCase() + fullName.slice(1)
     }).subscribe({
       next: () => {
+        this.themeService.playSuccessSound();
         this.isLoading.set(false);
         this.router.navigate(['/dashboard']);
       },

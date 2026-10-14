@@ -25,6 +25,14 @@ public enum LoanStatus
     Closed = 2
 }
 
+public enum LoanPriority
+{
+    Low = 1,
+    Medium = 2,
+    High = 3,
+    Urgent = 4
+}
+
 public enum LoanTransactionKind
 {
     Disburse = 1,

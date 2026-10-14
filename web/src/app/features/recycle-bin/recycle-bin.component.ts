@@ -1318,6 +1318,7 @@ export class RecycleBinComponent implements OnInit {
     this.actionLoading.set(true);
     this.recycleBinService.restoreItem(item.module, item.id).subscribe({
       next: res => {
+        this.themeService.playSuccessSound();
         this.actionLoading.set(false);
         this.showToast(res.message || `Successfully restored ${item.title}.`, false);
         this.loadItems();
@@ -1342,6 +1343,7 @@ export class RecycleBinComponent implements OnInit {
     this.actionLoading.set(true);
     this.recycleBinService.permanentDelete(item.module, item.id).subscribe({
       next: res => {
+        this.themeService.playDeleteSound();
         this.actionLoading.set(false);
         this.showPurgeModal.set(false);
         this.selectedItemForPurge.set(null);
@@ -1365,6 +1367,7 @@ export class RecycleBinComponent implements OnInit {
     const mod = this.activeModule() === 'all' ? undefined : this.activeModule();
     this.recycleBinService.emptyRecycleBin(mod).subscribe({
       next: res => {
+        this.themeService.playDeleteSound();
         this.actionLoading.set(false);
         this.showEmptyModal.set(false);
         this.showToast(res.message || 'Recycle bin emptied successfully.', false);

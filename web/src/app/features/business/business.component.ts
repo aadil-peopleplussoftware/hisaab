@@ -2081,6 +2081,7 @@ export class BusinessComponent implements OnInit {
 
       this.businessService.updateBusiness(this.editingBusiness()!.id, payload).subscribe({
         next: () => {
+          this.themeService.playSuccessSound();
           this.closeBusinessModal();
           this.loadData();
         },
@@ -2099,6 +2100,7 @@ export class BusinessComponent implements OnInit {
 
       this.businessService.createBusiness(payload).subscribe({
         next: () => {
+          this.themeService.playSuccessSound();
           this.closeBusinessModal();
           this.loadData();
         },
@@ -2119,6 +2121,7 @@ export class BusinessComponent implements OnInit {
 
     this.businessService.deleteBusiness(id).subscribe({
       next: () => {
+        this.themeService.playDeleteSound();
         this.closeBusinessModal();
         if (this.selectedBusinessId() === id) {
           this.selectedBusinessId.set(null);
@@ -2219,6 +2222,7 @@ export class BusinessComponent implements OnInit {
 
       this.businessService.updateTransaction(this.editingTxn()!.id, payload).subscribe({
         next: () => {
+          this.themeService.playSuccessSound();
           this.closeTxnModal();
           this.loadData();
         },
@@ -2243,6 +2247,7 @@ export class BusinessComponent implements OnInit {
 
       this.businessService.createTransaction(payload).subscribe({
         next: () => {
+          this.themeService.playSuccessSound();
           this.closeTxnModal();
           this.loadData();
         },
@@ -2260,14 +2265,20 @@ export class BusinessComponent implements OnInit {
     if (!confirm('Are you sure you want to delete this entry? It will be moved to the Recycle Bin.')) return;
 
     this.businessService.deleteTransaction(id).subscribe({
-      next: () => this.loadData(),
+      next: () => {
+        this.themeService.playDeleteSound();
+        this.loadData();
+      },
       error: (err) => console.error('Failed to delete transaction:', err)
     });
   }
 
   markAsPaid(t: BusinessTransaction): void {
     this.businessService.updateStatus(t.id, BusinessPaymentStatus.Paid).subscribe({
-      next: () => this.loadData(),
+      next: () => {
+        this.themeService.playSuccessSound();
+        this.loadData();
+      },
       error: (err) => console.error('Failed to mark as paid:', err)
     });
   }

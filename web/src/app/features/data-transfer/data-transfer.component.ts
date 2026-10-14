@@ -10,6 +10,7 @@ import {
   ImportBatchDetail,
   MappingProfile
 } from './models/data-transfer.model';
+import { ThemeService } from '../../core/services/theme.service';
 
 interface ModuleOption {
   id: string;
@@ -1131,6 +1132,7 @@ interface ModuleOption {
 })
 export class DataTransferComponent implements OnInit {
   private readonly dataTransferService = inject(DataTransferService);
+  public readonly themeService = inject(ThemeService);
 
   readonly activeTab = signal<'import' | 'export' | 'history' | 'profiles'>('import');
   readonly importStep = signal<number>(1);
@@ -1419,6 +1421,7 @@ export class DataTransferComponent implements OnInit {
 
     this.dataTransferService.commitBatch(res.batchId).subscribe({
       next: (result) => {
+        this.themeService.playSuccessSound();
         this.importResult.set(result);
         this.isCommitting.set(false);
         this.importStep.set(5);
@@ -1461,6 +1464,7 @@ export class DataTransferComponent implements OnInit {
     this.isRollingBack.set(batch.id);
     this.dataTransferService.rollbackBatch(batch.id).subscribe({
       next: () => {
+        this.themeService.playDeleteSound();
         this.isRollingBack.set(null);
         this.loadHistory();
       },
@@ -1485,7 +1489,10 @@ export class DataTransferComponent implements OnInit {
   deleteProfile(id: string): void {
     if (!confirm('Are you sure you want to delete this saved mapping profile?')) return;
     this.dataTransferService.deleteMappingProfile(id).subscribe({
-      next: () => this.loadProfiles()
+      next: () => {
+        this.themeService.playDeleteSound();
+        this.loadProfiles();
+      }
     });
   }
 
@@ -1496,6 +1503,7 @@ export class DataTransferComponent implements OnInit {
     if (this.exportModule === 'ALL') {
       this.dataTransferService.exportAll().subscribe({
         next: (blob) => {
+          this.themeService.playSuccessSound();
           this.saveBlob(blob, `hisaab_full_backup_${new Date().toISOString().slice(0, 10)}.xlsx`);
           this.isExporting.set(false);
         },
@@ -1509,6 +1517,7 @@ export class DataTransferComponent implements OnInit {
         this.exportTo || undefined
       ).subscribe({
         next: (blob) => {
+          this.themeService.playSuccessSound();
           const ext = this.exportFormat === 'csv' ? 'csv' : 'xlsx';
           this.saveBlob(blob, `hisaab_${this.exportModule.toLowerCase()}_${new Date().toISOString().slice(0, 10)}.${ext}`);
           this.isExporting.set(false);

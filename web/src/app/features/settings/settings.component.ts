@@ -213,43 +213,171 @@ import { DeletionPermissionsService, DeletionPermissions } from '../../core/serv
 
       <!-- TAB: Appearance & Studio -->
       @if (activeTab() === 'appearance') {
-        <div class="card-section">
+        <div class="card-section studio-card-section">
           <div class="card-title-row">
             <div>
               <div class="title-with-icon">
-                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <circle cx="12" cy="12" r="10" />
                   <path d="M12 2a10 10 0 0 0 0 20v-4a6 6 0 0 1 0-12V2Z" />
                 </svg>
                 <h3>Appearance & Layout Studio</h3>
+                <span class="studio-badge-pill">Enterprise Studio</span>
               </div>
-              <p class="section-desc">Personalize your color theme, vector icon style, sidebar layout, display currency, and sensory audio.</p>
+              <p class="section-desc">Personalize your color palettes, typography font stack, vector icon packs, sidebar position, and sensory haptic feedback.</p>
             </div>
           </div>
 
-          <!-- 5 Themes Grid -->
+          <!-- Live Theme Preview Showcase Card -->
+          <div class="live-theme-showcase">
+            <div class="showcase-header">
+              <div class="showcase-title-wrap">
+                <span class="showcase-indicator-dot"></span>
+                <span class="showcase-label">LIVE THEME SHOWCASE</span>
+              </div>
+              <div class="showcase-theme-badge">
+                <span class="theme-mode-tag" [class.dark-tag]="activeThemeDef().category === 'dark'">
+                  {{ activeThemeDef().category === 'dark' ? '🌙 DARK PALETTE' : '☀️ LIGHT PALETTE' }}
+                </span>
+                <span class="theme-name-tag">{{ activeThemeDef().name }}</span>
+              </div>
+            </div>
+
+            <div class="showcase-content-grid">
+              <!-- Mini Metric Pill / Balance Preview -->
+              <div class="showcase-card-preview">
+                <span class="mini-label">SAMPLE CASHFLOW</span>
+                <div class="mini-balances">
+                  <div class="mini-pill income">
+                    <span class="arrow">↑</span>
+                    <span>+₹45,280.00</span>
+                  </div>
+                  <div class="mini-pill expense">
+                    <span class="arrow">↓</span>
+                    <span>-₹12,450.00</span>
+                  </div>
+                  <div class="mini-pill net">
+                    <span>Net: ₹32,830.00</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Action Button System Preview -->
+              <div class="showcase-card-preview">
+                <span class="mini-label">ACTION BUTTON CONTROLS</span>
+                <div class="mini-buttons">
+                  <button type="button" class="mini-btn-primary" (click)="themeService.playClickSound()">Primary Action</button>
+                  <button type="button" class="mini-btn-secondary" (click)="themeService.playClickSound()">Secondary</button>
+                  <button type="button" class="mini-btn-danger" (click)="themeService.playDeleteSound()">Delete</button>
+                </div>
+              </div>
+
+              <!-- Theme Color Spectrum -->
+              <div class="showcase-card-preview">
+                <span class="mini-label">ACTIVE COLOR SPECTRUM</span>
+                <div class="spectrum-swatches">
+                  @for (c of activeThemeDef().previewColors; track c) {
+                    <div class="spectrum-chip" [style.background-color]="c" [title]="c">
+                      <span class="chip-hex">{{ c }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 10 Themes Grid with Category Filtering -->
           <div class="studio-block">
-            <h4 class="studio-subheading">Color Themes (5 Themes Available)</h4>
+            <div class="studio-header-with-filter">
+              <div>
+                <h4 class="studio-subheading">Color Themes ({{ themeService.availableThemes.length }} Themes Available)</h4>
+                <p class="studio-subdesc">Select an artisan color palette crafted for financial clarity and reduced eye fatigue.</p>
+              </div>
+              <div class="theme-filter-pills">
+                <button
+                  type="button"
+                  class="theme-filter-btn"
+                  [class.active]="themeCategoryFilter() === 'all'"
+                  (click)="themeCategoryFilter.set('all'); themeService.playClickSound()"
+                >
+                  All ({{ themeService.availableThemes.length }})
+                </button>
+                <button
+                  type="button"
+                  class="theme-filter-btn"
+                  [class.active]="themeCategoryFilter() === 'light'"
+                  (click)="themeCategoryFilter.set('light'); themeService.playClickSound()"
+                >
+                  ☀️ Light Themes (7)
+                </button>
+                <button
+                  type="button"
+                  class="theme-filter-btn"
+                  [class.active]="themeCategoryFilter() === 'dark'"
+                  (click)="themeCategoryFilter.set('dark'); themeService.playClickSound()"
+                >
+                  🌙 Dark Themes (3)
+                </button>
+              </div>
+            </div>
+
             <div class="theme-picker-grid">
-              @for (t of themeService.availableThemes; track t.id) {
+              @for (t of filteredThemes(); track t.id) {
                 <div
                   class="theme-select-card"
                   [class.active]="themeService.currentTheme() === t.id"
                   (click)="themeService.setTheme(t.id)"
                 >
-                  <div class="theme-swatch-bar">
-                    @for (c of t.previewColors; track c) {
-                      <span class="swatch-circle" [style.background-color]="c"></span>
-                    }
+                  <div class="theme-card-top">
+                    <span class="theme-category-pill" [class.dark]="t.category === 'dark'">
+                      {{ t.category === 'dark' ? '🌙 Dark' : '☀️ Light' }}
+                    </span>
+                    <div class="theme-swatch-bar">
+                      @for (c of t.previewColors; track c) {
+                        <span class="swatch-circle" [style.background-color]="c"></span>
+                      }
+                    </div>
                   </div>
                   <div class="theme-meta">
                     <span class="theme-title">{{ t.name }}</span>
-                    <span class="theme-desc">{{ t.description }}</span>
+                    <p class="theme-desc">{{ t.description }}</p>
                   </div>
                   <div class="theme-footer">
-                    <span class="badge">{{ t.category | uppercase }}</span>
                     @if (themeService.currentTheme() === t.id) {
-                      <span class="active-tag">
+                      <span class="active-tag-pill">
+                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="3">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        Current Theme
+                      </span>
+                    } @else {
+                      <span class="select-hint-text">Click to apply</span>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Typography / Font Stack Selection -->
+          <div class="studio-block">
+            <div class="studio-header-with-filter">
+              <div>
+                <h4 class="studio-subheading">Dashboard Typography & Font Stack</h4>
+                <p class="studio-subdesc">Choose your preferred typeface tailored for financial clarity and numerical precision.</p>
+              </div>
+            </div>
+            <div class="font-picker-grid">
+              @for (f of themeService.availableFonts; track f.id) {
+                <div
+                  class="font-select-card"
+                  [class.active]="themeService.fontFamily() === f.id"
+                  (click)="themeService.setFontFamily(f.id)"
+                >
+                  <div class="font-card-header">
+                    <span class="font-name">{{ f.name }}</span>
+                    @if (themeService.fontFamily() === f.id) {
+                      <span class="active-tag-pill">
                         <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3">
                           <polyline points="20 6 9 17 4 12"/>
                         </svg>
@@ -257,14 +385,59 @@ import { DeletionPermissionsService, DeletionPermissions } from '../../core/serv
                       </span>
                     }
                   </div>
+                  <p class="font-desc">{{ f.description }}</p>
+                  <div class="font-sample-box" [attr.data-font]="f.id">
+                    <span class="sample-amount">₹1,45,280.00</span>
+                    <span class="sample-sub">The quick brown fox jumps over the lazy dog</span>
+                  </div>
                 </div>
               }
             </div>
           </div>
 
-          <!-- 4 Icon Packs Grid -->
+          <!-- Interface Corner Roundness -->
           <div class="studio-block">
-            <h4 class="studio-subheading">Navigation Icon Pack (4 Styles)</h4>
+            <div class="studio-header-with-filter">
+              <div>
+                <h4 class="studio-subheading">Interface Corner Roundness</h4>
+                <p class="studio-subdesc">Adjust card, button, and input corner roundness across the entire platform.</p>
+              </div>
+            </div>
+            <div class="radius-picker-grid">
+              @for (r of themeService.availableRadii; track r.id) {
+                <div
+                  class="radius-select-card"
+                  [class.active]="themeService.radiusPreset() === r.id"
+                  (click)="themeService.setRadiusPreset(r.id)"
+                >
+                  <div class="radius-visual-box" [attr.data-radius]="r.id">
+                    <span class="radius-value-tag">{{ r.samplePx }}</span>
+                  </div>
+                  <div class="radius-meta">
+                    <span class="radius-title">{{ r.name }}</span>
+                    <span class="radius-desc">{{ r.description }}</span>
+                  </div>
+                  @if (themeService.radiusPreset() === r.id) {
+                    <span class="active-tag-pill">
+                      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                      Active
+                    </span>
+                  }
+                </div>
+              }
+            </div>
+          </div>
+
+          <!-- Navigation Icon Pack (4 Styles) -->
+          <div class="studio-block">
+            <div class="studio-header-with-filter">
+              <div>
+                <h4 class="studio-subheading">Navigation Icon Pack (4 Styles)</h4>
+                <p class="studio-subdesc">Fintech vector outline, solid silhouette, modern duotone depth, or hairline precision.</p>
+              </div>
+            </div>
             <div class="icon-picker-grid">
               @for (ic of themeService.availableIconStyles; track ic.id) {
                 <div
@@ -272,52 +445,65 @@ import { DeletionPermissionsService, DeletionPermissions } from '../../core/serv
                   [class.active]="themeService.iconStyle() === ic.id"
                   (click)="themeService.setIconStyle(ic.id)"
                 >
-                  <div class="icon-preview-tag">
-                    @if (ic.id === 'linear') {
-                      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
-                        <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
-                        <rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/>
-                      </svg>
-                    } @else if (ic.id === 'filled') {
-                      <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
-                        <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
-                        <rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/>
-                      </svg>
-                    } @else if (ic.id === 'duotone') {
-                      <svg viewBox="0 0 24 24" width="22" height="22">
-                        <rect x="3" y="3" width="7" height="7" rx="1.5" fill="currentColor" opacity="0.3" stroke="currentColor" stroke-width="1.5"/>
-                        <rect x="14" y="3" width="7" height="7" rx="1.5" fill="currentColor" opacity="0.9"/>
-                        <rect x="14" y="14" width="7" height="7" rx="1.5" fill="currentColor" opacity="0.3" stroke="currentColor" stroke-width="1.5"/>
-                        <rect x="3" y="14" width="7" height="7" rx="1.5" fill="currentColor" opacity="0.9"/>
-                      </svg>
+                  <div class="icon-card-header">
+                    <div class="icon-preview-tag">
+                      @if (ic.id === 'linear') {
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8">
+                          <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
+                          <rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/>
+                        </svg>
+                      } @else if (ic.id === 'filled') {
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                          <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
+                          <rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/>
+                        </svg>
+                      } @else if (ic.id === 'duotone') {
+                        <svg viewBox="0 0 24 24" width="24" height="24">
+                          <rect x="3" y="3" width="7" height="7" rx="1.5" fill="currentColor" opacity="0.3" stroke="currentColor" stroke-width="1.5"/>
+                          <rect x="14" y="3" width="7" height="7" rx="1.5" fill="currentColor" opacity="0.9"/>
+                          <rect x="14" y="14" width="7" height="7" rx="1.5" fill="currentColor" opacity="0.3" stroke="currentColor" stroke-width="1.5"/>
+                          <rect x="3" y="14" width="7" height="7" rx="1.5" fill="currentColor" opacity="0.9"/>
+                        </svg>
+                      } @else {
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.2">
+                          <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+                          <rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
+                        </svg>
+                      }
+                    </div>
+                    <div class="icon-title-wrap">
+                      <span class="icon-title">{{ ic.name }}</span>
+                      <span class="badge">{{ ic.badge }}</span>
+                    </div>
+                  </div>
+                  <div class="icon-desc-wrap">
+                    <p class="icon-desc">{{ ic.description }}</p>
+                  </div>
+                  <div class="icon-card-footer">
+                    @if (themeService.iconStyle() === ic.id) {
+                      <span class="active-tag-pill">
+                        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        Active Style
+                      </span>
                     } @else {
-                      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.2">
-                        <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
-                        <rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/>
-                      </svg>
+                      <span class="select-hint-text">Select style</span>
                     }
                   </div>
-                  <div class="icon-meta">
-                    <span class="icon-title">{{ ic.name }}</span>
-                    <span class="icon-desc">{{ ic.description }}</span>
-                  </div>
-                  <span class="badge">{{ ic.badge }}</span>
-                  @if (themeService.iconStyle() === ic.id) {
-                    <span class="active-tag">
-                      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3">
-                        <polyline points="20 6 9 17 4 12"/>
-                      </svg>
-                      Active
-                    </span>
-                  }
                 </div>
               }
             </div>
           </div>
 
-          <!-- 4 Sidebar Positions Grid -->
+          <!-- Sidebar Position & Layout (4 Options) -->
           <div class="studio-block">
-            <h4 class="studio-subheading">Sidebar Position & Layout (4 Options)</h4>
+            <div class="studio-header-with-filter">
+              <div>
+                <h4 class="studio-subheading">Sidebar Position & Layout (4 Options)</h4>
+                <p class="studio-subdesc">Configure your desktop layout: standard left, right-aligned, top navigation, or slim mini-bar.</p>
+              </div>
+            </div>
             <div class="sidebar-picker-grid">
               @for (sp of themeService.availableSidebarPositions; track sp.id) {
                 <div
@@ -325,38 +511,46 @@ import { DeletionPermissionsService, DeletionPermissions } from '../../core/serv
                   [class.active]="themeService.sidebarPosition() === sp.id"
                   (click)="themeService.setSidebarPosition(sp.id)"
                 >
-                  <div class="pos-badge">
-                    @if (sp.id === 'left') {
-                      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
-                        <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/>
-                      </svg>
-                    } @else if (sp.id === 'right') {
-                      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
-                        <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="15" y1="3" x2="15" y2="21"/>
-                      </svg>
-                    } @else if (sp.id === 'top') {
-                      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
-                        <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/>
-                      </svg>
+                  <div class="sidebar-card-header">
+                    <div class="pos-badge">
+                      @if (sp.id === 'left') {
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8">
+                          <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/>
+                        </svg>
+                      } @else if (sp.id === 'right') {
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8">
+                          <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="15" y1="3" x2="15" y2="21"/>
+                        </svg>
+                      } @else if (sp.id === 'top') {
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8">
+                          <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/>
+                        </svg>
+                      } @else {
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8">
+                          <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="6" y1="3" x2="6" y2="21"/>
+                        </svg>
+                      }
+                    </div>
+                    <div class="sidebar-title-wrap">
+                      <span class="pos-title">{{ sp.name }}</span>
+                      <span class="badge">{{ sp.badge }}</span>
+                    </div>
+                  </div>
+                  <div class="pos-desc-wrap">
+                    <p class="pos-desc">{{ sp.description }}</p>
+                  </div>
+                  <div class="sidebar-card-footer">
+                    @if (themeService.sidebarPosition() === sp.id) {
+                      <span class="active-tag-pill">
+                        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                        Active Layout
+                      </span>
                     } @else {
-                      <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
-                        <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="6" y1="3" x2="6" y2="21"/>
-                      </svg>
+                      <span class="select-hint-text">Select layout</span>
                     }
                   </div>
-                  <div class="pos-meta">
-                    <span class="pos-title">{{ sp.name }}</span>
-                    <span class="pos-desc">{{ sp.description }}</span>
-                  </div>
-                  <span class="badge">{{ sp.badge }}</span>
-                  @if (themeService.sidebarPosition() === sp.id) {
-                    <span class="active-tag">
-                      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3">
-                        <polyline points="20 6 9 17 4 12"/>
-                      </svg>
-                      Active
-                    </span>
-                  }
                 </div>
               }
             </div>
@@ -364,7 +558,12 @@ import { DeletionPermissionsService, DeletionPermissions } from '../../core/serv
 
           <!-- Multi-Currency Display Preference -->
           <div class="studio-block">
-            <h4 class="studio-subheading">Display Currency Conversion (5 Currencies)</h4>
+            <div class="studio-header-with-filter">
+              <div>
+                <h4 class="studio-subheading">Display Currency Conversion (5 Currencies)</h4>
+                <p class="studio-subdesc">Auto-converts all transaction values across screens to your chosen viewing currency.</p>
+              </div>
+            </div>
             <div class="currency-picker-grid">
               @for (c of themeService.availableCurrencies; track c.code) {
                 <div
@@ -372,13 +571,13 @@ import { DeletionPermissionsService, DeletionPermissions } from '../../core/serv
                   [class.active]="themeService.displayCurrency() === c.code"
                   (click)="themeService.setDisplayCurrency(c.code)"
                 >
-                  <div class="curr-symbol">{{ c.symbol }}</div>
+                  <div class="curr-symbol-box">{{ c.symbol }}</div>
                   <div class="curr-meta">
                     <span class="curr-code">{{ c.code }}</span>
                     <span class="curr-name">{{ c.name }}</span>
                   </div>
                   @if (themeService.displayCurrency() === c.code) {
-                    <span class="active-tag">
+                    <span class="active-tag-pill">
                       <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3">
                         <polyline points="20 6 9 17 4 12"/>
                       </svg>
@@ -390,7 +589,62 @@ import { DeletionPermissionsService, DeletionPermissions } from '../../core/serv
             </div>
           </div>
 
-          <!-- Advanced Workflow & Density -->
+          <!-- Sensory Audio Feedback & Interactive Soundboard -->
+          <div class="studio-block">
+            <div class="studio-header-with-filter">
+              <div>
+                <h4 class="studio-subheading">Sensory Audio Feedback & Soundboard</h4>
+                <p class="studio-subdesc">Tasteful Web Audio synthesizer providing immediate tactile haptic feedback without external audio files.</p>
+              </div>
+              <div class="audio-master-toggle" (click)="themeService.toggleSoundEffects()">
+                <span class="toggle-status-text">{{ themeService.soundEffects() ? 'SOUND: ON' : 'SOUND: MUTED' }}</span>
+                <div class="toggle-pill" [class.on]="themeService.soundEffects()">
+                  {{ themeService.soundEffects() ? 'ENABLED' : 'MUTED' }}
+                </div>
+              </div>
+            </div>
+
+            <!-- Live Soundboard Test Buttons -->
+            <div class="soundboard-grid">
+              <div class="sound-card" (click)="testSound('click')">
+                <div class="sound-icon-box click">🔊</div>
+                <div class="sound-info">
+                  <strong>Tactile Click</strong>
+                  <span>Micro sine tap for buttons & pills</span>
+                </div>
+                <button type="button" class="btn-sound-play">Play Click</button>
+              </div>
+
+              <div class="sound-card" (click)="testSound('success')">
+                <div class="sound-icon-box success">🎵</div>
+                <div class="sound-info">
+                  <strong>Success Chime</strong>
+                  <span>Ascending major triad (C-E-G)</span>
+                </div>
+                <button type="button" class="btn-sound-play">Play Chime</button>
+              </div>
+
+              <div class="sound-card" (click)="testSound('delete')">
+                <div class="sound-icon-box delete">🗑️</div>
+                <div class="sound-info">
+                  <strong>Delete / Caution Tap</strong>
+                  <span>Low-frequency descending sweep</span>
+                </div>
+                <button type="button" class="btn-sound-play">Play Delete</button>
+              </div>
+
+              <div class="sound-card" (click)="testSound('nav')">
+                <div class="sound-icon-box nav">🚀</div>
+                <div class="sound-info">
+                  <strong>Route Transition</strong>
+                  <span>Soft triangle navigation step</span>
+                </div>
+                <button type="button" class="btn-sound-play">Play Nav</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Advanced Accessibility & Density -->
           <div class="studio-block">
             <h4 class="studio-subheading">Workflow & Accessibility Preferences</h4>
             <div class="settings-switch-grid">
@@ -411,16 +665,6 @@ import { DeletionPermissionsService, DeletionPermissions } from '../../core/serv
                 </div>
                 <div class="toggle-pill" [class.on]="themeService.privacyMode()">
                   {{ themeService.privacyMode() ? 'MASKED' : 'VISIBLE' }}
-                </div>
-              </div>
-
-              <div class="setting-switch-card" (click)="themeService.toggleSoundEffects()">
-                <div class="switch-content">
-                  <strong>Sensory Audio Feedback</strong>
-                  <p>Play subtle synthesised haptic clicks on navigation and transaction events.</p>
-                </div>
-                <div class="toggle-pill" [class.on]="themeService.soundEffects()">
-                  {{ themeService.soundEffects() ? 'ENABLED' : 'MUTED' }}
                 </div>
               </div>
             </div>
@@ -1698,13 +1942,711 @@ import { DeletionPermissionsService, DeletionPermissions } from '../../core/serv
       margin-bottom: 12px;
     }
 
+    .studio-card-section {
+      position: relative;
+    }
+
+    .studio-badge-pill {
+      display: inline-block;
+      margin-left: 8px;
+      padding: 2px 8px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border-radius: 9999px;
+      background: var(--color-accent-subtle);
+      color: var(--color-accent-fg);
+      border: 1px solid var(--color-border);
+      vertical-align: middle;
+    }
+
+    /* Live Interactive Theme Showcase */
+    .live-theme-showcase {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      background: var(--color-canvas-subtle);
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .showcase-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid var(--color-border-subtle);
+      margin-bottom: 16px;
+    }
+
+    .showcase-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .showcase-indicator-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #10b981;
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+        animation: pulseDot 2s infinite ease-in-out;
+      }
+
+      .showcase-label {
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--color-text-muted);
+      }
+    }
+
+    @keyframes pulseDot {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.2); }
+    }
+
+    .showcase-theme-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .theme-mode-tag {
+        font-size: 11px;
+        font-weight: 700;
+        padding: 2px 8px;
+        border-radius: 9999px;
+        background: #fef3c7;
+        color: #92400e;
+
+        &.dark-tag {
+          background: #1e293b;
+          color: #93c5fd;
+        }
+      }
+
+      .theme-name-tag {
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--color-text-main);
+      }
+    }
+
+    .showcase-content-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+
+    .showcase-card-preview {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+
+      .mini-label {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--color-text-muted);
+      }
+    }
+
+    .mini-balances {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+
+      .mini-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 5px 10px;
+        border-radius: var(--radius-sm);
+        font-size: 12px;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+
+        &.income {
+          background: var(--color-income-bg);
+          color: var(--color-income);
+          border: 1px solid var(--color-income-border);
+        }
+
+        &.expense {
+          background: var(--color-expense-bg);
+          color: var(--color-expense);
+          border: 1px solid var(--color-expense-border);
+        }
+
+        &.net {
+          background: var(--color-bg-card);
+          color: var(--color-text-main);
+          border: 1px solid var(--color-border);
+        }
+
+        .arrow {
+          font-weight: 900;
+        }
+      }
+    }
+
+    .mini-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+
+      .mini-btn-primary {
+        padding: 6px 14px;
+        border-radius: var(--radius-sm);
+        font-size: 12px;
+        font-weight: 600;
+        background: var(--color-primary);
+        color: var(--color-primary-contrast);
+        border: 1px solid var(--color-primary);
+        cursor: pointer;
+        transition: opacity 0.15s ease;
+
+        &:hover {
+          opacity: 0.9;
+        }
+      }
+
+      .mini-btn-secondary {
+        padding: 6px 14px;
+        border-radius: var(--radius-sm);
+        font-size: 12px;
+        font-weight: 600;
+        background: var(--color-canvas-subtle);
+        color: var(--color-text-main);
+        border: 1px solid var(--color-border);
+        cursor: pointer;
+
+        &:hover {
+          background: var(--color-bg-hover);
+        }
+      }
+
+      .mini-btn-danger {
+        padding: 6px 14px;
+        border-radius: var(--radius-sm);
+        font-size: 12px;
+        font-weight: 600;
+        background: var(--color-btn-danger-bg);
+        color: var(--color-btn-danger-text);
+        border: 1px solid var(--color-btn-danger-border);
+        cursor: pointer;
+
+        &:hover {
+          background: var(--color-btn-danger-hover-bg);
+          color: var(--color-btn-danger-hover-text);
+        }
+      }
+    }
+
+    .spectrum-swatches {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+
+      .spectrum-chip {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 4px 8px;
+        border-radius: var(--radius-xs);
+        border: 1px solid rgba(0, 0, 0, 0.15);
+        min-width: 65px;
+        height: 28px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+
+        .chip-hex {
+          font-size: 10px;
+          font-weight: 700;
+          font-family: var(--font-family-mono);
+          text-shadow: 0 0 3px rgba(0, 0, 0, 0.6), 0 0 2px rgba(255, 255, 255, 0.6);
+          color: #ffffff;
+        }
+      }
+    }
+
+    /* Studio Headers and Filter Controls */
+    .studio-header-with-filter {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 14px;
+
+      .studio-subheading {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--color-text-main);
+      }
+
+      .studio-subdesc {
+        margin: 2px 0 0;
+        font-size: 12px;
+        color: var(--color-text-muted);
+      }
+    }
+
+    .theme-filter-pills {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--color-canvas-subtle);
+      padding: 3px;
+      border-radius: 9999px;
+      border: 1px solid var(--color-border);
+
+      .theme-filter-btn {
+        padding: 4px 12px;
+        border-radius: 9999px;
+        border: none;
+        background: transparent;
+        color: var(--color-text-muted);
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s ease;
+
+        &:hover {
+          color: var(--color-text-main);
+        }
+
+        &.active {
+          background: var(--color-primary);
+          color: var(--color-primary-contrast);
+          box-shadow: var(--shadow-sm);
+        }
+      }
+    }
+
+    /* Theme Picker Cards */
     .theme-picker-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 14px;
     }
 
     .theme-select-card {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      background: var(--color-canvas-subtle);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: 140px;
+      transition: all 0.15s ease;
+
+      &:hover {
+        border-color: var(--color-accent-fg);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
+      }
+
+      &.active {
+        border-color: var(--color-primary);
+        background: var(--color-bg-card);
+        box-shadow: 0 0 0 2px var(--color-primary);
+      }
+
+      .theme-card-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        .theme-category-pill {
+          font-size: 10px;
+          font-weight: 700;
+          text-transform: uppercase;
+          padding: 2px 8px;
+          border-radius: 9999px;
+          background: #fef3c7;
+          color: #92400e;
+
+          &.dark {
+            background: #1e293b;
+            color: #93c5fd;
+          }
+        }
+      }
+
+      .theme-swatch-bar {
+        display: flex;
+        gap: 6px;
+
+        .swatch-circle {
+          width: 16px;
+          height: 16px;
+          border-radius: 50%;
+          border: 1px solid rgba(0, 0, 0, 0.15);
+          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+        }
+      }
+
+      .theme-meta {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        .theme-title {
+          font-size: 14px;
+          font-weight: 700;
+          color: var(--color-text-main);
+        }
+
+        .theme-desc {
+          font-size: 12px;
+          color: var(--color-text-muted);
+          line-height: 1.4;
+          margin: 0;
+        }
+      }
+
+      .theme-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: auto;
+        padding-top: 6px;
+      }
+    }
+
+    .active-tag-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--color-primary);
+      background: var(--color-primary-light);
+      padding: 3px 10px;
+      border-radius: 9999px;
+    }
+
+    .select-hint-text {
+      font-size: 11px;
+      color: var(--color-text-subtle);
+    }
+
+    /* Font Stack Cards */
+    .font-picker-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 14px;
+    }
+
+    .font-select-card {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      background: var(--color-canvas-subtle);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: all 0.15s ease;
+
+      &:hover {
+        border-color: var(--color-accent-fg);
+      }
+
+      &.active {
+        border-color: var(--color-primary);
+        background: var(--color-bg-card);
+        box-shadow: 0 0 0 2px var(--color-primary);
+      }
+
+      .font-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        .font-name {
+          font-size: 14px;
+          font-weight: 700;
+          color: var(--color-text-main);
+        }
+      }
+
+      .font-desc {
+        font-size: 12px;
+        color: var(--color-text-muted);
+        line-height: 1.4;
+        margin: 0;
+      }
+
+      .font-sample-box {
+        background: var(--color-canvas-default);
+        border: 1px solid var(--color-border-subtle);
+        border-radius: var(--radius-sm);
+        padding: 10px 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+
+        .sample-amount {
+          font-size: 15px;
+          font-weight: 700;
+          color: var(--color-primary);
+        }
+
+        .sample-sub {
+          font-size: 11px;
+          color: var(--color-text-muted);
+        }
+      }
+    }
+
+    /* Corner Radius Selector Cards */
+    .radius-picker-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 14px;
+    }
+
+    .radius-select-card {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      background: var(--color-canvas-subtle);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 10px;
+      transition: all 0.15s ease;
+
+      &:hover {
+        border-color: var(--color-accent-fg);
+      }
+
+      &.active {
+        border-color: var(--color-primary);
+        background: var(--color-bg-card);
+        box-shadow: 0 0 0 2px var(--color-primary);
+      }
+
+      .radius-visual-box {
+        width: 100%;
+        height: 48px;
+        background: var(--color-primary-light);
+        border: 2px solid var(--color-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        .radius-value-tag {
+          font-size: 12px;
+          font-weight: 700;
+          color: var(--color-primary);
+        }
+      }
+
+      .radius-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+
+        .radius-title {
+          font-size: 13px;
+          font-weight: 700;
+          color: var(--color-text-main);
+        }
+
+        .radius-desc {
+          font-size: 11px;
+          color: var(--color-text-muted);
+        }
+      }
+    }
+
+    /* Icon Packs & Sidebar Position Vertical Card Architecture (No Squishing!) */
+    .icon-picker-grid,
+    .sidebar-picker-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 14px;
+    }
+
+    .icon-select-card,
+    .sidebar-select-card {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      background: var(--color-canvas-subtle);
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 140px;
+      transition: all 0.15s ease;
+
+      &:hover {
+        border-color: var(--color-accent-fg);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
+      }
+
+      &.active {
+        border-color: var(--color-primary);
+        background: var(--color-bg-card);
+        box-shadow: 0 0 0 2px var(--color-primary);
+      }
+
+      .icon-card-header,
+      .sidebar-card-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .icon-preview-tag,
+      .pos-badge {
+        width: 40px;
+        height: 40px;
+        border-radius: var(--radius-sm);
+        background: var(--color-bg-card);
+        border: 1px solid var(--color-border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--color-primary);
+        flex-shrink: 0;
+      }
+
+      .icon-title-wrap,
+      .sidebar-title-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+
+        .icon-title,
+        .pos-title {
+          font-size: 13px;
+          font-weight: 700;
+          color: var(--color-text-main);
+        }
+      }
+
+      .icon-desc-wrap,
+      .pos-desc-wrap {
+        width: 100%;
+
+        .icon-desc,
+        .pos-desc {
+          font-size: 12px;
+          color: var(--color-text-muted);
+          line-height: 1.45;
+          margin: 0;
+          word-break: normal;
+        }
+      }
+
+      .icon-card-footer,
+      .sidebar-card-footer {
+        margin-top: auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-top: 6px;
+      }
+    }
+
+    /* Currency Cards */
+    .currency-picker-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 12px;
+    }
+
+    .currency-select-card {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 14px;
+      background: var(--color-canvas-subtle);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.15s ease;
+
+      &:hover {
+        border-color: var(--color-accent-fg);
+      }
+
+      &.active {
+        border-color: var(--color-primary);
+        background: var(--color-bg-card);
+        box-shadow: 0 0 0 2px var(--color-primary);
+      }
+
+      .curr-symbol-box {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: var(--color-primary-light);
+        color: var(--color-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        font-weight: 800;
+        flex-shrink: 0;
+      }
+
+      .curr-meta {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+
+        .curr-code {
+          font-size: 13px;
+          font-weight: 700;
+          color: var(--color-text-main);
+        }
+
+        .curr-name {
+          font-size: 11px;
+          color: var(--color-text-muted);
+        }
+      }
+    }
+
+    /* Sensory Audio Soundboard */
+    .audio-master-toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+
+      .toggle-status-text {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--color-text-muted);
+      }
+    }
+
+    .soundboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 14px;
+      margin-top: 10px;
+    }
+
+    .sound-card {
       border: 1px solid var(--color-border);
       border-radius: var(--radius-md);
       padding: 14px;
@@ -1713,120 +2655,67 @@ import { DeletionPermissionsService, DeletionPermissions } from '../../core/serv
       display: flex;
       flex-direction: column;
       gap: 10px;
-      transition: all 0.12s ease;
+      transition: all 0.15s ease;
 
       &:hover {
         border-color: var(--color-accent-fg);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow-sm);
       }
 
-      &.active {
-        border-color: var(--color-primary);
+      .sound-icon-box {
+        width: 36px;
+        height: 36px;
+        border-radius: var(--radius-sm);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+
+        &.click { background: rgba(11, 87, 208, 0.12); }
+        &.success { background: rgba(16, 185, 129, 0.15); }
+        &.delete { background: rgba(239, 68, 68, 0.12); }
+        &.nav { background: rgba(99, 102, 241, 0.12); }
+      }
+
+      .sound-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+
+        strong {
+          font-size: 13px;
+          font-weight: 700;
+          color: var(--color-text-main);
+        }
+
+        span {
+          font-size: 11px;
+          color: var(--color-text-muted);
+        }
+      }
+
+      .btn-sound-play {
+        margin-top: auto;
+        padding: 6px 12px;
+        border-radius: var(--radius-xs);
+        border: 1px solid var(--color-border);
         background: var(--color-bg-card);
-        box-shadow: 0 0 0 2px var(--color-primary);
+        color: var(--color-text-main);
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s ease;
+
+        &:hover {
+          background: var(--color-primary);
+          color: var(--color-primary-contrast);
+          border-color: var(--color-primary);
+        }
       }
     }
 
-    .theme-swatch-bar {
-      display: flex;
-      gap: 6px;
-    }
-
-    .swatch-circle {
-      width: 16px;
-      height: 16px;
-      border-radius: 50%;
-      border: 1px solid rgba(0, 0, 0, 0.15);
-    }
-
-    .theme-meta {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .theme-title {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--color-text-main);
-    }
-
-    .theme-desc {
-      font-size: 12px;
-      color: var(--color-text-muted);
-    }
-
-    .theme-footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-top: auto;
-    }
-
-    .active-tag {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--color-primary);
-    }
-
-    .icon-picker-grid,
-    .sidebar-picker-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 12px;
-    }
-
-    .icon-select-card,
-    .sidebar-select-card {
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-md);
-      padding: 12px;
-      background: var(--color-canvas-subtle);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      transition: all 0.12s ease;
-
-      &:hover {
-        border-color: var(--color-accent-fg);
-      }
-
-      &.active {
-        border-color: var(--color-primary);
-        background: var(--color-bg-card);
-        box-shadow: 0 0 0 2px var(--color-primary);
-      }
-    }
-
-    .icon-preview-tag,
-    .pos-badge {
-      font-size: 18px;
-      font-weight: 700;
-      min-width: 32px;
-      text-align: center;
-    }
-
-    .icon-meta,
-    .pos-meta {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .icon-title,
-    .pos-title {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--color-text-main);
-    }
-
-    .icon-desc,
-    .pos-desc {
-      font-size: 11px;
-      color: var(--color-text-muted);
-    }
-
+    /* Workflow & Density Settings Switch Cards */
     .settings-switch-grid {
       display: grid;
       grid-template-columns: 1fr;
@@ -1857,6 +2746,7 @@ import { DeletionPermissionsService, DeletionPermissions } from '../../core/serv
         strong {
           display: block;
           font-size: 13px;
+          font-weight: 700;
           color: var(--color-text-main);
         }
         p {
@@ -1867,8 +2757,8 @@ import { DeletionPermissionsService, DeletionPermissions } from '../../core/serv
       }
 
       .toggle-pill {
-        padding: 3px 10px;
-        border-radius: 12px;
+        padding: 4px 12px;
+        border-radius: 9999px;
         font-size: 11px;
         font-weight: 700;
         background: rgba(175, 184, 193, 0.3);
@@ -1878,59 +2768,6 @@ import { DeletionPermissionsService, DeletionPermissions } from '../../core/serv
           background: var(--color-primary);
           color: #ffffff;
         }
-      }
-    }
-
-    .currency-picker-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-      gap: 12px;
-    }
-
-    .currency-select-card {
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-md);
-      padding: 12px;
-      background: var(--color-canvas-subtle);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      transition: all 0.12s ease;
-
-      &:hover {
-        border-color: var(--color-accent-fg);
-      }
-
-      &.active {
-        border-color: var(--color-primary);
-        background: var(--color-bg-card);
-        box-shadow: 0 0 0 2px var(--color-primary);
-      }
-
-      .curr-symbol {
-        font-size: 18px;
-        font-weight: 700;
-        min-width: 28px;
-        color: var(--color-primary);
-      }
-
-      .curr-meta {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-      }
-
-      .curr-code {
-        font-size: 13px;
-        font-weight: 700;
-        color: var(--color-text-main);
-      }
-
-      .curr-name {
-        font-size: 11px;
-        color: var(--color-text-muted);
       }
     }
 
@@ -2148,6 +2985,28 @@ export class SettingsComponent implements OnInit {
   readonly alertMessage = signal<string | null>(null);
   readonly isAlertError = signal<boolean>(false);
 
+  // Theme category filter & computed helpers
+  readonly themeCategoryFilter = signal<'all' | 'light' | 'dark'>('all');
+  readonly filteredThemes = computed(() => {
+    const filter = this.themeCategoryFilter();
+    if (filter === 'all') return this.themeService.availableThemes;
+    return this.themeService.availableThemes.filter(t => t.category === filter);
+  });
+  readonly activeThemeDef = computed(() => {
+    const curr = this.themeService.currentTheme();
+    return this.themeService.availableThemes.find(t => t.id === curr) || this.themeService.availableThemes[0];
+  });
+
+  testSound(type: 'click' | 'success' | 'delete' | 'nav'): void {
+    if (!this.themeService.soundEffects()) {
+      this.themeService.toggleSoundEffects();
+    }
+    if (type === 'click') this.themeService.playClickSound();
+    else if (type === 'success') this.themeService.playSuccessSound();
+    else if (type === 'delete') this.themeService.playDeleteSound();
+    else if (type === 'nav') this.themeService.playNavSound();
+  }
+
   // Preference form model
   prefForm = {
     fullName: '',
@@ -2209,6 +3068,7 @@ export class SettingsComponent implements OnInit {
     const payload = { [module]: updatedVal };
     this.deletionPermissionsService.updatePermissions(payload).subscribe({
       next: () => {
+        this.themeService.playClickSound();
         this.alertMessage.set(`Deletion for ${module.toUpperCase()} is now ${updatedVal ? 'ON (Allowed)' : 'OFF (Blocked)'}.`);
         this.isAlertError.set(false);
       },
@@ -2230,6 +3090,7 @@ export class SettingsComponent implements OnInit {
     };
     this.deletionPermissionsService.updatePermissions(payload).subscribe({
       next: () => {
+        this.themeService.playClickSound();
         this.alertMessage.set(`All modules deletion permissions set to ${allow ? 'ALLOWED (ON)' : 'LOCKED (OFF)'}.`);
         this.isAlertError.set(false);
       },
@@ -2273,6 +3134,7 @@ export class SettingsComponent implements OnInit {
     if (confirm(`Move category "${cat.name}" to Recycle Bin?`)) {
       this.http.delete(`/api/v1/categories/${cat.id}`).subscribe({
         next: () => {
+          this.themeService.playDeleteSound();
           this.alertMessage.set(`Category "${cat.name}" moved to Recycle Bin.`);
           this.isAlertError.set(false);
           this.loadCategories();
@@ -2290,6 +3152,7 @@ export class SettingsComponent implements OnInit {
     this.saving.set(true);
     this.settingsService.updatePreferences(this.prefForm).subscribe({
       next: (res) => {
+        this.themeService.playSuccessSound();
         this.profile.set(res);
         this.saving.set(false);
         this.showAlert('Preferences saved successfully.');
@@ -2317,6 +3180,7 @@ export class SettingsComponent implements OnInit {
       icon: 'tag'
     }).subscribe({
       next: (created) => {
+        this.themeService.playSuccessSound();
         this.categories.update(list => [...list, created]);
         this.showCategoryModal.set(false);
         this.showAlert(`Category '${created.name}' created successfully.`);
@@ -2331,6 +3195,7 @@ export class SettingsComponent implements OnInit {
     this.exporting.set('json');
     this.settingsService.exportJson().subscribe({
       next: (blob) => {
+        this.themeService.playSuccessSound();
         const fileName = `Hisaab_Backup_${new Date().toISOString().slice(0, 10)}.json`;
         this.settingsService.downloadBlob(blob, fileName);
         this.exporting.set(null);
@@ -2347,6 +3212,7 @@ export class SettingsComponent implements OnInit {
     this.exporting.set('excel');
     this.settingsService.exportExcel().subscribe({
       next: (blob) => {
+        this.themeService.playSuccessSound();
         const fileName = `Hisaab_Master_Data_${new Date().toISOString().slice(0, 10)}.xlsx`;
         this.settingsService.downloadBlob(blob, fileName);
         this.exporting.set(null);
