@@ -217,6 +217,11 @@ using (var scope = app.Services.CreateScope())
 
             CREATE INDEX IF NOT EXISTS ""IX_goal_contributions_GoalId_ContributionDate"" ON goal_contributions (""GoalId"", ""ContributionDate"");
             CREATE INDEX IF NOT EXISTS ""IX_goal_contributions_UserId_ContributionDate"" ON goal_contributions (""UserId"", ""ContributionDate"");
+
+            -- Refresh Tokens Long-Lived Session & Family Tracking
+            ALTER TABLE refresh_tokens ADD COLUMN IF NOT EXISTS ""FamilyId"" uuid NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000';
+            ALTER TABLE refresh_tokens ADD COLUMN IF NOT EXISTS ""IsRememberMe"" boolean NOT NULL DEFAULT true;
+            CREATE INDEX IF NOT EXISTS ""IX_refresh_tokens_FamilyId"" ON refresh_tokens (""FamilyId"");
         ");
     }
     catch

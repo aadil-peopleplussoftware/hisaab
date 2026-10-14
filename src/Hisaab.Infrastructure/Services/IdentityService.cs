@@ -7,6 +7,7 @@ using Hisaab.Infrastructure.Persistence;
 using System.Collections.Concurrent;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace Hisaab.Infrastructure.Services;
 
@@ -81,14 +82,15 @@ public class IdentityService : IIdentityService
         }
         await _userManager.AddToRoleAsync(user, "User");
 
-        return await GenerateAuthResponseAsync(user, "User", deviceInfo, ipAddress, cancellationToken);
+        return await GenerateAuthResponseAsync(user, "User", true, null, deviceInfo, ipAddress, cancellationToken);
     }
 
     public async Task<Result<AuthResponseDto>> LoginAsync(
         string email,
         string password,
-        string? deviceInfo,
-        string? ipAddress,
+        bool rememberMe = true,
+        string? deviceInfo = null,
+        string? ipAddress = null,
         CancellationToken cancellationToken = default)
     {
         var normalizedEmail = email.Trim().ToLowerInvariant();
@@ -117,7 +119,7 @@ public class IdentityService : IIdentityService
         var roles = await _userManager.GetRolesAsync(user);
         var role = roles.FirstOrDefault() ?? "User";
 
-        return await GenerateAuthResponseAsync(user, role, deviceInfo, ipAddress, cancellationToken);
+        return await GenerateAuthResponseAsync(user, role, rememberMe, null, deviceInfo, ipAddress, cancellationToken);
     }
 
     public async Task<Result<AuthResponseDto>> RefreshTokenAsync(
@@ -132,9 +134,40 @@ public class IdentityService : IIdentityService
             .IgnoreQueryFilters()
             .FirstOrDefaultAsync(rt => rt.TokenHash == tokenHash, cancellationToken);
 
-        if (existingToken == null || !existingToken.IsActive)
+        if (existingToken == null)
         {
-            return Result<AuthResponseDto>.Failure("Invalid or expired refresh token.");
+            return Result<AuthResponseDto>.Failure("Invalid refresh token.");
+        }
+
+        // =========================================================================
+        // ⚠️ REUSE DETECTION / BREACH DETECTION (RFC 6819 & OAuth 2.0 Security BCP)
+        // If an already revoked token is used, it indicates a compromised token or
+        // token theft. Immediately invalidate all active tokens in the entire family!
+        // =========================================================================
+        if (existingToken.IsRevoked)
+        {
+            _logger.LogWarning(
+                "SECURITY ALERT: Revoked refresh token reuse detected for User {UserId}, Family {FamilyId}! Invalidating all tokens in family.",
+                existingToken.UserId,
+                existingToken.FamilyId);
+
+            var familyTokens = await _dbContext.RefreshTokens
+                .IgnoreQueryFilters()
+                .Where(rt => rt.FamilyId == existingToken.FamilyId && rt.RevokedAtUtc == null)
+                .ToListAsync(cancellationToken);
+
+            foreach (var t in familyTokens)
+            {
+                t.RevokedAtUtc = _dateTimeService.UtcNow;
+            }
+            await _dbContext.SaveChangesAsync(cancellationToken);
+
+            return Result<AuthResponseDto>.Failure("Security breach alert: Compromised session detected. All sessions in this family have been revoked. Please sign in again.");
+        }
+
+        if (existingToken.IsExpired)
+        {
+            return Result<AuthResponseDto>.Failure("Refresh token has expired. Please sign in again.");
         }
 
         var user = await _userManager.FindByIdAsync(existingToken.UserId.ToString());
@@ -143,8 +176,11 @@ public class IdentityService : IIdentityService
             return Result<AuthResponseDto>.Failure("User account is inactive or not found.");
         }
 
-        // Rotate token: revoke old token and record replacement
-        var (newRawToken, newTokenHash, newExpiresAtUtc) = _jwtTokenGenerator.GenerateRefreshToken();
+        // =========================================================================
+        // Token Rotation: Invalidate current token and issue fresh token in same family
+        // =========================================================================
+        var expirationDays = existingToken.IsRememberMe ? 30 : 7;
+        var (newRawToken, newTokenHash, newExpiresAtUtc) = _jwtTokenGenerator.GenerateRefreshToken(expirationDays);
 
         existingToken.RevokedAtUtc = _dateTimeService.UtcNow;
         existingToken.ReplacedByTokenHash = newTokenHash;
@@ -154,6 +190,8 @@ public class IdentityService : IIdentityService
             UserId = user.Id,
             TokenHash = newTokenHash,
             ExpiresAtUtc = newExpiresAtUtc,
+            FamilyId = existingToken.FamilyId, // Maintains token family identity
+            IsRememberMe = existingToken.IsRememberMe,
             DeviceInfo = deviceInfo ?? existingToken.DeviceInfo,
             IpAddress = ipAddress ?? existingToken.IpAddress,
             CreatedAtUtc = _dateTimeService.UtcNow
@@ -300,18 +338,23 @@ public class IdentityService : IIdentityService
     private async Task<Result<AuthResponseDto>> GenerateAuthResponseAsync(
         ApplicationUser user,
         string role,
+        bool rememberMe,
+        Guid? existingFamilyId,
         string? deviceInfo,
         string? ipAddress,
         CancellationToken cancellationToken)
     {
         var accessToken = _jwtTokenGenerator.GenerateAccessToken(user.Id, user.Email!, user.FullName, role);
-        var (rawRefreshToken, tokenHash, expiresAtUtc) = _jwtTokenGenerator.GenerateRefreshToken();
+        var expirationDays = rememberMe ? 30 : 7;
+        var (rawRefreshToken, tokenHash, expiresAtUtc) = _jwtTokenGenerator.GenerateRefreshToken(expirationDays);
 
         var refreshTokenEntity = new RefreshToken
         {
             UserId = user.Id,
             TokenHash = tokenHash,
             ExpiresAtUtc = expiresAtUtc,
+            FamilyId = existingFamilyId ?? Guid.NewGuid(),
+            IsRememberMe = rememberMe,
             DeviceInfo = deviceInfo,
             IpAddress = ipAddress,
             CreatedAtUtc = _dateTimeService.UtcNow
@@ -426,7 +469,7 @@ public class IdentityService : IIdentityService
         var roles = await _userManager.GetRolesAsync(user);
         var role = roles.FirstOrDefault() ?? "User";
 
-        return await GenerateAuthResponseAsync(user, role, deviceInfo, ipAddress, cancellationToken);
+        return await GenerateAuthResponseAsync(user, role, true, null, deviceInfo, ipAddress, cancellationToken);
     }
 
     public async Task<Result<OtpResultDto>> SendOtpAsync(
@@ -516,7 +559,7 @@ public class IdentityService : IIdentityService
 
         var roles = await _userManager.GetRolesAsync(user);
         var role = roles.FirstOrDefault() ?? "User";
-        return await GenerateAuthResponseAsync(user, role, deviceInfo, ipAddress, cancellationToken);
+        return await GenerateAuthResponseAsync(user, role, true, null, deviceInfo, ipAddress, cancellationToken);
     }
 
     public async Task<Result<ForgotPasswordResultDto>> ForgotPasswordAsync(

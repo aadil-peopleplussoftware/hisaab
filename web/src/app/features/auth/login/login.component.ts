@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../../core/services/auth.service';
 import { ThemeService } from '../../../core/services/theme.service';
 
@@ -144,16 +144,46 @@ type LoginTab = 'password' | 'otp' | 'google' | 'forgot';
                 </div>
               </div>
             </div>
+
+            <!-- Metric Card 3: Dreams & Goals Milestone Target -->
+            <div class="glass-card goal-preview-card">
+              <div class="card-header-row">
+                <div class="card-header-text">
+                  <span class="card-caption">Dreams & Financial Goals Milestone</span>
+                  <div class="card-amount-row">
+                    <span class="card-amount">₹15,00,000</span>
+                    <span class="metric-pill positive">65% Achieved</span>
+                  </div>
+                </div>
+                <div class="goal-preview-emoji">🚗</div>
+              </div>
+              <div class="goal-preview-meta">
+                <div class="v-row">
+                  <span class="v-name">Dream Car (Honda City)</span>
+                  <span class="v-val text-green">₹9,75,000 Saved</span>
+                </div>
+                <div class="progress-bar-bg">
+                  <div class="progress-bar-fill fill-amber" style="width: 65%"></div>
+                </div>
+                <span class="goal-advisor-text">⚡ Advisor Pace: ₹35,000/mo to achieve by Dec 2027</span>
+              </div>
+            </div>
           </div>
 
           <!-- Trust & Security Highlights -->
           <footer class="showcase-trust">
             <div class="trust-badge">
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+              </svg>
+              <span>30-Day Token Rotation</span>
+            </div>
+            <div class="trust-badge">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                 <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
               </svg>
-              <span>256-Bit SSL Encrypted</span>
+              <span>httpOnly Session Protection</span>
             </div>
             <div class="trust-badge">
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
@@ -357,6 +387,29 @@ type LoginTab = 'password' | 'otp' | 'google' | 'forgot';
                   }
                 </div>
 
+                <!-- Keep Me Logged In (30-day Long-Lived Session) -->
+                <div class="keep-logged-in-row">
+                  <label class="remember-me-toggle">
+                    <input
+                      type="checkbox"
+                      formControlName="rememberMe"
+                      class="remember-checkbox"
+                    />
+                    <div class="checkbox-custom">
+                      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                    </div>
+                    <div class="remember-label-group">
+                      <span class="remember-title">Keep me logged in for 30 days</span>
+                      <span class="remember-hint">Persistent session with secure token rotation</span>
+                    </div>
+                  </label>
+                  <span class="security-badge" title="Protected in httpOnly, SameSite=Lax encrypted cookie">
+                    🛡️ httpOnly Secure
+                  </span>
+                </div>
+
                 <button
                   type="submit"
                   class="btn-gradient-primary"
@@ -444,6 +497,28 @@ type LoginTab = 'password' | 'otp' | 'google' | 'forgot';
                       }
                     </div>
 
+                    <!-- Keep Me Logged In (30-day Long-Lived Session) -->
+                    <div class="keep-logged-in-row">
+                      <label class="remember-me-toggle">
+                        <input
+                          type="checkbox"
+                          [checked]="rememberMeOtp()"
+                          (change)="rememberMeOtp.set($any($event.target).checked)"
+                          class="remember-checkbox"
+                        />
+                        <div class="checkbox-custom">
+                          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                          </svg>
+                        </div>
+                        <div class="remember-label-group">
+                          <span class="remember-title">Keep me logged in for 30 days</span>
+                          <span class="remember-hint">Persistent session on this device</span>
+                        </div>
+                      </label>
+                      <span class="security-badge">🛡️ Secure</span>
+                    </div>
+
                     <button
                       type="button"
                       class="btn-gradient-primary"
@@ -512,6 +587,28 @@ type LoginTab = 'password' | 'otp' | 'google' | 'forgot';
                     />
                   </div>
                   <span class="field-hint">New Gmail accounts are automatically provisioned with secure workspace access.</span>
+                </div>
+
+                <!-- Keep Me Logged In (30-day Long-Lived Session) -->
+                <div class="keep-logged-in-row">
+                  <label class="remember-me-toggle">
+                    <input
+                      type="checkbox"
+                      [checked]="rememberMeGoogle()"
+                      (change)="rememberMeGoogle.set($any($event.target).checked)"
+                      class="remember-checkbox"
+                    />
+                    <div class="checkbox-custom">
+                      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                      </svg>
+                    </div>
+                    <div class="remember-label-group">
+                      <span class="remember-title">Keep me logged in for 30 days</span>
+                      <span class="remember-hint">OAuth2 persistent rotation</span>
+                    </div>
+                  </label>
+                  <span class="security-badge">🛡️ Secure</span>
                 </div>
 
                 <button
@@ -1014,6 +1111,38 @@ type LoginTab = 'password' | 'otp' | 'google' | 'forgot';
       background: linear-gradient(90deg, #1f6feb, #58a6ff);
     }
 
+    .progress-bar-fill.fill-amber {
+      background: linear-gradient(90deg, #d97706, #f59e0b);
+    }
+
+    .goal-preview-card {
+      margin-top: 0.85rem;
+    }
+
+    .goal-preview-emoji {
+      font-size: 1.6rem;
+      width: 38px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(245, 158, 11, 0.15);
+      border-radius: 10px;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .goal-preview-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .goal-advisor-text {
+      font-size: 0.72rem;
+      color: #f59e0b;
+      margin-top: 0.25rem;
+    }
+
     /* Trust Footer */
     .showcase-trust {
       display: flex;
@@ -1279,6 +1408,90 @@ type LoginTab = 'password' | 'otp' | 'google' | 'forgot';
       margin-top: 0.2rem;
     }
 
+    /* Keep Me Logged In (30-day Long-Lived Session) */
+    .keep-logged-in-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      margin: 0.5rem 0 0.85rem;
+      padding: 0.65rem 0.85rem;
+      background: var(--color-canvas-subtle);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: var(--radius-md);
+      transition: background 0.15s ease, border-color 0.15s ease;
+    }
+
+    .keep-logged-in-row:hover {
+      background: var(--color-canvas-surface);
+      border-color: var(--color-border-default);
+    }
+
+    .remember-me-toggle {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      cursor: pointer;
+      user-select: none;
+      flex: 1;
+    }
+
+    .remember-checkbox {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .checkbox-custom {
+      width: 18px;
+      height: 18px;
+      border-radius: 5px;
+      border: 1.5px solid var(--color-border-default);
+      background: var(--color-canvas-default);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: transparent;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+    }
+
+    .remember-checkbox:checked + .checkbox-custom {
+      background: var(--color-accent-fg);
+      border-color: var(--color-accent-fg);
+      color: #ffffff;
+      box-shadow: 0 0 0 2px var(--color-accent-subtle);
+    }
+
+    .remember-label-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .remember-title {
+      font-size: 0.825rem;
+      font-weight: 600;
+      color: var(--color-fg-default);
+    }
+
+    .remember-hint {
+      font-size: 0.7rem;
+      color: var(--color-fg-subtle);
+    }
+
+    .security-badge {
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 0.2rem 0.5rem;
+      background: rgba(16, 185, 129, 0.12);
+      color: #059669;
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      border-radius: 9999px;
+      white-space: nowrap;
+      letter-spacing: 0.02em;
+    }
+
     /* Submit Primary Button */
     .btn-gradient-primary {
       display: flex;
@@ -1518,6 +1731,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   public readonly themeService = inject(ThemeService);
 
   readonly activeTab = signal<LoginTab>('password');
@@ -1525,7 +1739,8 @@ export class LoginComponent implements OnInit, OnDestroy {
   // Password Form
   readonly loginForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required]]
+    password: ['', [Validators.required]],
+    rememberMe: [true]
   });
 
   readonly showPassword = signal<boolean>(false);
@@ -1539,21 +1754,29 @@ export class LoginComponent implements OnInit, OnDestroy {
   readonly otpSent = signal<boolean>(false);
   readonly otpCountdown = signal<number>(30);
   readonly otpDigits = signal<string[]>(['', '', '', '', '', '']);
+  readonly rememberMeOtp = signal<boolean>(true);
   private countdownTimer: any = null;
 
   // Google State
   googleAccountEmail: string = '';
+  readonly rememberMeGoogle = signal<boolean>(true);
 
   // Forgot Password State
   forgotPasswordEmail: string = '';
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    if (this.authService.isAuthenticated()) {
+      const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
+      this.router.navigateByUrl(returnUrl);
+    }
+  }
 
   ngOnDestroy(): void {
     if (this.countdownTimer) clearInterval(this.countdownTimer);
   }
 
   setTab(tab: LoginTab): void {
+    this.themeService.playClickSound();
     this.activeTab.set(tab);
     this.errorMessage.set(null);
     this.infoMessage.set(null);
@@ -1561,6 +1784,7 @@ export class LoginComponent implements OnInit, OnDestroy {
   }
 
   togglePasswordVisibility(): void {
+    this.themeService.playClickSound();
     this.showPassword.update(v => !v);
   }
 
@@ -1578,13 +1802,18 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
-    const { email, password } = this.loginForm.getRawValue();
+    const { email, password, rememberMe } = this.loginForm.getRawValue();
 
-    this.authService.login({ email: email!, password: password! }).subscribe({
+    this.authService.login({
+      email: email!,
+      password: password!,
+      rememberMe: rememberMe ?? true
+    }).subscribe({
       next: () => {
         this.themeService.playSuccessSound();
         this.isLoading.set(false);
-        this.router.navigate(['/dashboard']);
+        const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
+        this.router.navigateByUrl(returnUrl);
       },
       error: (err) => {
         this.isLoading.set(false);
@@ -1672,7 +1901,8 @@ export class LoginComponent implements OnInit, OnDestroy {
       next: () => {
         this.themeService.playSuccessSound();
         this.isLoading.set(false);
-        this.router.navigate(['/dashboard']);
+        const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
+        this.router.navigateByUrl(returnUrl);
       },
       error: (err) => {
         this.isLoading.set(false);
@@ -1698,7 +1928,8 @@ export class LoginComponent implements OnInit, OnDestroy {
       next: () => {
         this.themeService.playSuccessSound();
         this.isLoading.set(false);
-        this.router.navigate(['/dashboard']);
+        const returnUrl = this.route.snapshot.queryParams['returnUrl'] || '/dashboard';
+        this.router.navigateByUrl(returnUrl);
       },
       error: (err) => {
         this.isLoading.set(false);

@@ -16,8 +16,9 @@ public interface IIdentityService
     Task<Result<AuthResponseDto>> LoginAsync(
         string email,
         string password,
-        string? deviceInfo,
-        string? ipAddress,
+        bool rememberMe = true,
+        string? deviceInfo = null,
+        string? ipAddress = null,
         CancellationToken cancellationToken = default);
 
     Task<Result<AuthResponseDto>> RefreshTokenAsync(

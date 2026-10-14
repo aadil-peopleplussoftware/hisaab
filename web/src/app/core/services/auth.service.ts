@@ -1,6 +1,6 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, tap, of, catchError } from 'rxjs';
 import { User, AuthResponse } from '../models/user.model';
 
 export interface RegisterPayload {
@@ -12,6 +12,7 @@ export interface RegisterPayload {
 export interface LoginPayload {
   email: string;
   password: string;
+  rememberMe?: boolean;
 }
 
 export interface UpdateProfilePayload {
@@ -77,6 +78,18 @@ export class AuthService {
 
   readonly currentUser = signal<User | null>(null);
   readonly isAuthenticated = computed(() => !!this.currentUser());
+  readonly isInitialized = signal<boolean>(false);
+
+  initSession(): Observable<AuthResponse | null> {
+    return this.refreshToken().pipe(
+      tap(() => this.isInitialized.set(true)),
+      catchError(() => {
+        this.clearSession();
+        this.isInitialized.set(true);
+        return of(null);
+      })
+    );
+  }
 
   register(payload: RegisterPayload): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.baseUrl}/register`, payload).pipe(

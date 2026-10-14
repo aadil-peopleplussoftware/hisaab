@@ -591,17 +591,56 @@ import { DeletionPermissionsService, DeletionPermissions } from '../../core/serv
 
           <!-- Sensory Audio Feedback & Interactive Soundboard -->
           <div class="studio-block">
-            <div class="studio-header-with-filter">
+            <div class="studio-header-with-filter audio-panel-header">
               <div>
-                <h4 class="studio-subheading">Sensory Audio Feedback & Soundboard</h4>
+                <div class="audio-header-title-row">
+                  <h4 class="studio-subheading">Sensory Audio Feedback & Soundboard</h4>
+                  <span class="audio-live-flag" [class.flag-on]="themeService.soundEffects()" [class.flag-off]="!themeService.soundEffects()">
+                    <span class="status-pulse-dot"></span>
+                    {{ themeService.soundEffects() ? 'AUDIO: ON' : 'AUDIO: OFF' }}
+                  </span>
+                </div>
                 <p class="studio-subdesc">Tasteful Web Audio synthesizer providing immediate tactile haptic feedback without external audio files.</p>
               </div>
-              <div class="audio-master-toggle" (click)="themeService.toggleSoundEffects()">
-                <span class="toggle-status-text">{{ themeService.soundEffects() ? 'SOUND: ON' : 'SOUND: MUTED' }}</span>
-                <div class="toggle-pill" [class.on]="themeService.soundEffects()">
-                  {{ themeService.soundEffects() ? 'ENABLED' : 'MUTED' }}
-                </div>
+
+              <!-- Explicit ON / OFF Segmented Flag Switch -->
+              <div class="audio-flag-switch-group" role="group" aria-label="Audio Feedback Flag Toggle">
+                <button
+                  type="button"
+                  class="audio-flag-btn btn-flag-on"
+                  [class.active]="themeService.soundEffects()"
+                  (click)="themeService.setSoundEffects(true)"
+                  title="Enable audio feedback across all screens">
+                  <span class="flag-icon">🔊</span>
+                  <span class="flag-label">ON</span>
+                </button>
+                <button
+                  type="button"
+                  class="audio-flag-btn btn-flag-off"
+                  [class.active]="!themeService.soundEffects()"
+                  (click)="themeService.setSoundEffects(false)"
+                  title="Mute audio feedback across all screens">
+                  <span class="flag-icon">🔇</span>
+                  <span class="flag-label">OFF</span>
+                </button>
               </div>
+            </div>
+
+            <!-- Audio Master Status Banner -->
+            <div class="audio-status-banner" [class.banner-active]="themeService.soundEffects()" [class.banner-muted]="!themeService.soundEffects()">
+              <div class="status-banner-content">
+                <span class="banner-icon">{{ themeService.soundEffects() ? '🔔' : '🔕' }}</span>
+                <span class="banner-text">
+                  <strong>Status: {{ themeService.soundEffects() ? 'ACTIVE (ON)' : 'MUTED (OFF)' }}</strong> —
+                  {{ themeService.soundEffects() ? 'Tactile clicks, modal chimes, and transaction cues will play across all screens.' : 'App sound effects are disabled. You can preview tones below without turning the master flag on.' }}
+                </span>
+              </div>
+              <button
+                type="button"
+                class="btn-banner-quick-toggle"
+                (click)="themeService.toggleSoundEffects()">
+                {{ themeService.soundEffects() ? 'Turn Sound OFF' : 'Turn Sound ON' }}
+              </button>
             </div>
 
             <!-- Live Soundboard Test Buttons -->
@@ -2650,17 +2689,179 @@ import { DeletionPermissionsService, DeletionPermissions } from '../../core/serv
       }
     }
 
-    /* Sensory Audio Soundboard */
-    .audio-master-toggle {
+    /* Sensory Audio Soundboard & Explicit Flag Controls */
+    .audio-panel-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .audio-header-title-row {
       display: flex;
       align-items: center;
-      gap: 10px;
-      cursor: pointer;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
 
-      .toggle-status-text {
+    .audio-live-flag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 10px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      transition: all 0.2s ease;
+
+      .status-pulse-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+      }
+
+      &.flag-on {
+        background: rgba(16, 185, 129, 0.15);
+        color: #059669;
+        border: 1px solid rgba(16, 185, 129, 0.35);
+
+        .status-pulse-dot {
+          background: #10b981;
+          box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.3);
+          animation: audioFlagPulse 2s infinite ease-in-out;
+        }
+      }
+
+      &.flag-off {
+        background: rgba(100, 116, 139, 0.12);
+        color: var(--color-text-muted);
+        border: 1px solid var(--color-border);
+
+        .status-pulse-dot {
+          background: #94a3b8;
+        }
+      }
+    }
+
+    @keyframes audioFlagPulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.25); opacity: 0.75; }
+    }
+
+    .audio-flag-switch-group {
+      display: inline-flex;
+      align-items: center;
+      background: var(--color-canvas-subtle);
+      border: 1px solid var(--color-border);
+      border-radius: 9999px;
+      padding: 3px;
+      gap: 3px;
+      box-shadow: var(--shadow-sm);
+
+      .audio-flag-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 16px;
+        border-radius: 9999px;
         font-size: 12px;
         font-weight: 700;
+        cursor: pointer;
+        border: none;
+        background: transparent;
         color: var(--color-text-muted);
+        transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+
+        .flag-icon {
+          font-size: 13px;
+        }
+
+        &:hover {
+          color: var(--color-text-main);
+        }
+
+        &.btn-flag-on.active {
+          background: #10b981;
+          color: #ffffff;
+          box-shadow: 0 2px 6px rgba(16, 185, 129, 0.35);
+        }
+
+        &.btn-flag-off.active {
+          background: #64748b;
+          color: #ffffff;
+          box-shadow: 0 2px 6px rgba(100, 116, 139, 0.3);
+        }
+      }
+    }
+
+    .audio-status-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      margin: 12px 0 16px 0;
+      border: 1px solid transparent;
+      font-size: 12px;
+      transition: all 0.2s ease;
+      flex-wrap: wrap;
+
+      &.banner-active {
+        background: rgba(16, 185, 129, 0.08);
+        border-color: rgba(16, 185, 129, 0.25);
+        color: var(--color-text-main);
+
+        .banner-icon {
+          color: #10b981;
+        }
+      }
+
+      &.banner-muted {
+        background: var(--color-canvas-subtle);
+        border-color: var(--color-border);
+        color: var(--color-text-muted);
+
+        .banner-icon {
+          color: #94a3b8;
+        }
+      }
+
+      .status-banner-content {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex: 1;
+
+        .banner-icon {
+          font-size: 16px;
+        }
+
+        .banner-text {
+          strong {
+            color: var(--color-text-main);
+          }
+        }
+      }
+
+      .btn-banner-quick-toggle {
+        padding: 5px 12px;
+        font-size: 11px;
+        font-weight: 600;
+        border-radius: var(--radius-xs);
+        border: 1px solid var(--color-border);
+        background: var(--color-bg-card);
+        color: var(--color-text-main);
+        cursor: pointer;
+        transition: all 0.15s ease;
+
+        &:hover {
+          border-color: var(--color-accent-fg);
+          background: var(--color-canvas-subtle);
+        }
       }
     }
 
@@ -3023,13 +3224,7 @@ export class SettingsComponent implements OnInit {
   });
 
   testSound(type: 'click' | 'success' | 'delete' | 'nav'): void {
-    if (!this.themeService.soundEffects()) {
-      this.themeService.toggleSoundEffects();
-    }
-    if (type === 'click') this.themeService.playClickSound();
-    else if (type === 'success') this.themeService.playSuccessSound();
-    else if (type === 'delete') this.themeService.playDeleteSound();
-    else if (type === 'nav') this.themeService.playNavSound();
+    this.themeService.previewSound(type);
   }
 
   // Preference form model

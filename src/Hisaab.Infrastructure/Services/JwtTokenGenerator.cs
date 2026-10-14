@@ -49,7 +49,7 @@ public class JwtTokenGenerator : IJwtTokenGenerator
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    public (string RawToken, string TokenHash, DateTime ExpiresAtUtc) GenerateRefreshToken()
+    public (string RawToken, string TokenHash, DateTime ExpiresAtUtc) GenerateRefreshToken(int? customExpirationDays = null)
     {
         var randomBytes = new byte[64];
         using var rng = RandomNumberGenerator.Create();
@@ -57,7 +57,7 @@ public class JwtTokenGenerator : IJwtTokenGenerator
         var rawToken = Convert.ToBase64String(randomBytes);
 
         var tokenHash = HashToken(rawToken);
-        var expirationDays = _configuration.GetValue<int?>("Jwt:RefreshTokenExpirationDays") ?? 7;
+        var expirationDays = customExpirationDays ?? _configuration.GetValue<int?>("Jwt:RefreshTokenExpirationDays") ?? 7;
         var expiresAtUtc = _dateTimeService.UtcNow.AddDays(expirationDays);
 
         return (rawToken, tokenHash, expiresAtUtc);
