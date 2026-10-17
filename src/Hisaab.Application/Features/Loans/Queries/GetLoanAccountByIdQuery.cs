@@ -117,6 +117,8 @@ public class GetLoanAccountByIdQueryHandler : IRequestHandler<GetLoanAccountById
             account.DueDate,
             account.Status,
             account.Status.ToString(),
+            account.Priority,
+            account.Priority.ToString(),
             account.Note,
             totalDisbursed,
             totalRepaid,

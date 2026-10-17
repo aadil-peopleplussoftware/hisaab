@@ -1,6 +1,6 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LoansService } from '../services/loans.service';
 import {
@@ -9,6 +9,7 @@ import {
   LoanAccountDetail,
   LoanDirection,
   LoanInterestType,
+  LoanPriority,
   LoanStatus,
   LoanTransaction,
   LoanTransactionKind,
@@ -16,11 +17,13 @@ import {
 } from '../models/loan.model';
 import { InrCurrencyPipe } from '../../../shared/pipes/inr-currency.pipe';
 import { StatCardComponent } from '../../../shared/components/stat-card/stat-card.component';
+import { DeletionPermissionsService } from '../../../core/services/deletion-permissions.service';
+import { ThemeService } from '../../../core/services/theme.service';
 
 @Component({
   selector: 'app-loan-detail',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, InrCurrencyPipe, StatCardComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, InrCurrencyPipe, StatCardComponent],
   template: `
     <div class="loan-detail-page">
       <!-- Top Action & Navigation Bar -->
@@ -31,7 +34,12 @@ import { StatCardComponent } from '../../../shared/components/stat-card/stat-car
 
         <div class="header-buttons">
           <button type="button" class="btn-outline btn-print" (click)="printStatement()">
-            🖨️ Print Statement
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" class="mr-1">
+              <polyline points="6 9 6 2 18 2 18 9"/>
+              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+              <rect x="6" y="14" width="12" height="8"/>
+            </svg>
+            <span>Print Statement</span>
           </button>
           @if (detail()?.account?.status === 1) {
             <button type="button" class="btn-primary" (click)="openAddTxnModal()">
@@ -60,6 +68,14 @@ import { StatCardComponent } from '../../../shared/components/stat-card/stat-car
                   [class.badge-given]="d.account.direction === 1"
                   [class.badge-taken]="d.account.direction === 2">
                   {{ d.account.direction === 1 ? 'Given (Lent)' : 'Taken (Borrowed)' }}
+                </span>
+                <span
+                  class="priority-badge"
+                  [class.priority-urgent]="d.account.priority === 4"
+                  [class.priority-high]="d.account.priority === 3"
+                  [class.priority-medium]="d.account.priority === 2"
+                  [class.priority-low]="d.account.priority === 1">
+                  Priority: {{ getPriorityLabel(d.account.priority) }}
                 </span>
                 <span
                   class="badge"
@@ -97,6 +113,23 @@ import { StatCardComponent } from '../../../shared/components/stat-card/stat-car
 
           <!-- Quick Parameters Grid -->
           <div class="params-grid">
+            <div class="param-item">
+              <span class="param-label">{{ d.account.direction === 2 ? 'Payoff Priority' : 'Collection Priority' }}</span>
+              <select
+                class="quick-priority-select"
+                [ngModel]="d.account.priority"
+                (ngModelChange)="changePriority($event)"
+                [class.p-sel-urgent]="d.account.priority == 4"
+                [class.p-sel-high]="d.account.priority == 3"
+                [class.p-sel-medium]="d.account.priority == 2"
+                [class.p-sel-low]="d.account.priority == 1"
+                title="1-Click Priority Changer">
+                <option [ngValue]="4" [selected]="d.account.priority == 4">🔴 Urgent</option>
+                <option [ngValue]="3" [selected]="d.account.priority == 3">🟠 High</option>
+                <option [ngValue]="2" [selected]="d.account.priority == 2">🟡 Medium</option>
+                <option [ngValue]="1" [selected]="d.account.priority == 1">🟢 Low</option>
+              </select>
+            </div>
             <div class="param-item">
               <span class="param-label">Interest Rate</span>
               <span class="param-value">
@@ -185,11 +218,22 @@ import { StatCardComponent } from '../../../shared/components/stat-card/stat-car
               <h3>Account Ledger</h3>
               <p class="subtitle">{{ d.transactions.length }} transaction records with running balance</p>
             </div>
-            @if (d.account.status === 1) {
-              <button type="button" class="btn-primary btn-sm" (click)="openAddTxnModal()">
-                + Add Transaction
-              </button>
-            }
+            <div class="ledger-header-actions">
+              @if (d.transactions.length > 0) {
+                <button
+                  type="button"
+                  class="btn-action btn-danger btn-sm"
+                  title="Delete all transactions from this loan"
+                  (click)="clearAllTransactions()">
+                  🗑️ Clear All Transactions
+                </button>
+              }
+              @if (d.account.status === 1) {
+                <button type="button" class="btn-primary btn-sm" (click)="openAddTxnModal()">
+                  + Add Transaction
+                </button>
+              }
+            </div>
           </div>
 
           <!-- Empty Transactions -->
@@ -400,6 +444,18 @@ import { StatCardComponent } from '../../../shared/components/stat-card/stat-car
                 </div>
 
                 <div class="form-group">
+                  <label class="form-label">
+                    {{ detail()?.account?.direction === 2 ? 'Payoff Priority (Konsa pehle bharna he) *' : 'Collection Priority (Konsa pehle lena he) *' }}
+                  </label>
+                  <select class="form-control" formControlName="priority">
+                    <option [ngValue]="4">🔴 Urgent (Immediate action)</option>
+                    <option [ngValue]="3">🟠 High (Pay / collect soon)</option>
+                    <option [ngValue]="2">🟡 Medium (Standard)</option>
+                    <option [ngValue]="1">🟢 Low (Flexible)</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
                   <label class="form-label">Notes & Terms</label>
                   <textarea class="form-control" rows="2" formControlName="note"></textarea>
                 </div>
@@ -491,6 +547,77 @@ import { StatCardComponent } from '../../../shared/components/stat-card/stat-car
     .badge-taken { background: #fffbeb; color: #92400e; }
     .badge-active { background: #e0f2fe; color: #0369a1; }
     .badge-closed { background: #f1f5f9; color: #475569; }
+
+    .priority-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .priority-urgent {
+      background: #fef2f2;
+      color: #b91c1c;
+      border: 1px solid #fca5a5;
+    }
+
+    .priority-high {
+      background: #fff7ed;
+      color: #c2410c;
+      border: 1px solid #fdba74;
+    }
+
+    .priority-medium {
+      background: #fefce8;
+      color: #a16207;
+      border: 1px solid #fde047;
+    }
+
+    .priority-low {
+      background: #f0fdf4;
+      color: #15803d;
+      border: 1px solid #86efac;
+    }
+
+    .quick-priority-select {
+      padding: 0.25rem 0.5rem;
+      border-radius: 6px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      border: 1px solid var(--color-border);
+      background: var(--color-bg-card);
+      cursor: pointer;
+      min-height: 32px;
+      margin-top: 0.15rem;
+      transition: all 0.15s ease;
+    }
+
+    .p-sel-urgent {
+      background: #fef2f2;
+      color: #b91c1c;
+      border-color: #fca5a5;
+    }
+
+    .p-sel-high {
+      background: #fff7ed;
+      color: #c2410c;
+      border-color: #fdba74;
+    }
+
+    .p-sel-medium {
+      background: #fefce8;
+      color: #a16207;
+      border-color: #fde047;
+    }
+
+    .p-sel-low {
+      background: #f0fdf4;
+      color: #15803d;
+      border-color: #86efac;
+    }
 
     .account-name {
       margin: 0;
@@ -611,6 +738,13 @@ import { StatCardComponent } from '../../../shared/components/stat-card/stat-car
       font-size: 1.25rem;
       font-weight: 700;
       color: var(--color-text-main);
+    }
+
+    .ledger-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
     }
 
     .mobile-txn-list {
@@ -887,7 +1021,9 @@ export class LoanDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly loansService = inject(LoansService);
+  private readonly deletionPermissionsService = inject(DeletionPermissionsService);
   private readonly fb = inject(FormBuilder);
+  public readonly themeService = inject(ThemeService);
 
   readonly detail = signal<LoanAccountDetail | null>(null);
   readonly loading = signal<boolean>(true);
@@ -908,6 +1044,7 @@ export class LoanDetailComponent implements OnInit {
     counterparty: ['', [Validators.required, Validators.maxLength(150)]],
     interestRate: [0, [Validators.min(0), Validators.max(100)]],
     interestType: [LoanInterestType.None, [Validators.required]],
+    priority: [LoanPriority.Medium, [Validators.required]],
     dueDate: [''],
     note: ['']
   });
@@ -956,13 +1093,61 @@ export class LoanDetailComponent implements OnInit {
   }
 
   confirmDeleteLoan(): void {
+    if (!this.deletionPermissionsService.canDelete('loans')) {
+      alert('Deletion is disabled for Loans in Settings. Enable it in Settings > Deletion Controls to delete this loan.');
+      return;
+    }
+
     const current = this.detail();
     if (!current) return;
 
-    if (confirm(`Are you sure you want to delete the loan "${current.account.name}"? This will also remove its transaction history.`)) {
-      this.loansService.deleteLoan(current.account.id).subscribe({
+    const txnCount = current.transactions?.length || 0;
+
+    if (txnCount > 0) {
+      const confirmCascade = confirm(
+        `⚠️ Is loan me ${txnCount} transaction(s) recorded hain!\n\n` +
+        `Niyam: Loan delete karne ke liye pehle transactions delete honi chahiye.\n\n` +
+        `Kya aap pehle is loan ki sabhi ${txnCount} transactions ko delete karke is loan ko Recycle Bin me bhejna chahte hain?\n\n` +
+        `• 'OK' dabayein: Pehle sabhi transactions delete hongi aur phir loan delete ho jayega.\n` +
+        `• 'Cancel' dabayein: Aap niche ledger se ek-ek transaction delete kar sakte hain ya 'Clear All Transactions' use karein.`
+      );
+
+      if (!confirmCascade) return;
+    } else {
+      if (!confirm(`Are you sure you want to delete the loan "${current.account.name}"? This will move it to the Recycle Bin.`)) {
+        return;
+      }
+    }
+
+    this.loansService.deleteLoan(current.account.id).subscribe({
+      next: () => {
+        this.themeService.playDeleteSound();
+        this.router.navigate(['/loans']);
+      },
+      error: (err) => {
+        alert(err?.error?.detail || err?.error?.message || 'Failed to delete loan. Please check your settings or try again.');
+      }
+    });
+  }
+
+  clearAllTransactions(): void {
+    if (!this.deletionPermissionsService.canDelete('loans')) {
+      alert('Deletion is disabled for Loans in Settings. Enable it in Settings > Deletion Controls to delete transactions.');
+      return;
+    }
+
+    const current = this.detail();
+    if (!current || !current.transactions || current.transactions.length === 0) return;
+
+    const count = current.transactions.length;
+    if (confirm(`Are you sure you want to delete ALL ${count} transactions of this loan? They will be moved to the Recycle Bin.`)) {
+      this.loansService.deleteAllTransactions(current.account.id).subscribe({
         next: () => {
-          this.router.navigate(['/loans']);
+          this.themeService.playDeleteSound();
+          this.loadDetail(current.account.id);
+        },
+        error: (err) => {
+          alert(err?.error?.detail || err?.error?.message || 'Failed to clear transactions.');
         }
       });
     }
@@ -1001,6 +1186,7 @@ export class LoanDetailComponent implements OnInit {
 
     this.loansService.createTransaction(current.account.id, payload).subscribe({
       next: (updated) => {
+        this.themeService.playSuccessSound();
         this.detail.set(updated);
         this.submitting.set(false);
         this.closeAddTxnModal();
@@ -1013,13 +1199,22 @@ export class LoanDetailComponent implements OnInit {
   }
 
   deleteTransaction(txnId: string): void {
+    if (!this.deletionPermissionsService.canDelete('loans')) {
+      alert('Deletion is disabled for Loans in Settings. Enable it in Settings > Deletion Controls to delete this transaction.');
+      return;
+    }
+
     const current = this.detail();
     if (!current) return;
 
-    if (confirm('Are you sure you want to delete this transaction?')) {
+    if (confirm('Are you sure you want to delete this transaction? It will be moved to the Recycle Bin.')) {
       this.loansService.deleteTransaction(current.account.id, txnId).subscribe({
         next: () => {
+          this.themeService.playDeleteSound();
           this.loadDetail(current.account.id);
+        },
+        error: (err) => {
+          alert(err?.error?.detail || err?.error?.message || 'Failed to delete transaction.');
         }
       });
     }
@@ -1034,6 +1229,7 @@ export class LoanDetailComponent implements OnInit {
       counterparty: current.account.counterparty,
       interestRate: current.account.interestRate,
       interestType: current.account.interestType,
+      priority: current.account.priority || LoanPriority.Medium,
       dueDate: current.account.dueDate ? current.account.dueDate.substring(0, 10) : '',
       note: current.account.note || ''
     });
@@ -1042,6 +1238,44 @@ export class LoanDetailComponent implements OnInit {
 
   closeEditModal(): void {
     this.showEditModal.set(false);
+  }
+
+  changePriority(newPriorityOrEvent: any): void {
+    const current = this.detail();
+    if (!current) return;
+
+    let newPriority: number;
+    if (newPriorityOrEvent && typeof newPriorityOrEvent === 'object' && 'target' in newPriorityOrEvent) {
+      newPriority = Number((newPriorityOrEvent.target as HTMLSelectElement).value);
+    } else {
+      newPriority = Number(newPriorityOrEvent);
+    }
+
+    if (isNaN(newPriority) || newPriority < 1 || newPriority > 4) return;
+
+    // Optimistic update
+    current.account.priority = newPriority as LoanPriority;
+
+    this.themeService.playClickSound();
+    this.loansService.changePriority(current.account.id, newPriority as LoanPriority).subscribe({
+      next: (updated) => {
+        this.themeService.playSuccessSound();
+        this.detail.set(updated);
+      },
+      error: () => {
+        this.loadDetail(current.account.id);
+      }
+    });
+  }
+
+  getPriorityLabel(priority: number | LoanPriority): string {
+    switch (Number(priority)) {
+      case LoanPriority.Urgent: return 'Urgent 🔴';
+      case LoanPriority.High: return 'High 🟠';
+      case LoanPriority.Medium: return 'Medium 🟡';
+      case LoanPriority.Low: return 'Low 🟢';
+      default: return 'Medium 🟡';
+    }
   }
 
   submitEditLoan(): void {
@@ -1059,12 +1293,14 @@ export class LoanDetailComponent implements OnInit {
       counterparty: formVal.counterparty!.trim(),
       interestRate: Number(formVal.interestRate || 0),
       interestType: Number(formVal.interestType || 0),
+      priority: Number(formVal.priority || 2),
       dueDate: formVal.dueDate ? formVal.dueDate : null,
       note: formVal.note?.trim() || null
     };
 
     this.loansService.updateLoan(current.account.id, payload).subscribe({
       next: (updated) => {
+        this.themeService.playSuccessSound();
         this.detail.set(updated);
         this.submitting.set(false);
         this.closeEditModal();

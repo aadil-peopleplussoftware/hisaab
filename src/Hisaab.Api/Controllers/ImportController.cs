@@ -25,22 +25,21 @@ public class ImportController : ApiControllerBase
     [ProducesResponseType(typeof(UploadResultDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UploadFile(
-        [FromForm] IFormFile file,
-        [FromForm] string module,
+        [FromForm] UploadFileRequest request,
         CancellationToken cancellationToken)
     {
-        if (file == null || file.Length == 0)
+        if (request?.File == null || request.File.Length == 0)
         {
             return BadRequest(new { message = "File is required." });
         }
 
-        if (string.IsNullOrWhiteSpace(module))
+        if (string.IsNullOrWhiteSpace(request.Module))
         {
             return BadRequest(new { message = "Module name is required." });
         }
 
-        await using var stream = file.OpenReadStream();
-        var result = await Mediator.Send(new UploadImportFileCommand(stream, file.FileName, module), cancellationToken);
+        await using var stream = request.File.OpenReadStream();
+        var result = await Mediator.Send(new UploadImportFileCommand(stream, request.File.FileName, request.Module), cancellationToken);
         return Ok(result);
     }
 
@@ -156,5 +155,11 @@ public class ImportController : ApiControllerBase
         await Mediator.Send(new DeleteMappingProfileCommand(id), cancellationToken);
         return NoContent();
     }
+}
+
+public class UploadFileRequest
+{
+    public required IFormFile File { get; set; }
+    public required string Module { get; set; }
 }
 

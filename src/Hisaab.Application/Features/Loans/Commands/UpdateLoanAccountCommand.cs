@@ -15,7 +15,8 @@ public record UpdateLoanAccountCommand(
     decimal InterestRate,
     LoanInterestType InterestType,
     DateTime? DueDate,
-    string? Note
+    string? Note,
+    LoanPriority? Priority = null
 ) : IRequest;
 
 public class UpdateLoanAccountCommandValidator : AbstractValidator<UpdateLoanAccountCommand>
@@ -74,6 +75,11 @@ public class UpdateLoanAccountCommandHandler : IRequestHandler<UpdateLoanAccount
             ? DateTime.SpecifyKind(request.DueDate.Value, DateTimeKind.Utc)
             : null;
         account.Note = request.Note?.Trim();
+
+        if (request.Priority.HasValue)
+        {
+            account.Priority = request.Priority.Value;
+        }
 
         await _context.SaveChangesAsync(cancellationToken);
     }

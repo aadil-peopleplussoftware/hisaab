@@ -144,5 +144,57 @@ public class DataTransferServiceTests
         map["Cat"].Should().Be("Category");
         map["Narration"].Should().Be("Note");
     }
+
+    [Theory]
+    [InlineData("05-10-2026", "dd-MM-yyyy", 2026, 10, 5)]
+    [InlineData("06-10-2026", "dd-MM-yyyy", 2026, 10, 6)]
+    [InlineData("07-10-2026", "dd-MM-yyyy", 2026, 10, 7)]
+    [InlineData("06-10-2026 12:00:00 AM", "dd-MM-yyyy", 2026, 10, 6)]
+    [InlineData("07-10-2026 00:00:00", "dd-MM-yyyy", 2026, 10, 7)]
+    [InlineData("06/10/2026", "dd/MM/yyyy", 2026, 10, 6)]
+    [InlineData("2026-10-06", "yyyy-MM-dd", 2026, 10, 6)]
+    [InlineData("06-10-2026", null, 2026, 10, 6)]
+    [InlineData("07-10-2026", null, 2026, 10, 7)]
+    public void TryParseDate_ShouldCorrectlyParseIndianDates(string input, string? preferredFormat, int expectedYear, int expectedMonth, int expectedDay)
+    {
+        var ok = DataTransferService.TryParseDate(input, preferredFormat, out var parsed);
+
+        ok.Should().BeTrue();
+        parsed.Year.Should().Be(expectedYear);
+        parsed.Month.Should().Be(expectedMonth);
+        parsed.Day.Should().Be(expectedDay);
+    }
+
+    [Theory]
+    [InlineData("Salary", Hisaab.Domain.Enums.TransactionType.Income, "briefcase", "#16a34a")]
+    [InlineData("Freelance Client", Hisaab.Domain.Enums.TransactionType.Income, "laptop", "#059669")]
+    [InlineData("Bonus Diwali", Hisaab.Domain.Enums.TransactionType.Income, "gift", "#14b8a6")]
+    [InlineData("Groceries", Hisaab.Domain.Enums.TransactionType.Expense, "shopping-cart", "#ea580c")]
+    [InlineData("Electricity Bill", Hisaab.Domain.Enums.TransactionType.Expense, "zap", "#d97706")]
+    [InlineData("Uber Taxi", Hisaab.Domain.Enums.TransactionType.Expense, "truck", "#ca8a04")]
+    [InlineData("Custom Random", Hisaab.Domain.Enums.TransactionType.Income, "plus-circle", "#16a34a")]
+    [InlineData("Custom Random", Hisaab.Domain.Enums.TransactionType.Expense, "tag", "#dc2626")]
+    public void GetCategoryStyling_ShouldReturnAppropriateIconAndColor(string name, Hisaab.Domain.Enums.TransactionType type, string expectedIcon, string expectedColor)
+    {
+        var (icon, color) = DataTransferService.GetCategoryStyling(name, type);
+        icon.Should().Be(expectedIcon);
+        color.Should().Be(expectedColor);
+    }
+
+    [Fact]
+    public void IsNonDataRow_ShouldIdentifyEmptyAndInstructionRows()
+    {
+        var emptyRow = new Dictionary<string, string> { ["Type"] = "", ["Amount"] = "  ", ["Date"] = "" };
+        DataTransferService.IsNonDataRow(emptyRow).Should().BeTrue();
+
+        var instructionRow1 = new Dictionary<string, string> { ["Type"] = "Income & Expense Transactions — Import Instructions", ["Amount"] = "" };
+        DataTransferService.IsNonDataRow(instructionRow1).Should().BeTrue();
+
+        var instructionRow2 = new Dictionary<string, string> { ["Type"] = "Field Name", ["Amount"] = "Required?", ["Category"] = "Data Type" };
+        DataTransferService.IsNonDataRow(instructionRow2).Should().BeTrue();
+
+        var realDataRow = new Dictionary<string, string> { ["Type"] = "Expensess", ["Amount"] = "10000", ["Category"] = "Home/Family", ["Date"] = "12/01/2023" };
+        DataTransferService.IsNonDataRow(realDataRow).Should().BeFalse();
+    }
 }
 

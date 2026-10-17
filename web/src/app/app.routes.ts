@@ -12,6 +12,10 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/register/register.component').then(m => m.RegisterComponent)
   },
   {
+    path: 'auth/reset-password',
+    loadComponent: () => import('./features/auth/reset-password/reset-password.component').then(m => m.ResetPasswordComponent)
+  },
+  {
     path: '',
     component: ShellComponent,
     children: [
@@ -23,6 +27,11 @@ export const routes: Routes = [
       {
         path: 'dashboard',
         loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent)
+      },
+      {
+        path: 'analytics',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/analytics/kpi-dashboard.component').then(m => m.KpiDashboardComponent)
       },
       {
         path: 'profile',
@@ -45,6 +54,16 @@ export const routes: Routes = [
         loadComponent: () => import('./features/loans/loan-detail/loan-detail.component').then(m => m.LoanDetailComponent)
       },
       {
+        path: 'goals',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/goals/goals.component').then(m => m.GoalsComponent)
+      },
+      {
+        path: 'goals/:id',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/goals/goal-detail/goal-detail.component').then(m => m.GoalDetailComponent)
+      },
+      {
         path: 'epfo',
         canActivate: [authGuard],
         loadComponent: () => import('./features/epfo/epfo.component').then(m => m.EpfoComponent)
@@ -60,6 +79,16 @@ export const routes: Routes = [
         loadComponent: () => import('./features/investments/holding-detail/holding-detail.component').then(m => m.HoldingDetailComponent)
       },
       {
+        path: 'market-ai',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/market-ai/market-ai.component').then(m => m.MarketAiComponent)
+      },
+      {
+        path: 'business',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/business/business.component').then(m => m.BusinessComponent)
+      },
+      {
         path: 'reports',
         canActivate: [authGuard],
         loadComponent: () => import('./features/reports/reports.component').then(m => m.ReportsComponent)
@@ -68,6 +97,11 @@ export const routes: Routes = [
         path: 'data-transfer',
         canActivate: [authGuard],
         loadComponent: () => import('./features/data-transfer/data-transfer.component').then(m => m.DataTransferComponent)
+      },
+      {
+        path: 'recycle-bin',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/recycle-bin/recycle-bin.component').then(m => m.RecycleBinComponent)
       },
       {
         path: 'settings',

@@ -11,6 +11,8 @@ public class RefreshToken : BaseEntity, IUserOwned
     public string? ReplacedByTokenHash { get; set; }
     public string? DeviceInfo { get; set; }
     public string? IpAddress { get; set; }
+    public Guid FamilyId { get; set; } = Guid.NewGuid();
+    public bool IsRememberMe { get; set; } = true;
 
     public bool IsExpired => DateTime.UtcNow >= ExpiresAtUtc;
     public bool IsRevoked => RevokedAtUtc != null;

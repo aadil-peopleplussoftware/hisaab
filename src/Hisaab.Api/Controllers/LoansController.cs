@@ -16,9 +16,11 @@ public class LoansController : ApiControllerBase
         [FromQuery] LoanDirection? direction,
         [FromQuery] LoanStatus? status,
         [FromQuery] string? search,
+        [FromQuery] LoanPriority? priority,
+        [FromQuery] string? sortBy,
         CancellationToken cancellationToken)
     {
-        var result = await Mediator.Send(new GetLoanAccountsQuery(direction, status, search), cancellationToken);
+        var result = await Mediator.Send(new GetLoanAccountsQuery(direction, status, search, priority, sortBy), cancellationToken);
         return Ok(result);
     }
 
@@ -47,7 +49,8 @@ public class LoansController : ApiControllerBase
             request.InterestType,
             request.StartDate,
             request.DueDate,
-            request.Note
+            request.Note,
+            request.Priority ?? LoanPriority.Medium
         );
 
         var id = await Mediator.Send(command, cancellationToken);
@@ -72,7 +75,8 @@ public class LoansController : ApiControllerBase
             request.InterestRate,
             request.InterestType,
             request.DueDate,
-            request.Note
+            request.Note,
+            request.Priority
         );
 
         await Mediator.Send(command, cancellationToken);
@@ -95,11 +99,34 @@ public class LoansController : ApiControllerBase
         return Ok(detail);
     }
 
+    [HttpPatch("{id:guid}/priority")]
+    [ProducesResponseType(typeof(LoanAccountDetailDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> ChangePriority(
+        [FromRoute] Guid id,
+        [FromBody] ChangeLoanPriorityRequest request,
+        CancellationToken cancellationToken)
+    {
+        await Mediator.Send(new ChangeLoanPriorityCommand(id, request.Priority), cancellationToken);
+        var detail = await Mediator.Send(new GetLoanAccountByIdQuery(id), cancellationToken);
+
+        return Ok(detail);
+    }
+
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteLoan([FromRoute] Guid id, CancellationToken cancellationToken)
     {
+        if (!await CheckDeletePermissionAsync("Loans", cancellationToken))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new {
+                error = "DeletionDisabled",
+                message = "Deletion is disabled for Loans in Settings. Please enable it under Settings > Deletion Controls."
+            });
+        }
+
         await Mediator.Send(new DeleteLoanAccountCommand(id), cancellationToken);
         return NoContent();
     }
@@ -130,13 +157,42 @@ public class LoansController : ApiControllerBase
 
     [HttpDelete("{id:guid}/transactions/{transactionId:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteTransaction(
         [FromRoute] Guid id,
         [FromRoute] Guid transactionId,
         CancellationToken cancellationToken)
     {
+        if (!await CheckDeletePermissionAsync("Loans", cancellationToken))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new {
+                error = "DeletionDisabled",
+                message = "Deletion is disabled for Loans in Settings. Please enable it under Settings > Deletion Controls."
+            });
+        }
+
         await Mediator.Send(new DeleteLoanTransactionCommand(id, transactionId), cancellationToken);
+        return NoContent();
+    }
+
+    [HttpDelete("{id:guid}/transactions")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DeleteAllTransactions(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
+    {
+        if (!await CheckDeletePermissionAsync("Loans", cancellationToken))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new {
+                error = "DeletionDisabled",
+                message = "Deletion is disabled for Loans in Settings. Please enable it under Settings > Deletion Controls."
+            });
+        }
+
+        await Mediator.Send(new DeleteAllLoanTransactionsCommand(id), cancellationToken);
         return NoContent();
     }
 
@@ -163,7 +219,8 @@ public record CreateLoanRequest(
     LoanInterestType InterestType,
     DateTime StartDate,
     DateTime? DueDate,
-    string? Note
+    string? Note,
+    LoanPriority? Priority = null
 );
 
 public record UpdateLoanRequest(
@@ -172,11 +229,16 @@ public record UpdateLoanRequest(
     decimal InterestRate,
     LoanInterestType InterestType,
     DateTime? DueDate,
-    string? Note
+    string? Note,
+    LoanPriority? Priority = null
 );
 
 public record ChangeLoanStatusRequest(
     LoanStatus Status
+);
+
+public record ChangeLoanPriorityRequest(
+    LoanPriority Priority
 );
 
 public record CreateLoanTransactionRequest(

@@ -11,26 +11,26 @@ export type StatVariant = 'income' | 'expense' | 'loan' | 'epf' | 'investment' |
   template: `
     <div class="stat-card" [class]="'variant-' + variant()">
       <div class="stat-header">
-        <span class="stat-title">{{ title() }}</span>
-        @if (subtitle()) {
-          <span class="stat-subtitle">{{ subtitle() }}</span>
-        }
+        <span class="stat-title" [title]="title()">{{ title() }}</span>
       </div>
       <div class="stat-amount amount">
         {{ amount() | inrCurrency }}
       </div>
+      @if (subtitle()) {
+        <div class="stat-subtitle" [title]="subtitle()">{{ subtitle() }}</div>
+      }
     </div>
   `,
   styles: [`
     .stat-card {
       background: var(--color-bg-card);
       border: 1px solid var(--color-border);
-      border-radius: var(--radius-lg);
-      padding: 1.15rem 1.25rem;
+      border-radius: var(--radius-md);
+      padding: 1rem 1.15rem;
       box-shadow: var(--shadow-xs);
       display: flex;
       flex-direction: column;
-      gap: 0.4rem;
+      gap: 0.25rem;
       position: relative;
       overflow: hidden;
       transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
@@ -64,33 +64,39 @@ export type StatVariant = 'income' | 'expense' | 'loan' | 'epf' | 'investment' |
     .stat-header {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 0.5rem;
+      justify-content: flex-start;
+      width: 100%;
     }
 
     .stat-title {
-      font-size: 0.75rem;
+      font-size: 0.725rem;
       font-weight: 700;
       color: var(--color-text-muted);
       text-transform: uppercase;
-      letter-spacing: 0.06em;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+    }
+
+    .stat-amount {
+      font-size: 1.35rem;
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--color-text-main);
+      letter-spacing: -0.02em;
+      white-space: nowrap;
     }
 
     .stat-subtitle {
-      font-size: 0.75rem;
+      font-size: 0.725rem;
       color: var(--color-text-muted);
       font-weight: 500;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
-    }
-
-    .stat-amount {
-      font-size: 1.5rem;
-      font-weight: 700;
-      line-height: 1.2;
-      color: var(--color-text-main);
-      letter-spacing: -0.03em;
+      width: 100%;
     }
   `]
 })

@@ -19,19 +19,39 @@ public class SettingsController : ApiControllerBase
     private readonly ICurrentUserService _currentUserService;
     private readonly IAuditService _auditService;
     private readonly IDateTimeService _dateTimeService;
+    private readonly IDeletionPermissionService _deletionPermissionService;
 
     public SettingsController(
         IIdentityService identityService,
         IApplicationDbContext context,
         ICurrentUserService currentUserService,
         IAuditService auditService,
-        IDateTimeService dateTimeService)
+        IDateTimeService dateTimeService,
+        IDeletionPermissionService deletionPermissionService)
     {
         _identityService = identityService;
         _context = context;
         _currentUserService = currentUserService;
         _auditService = auditService;
         _dateTimeService = dateTimeService;
+        _deletionPermissionService = deletionPermissionService;
+    }
+
+    [HttpGet("deletion-permissions")]
+    public async Task<IActionResult> GetDeletionPermissions(CancellationToken cancellationToken)
+    {
+        if (!_currentUserService.UserId.HasValue) return Unauthorized();
+        var permissions = await _deletionPermissionService.GetPermissionsAsync(_currentUserService.UserId.Value, cancellationToken);
+        return Ok(permissions);
+    }
+
+    [HttpPut("deletion-permissions")]
+    public async Task<IActionResult> UpdateDeletionPermissions([FromBody] Dictionary<string, bool> permissions, CancellationToken cancellationToken)
+    {
+        if (!_currentUserService.UserId.HasValue) return Unauthorized();
+        var updated = await _deletionPermissionService.UpdatePermissionsAsync(_currentUserService.UserId.Value, permissions, cancellationToken);
+        await _auditService.LogAsync("DeletionPermissionsUpdated", "User", _currentUserService.UserId.ToString(), "Updated module deletion permissions", cancellationToken);
+        return Ok(updated);
     }
 
     [HttpGet("preferences")]

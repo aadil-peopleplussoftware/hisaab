@@ -1,6 +1,6 @@
 import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, tap, of, catchError } from 'rxjs';
 import { User, AuthResponse } from '../models/user.model';
 
 export interface RegisterPayload {
@@ -12,6 +12,7 @@ export interface RegisterPayload {
 export interface LoginPayload {
   email: string;
   password: string;
+  rememberMe?: boolean;
 }
 
 export interface UpdateProfilePayload {
@@ -26,6 +27,45 @@ export interface ChangePasswordPayload {
   newPassword: string;
 }
 
+export interface GoogleLoginPayload {
+  email: string;
+  fullName?: string;
+  avatarUrl?: string;
+}
+
+export interface SendOtpPayload {
+  identifier: string;
+}
+
+export interface VerifyOtpPayload {
+  identifier: string;
+  code: string;
+}
+
+export interface ForgotPasswordPayload {
+  email: string;
+}
+
+export interface ResetPasswordPayload {
+  email: string;
+  token: string;
+  newPassword: string;
+}
+
+export interface OtpResponse {
+  identifier: string;
+  sentViaEmail: boolean;
+  codeHint?: string;
+  message: string;
+}
+
+export interface ForgotPasswordResponse {
+  email: string;
+  sentViaEmail: boolean;
+  resetLink?: string;
+  message: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -38,6 +78,18 @@ export class AuthService {
 
   readonly currentUser = signal<User | null>(null);
   readonly isAuthenticated = computed(() => !!this.currentUser());
+  readonly isInitialized = signal<boolean>(false);
+
+  initSession(): Observable<AuthResponse | null> {
+    return this.refreshToken().pipe(
+      tap(() => this.isInitialized.set(true)),
+      catchError(() => {
+        this.clearSession();
+        this.isInitialized.set(true);
+        return of(null);
+      })
+    );
+  }
 
   register(payload: RegisterPayload): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.baseUrl}/register`, payload).pipe(
@@ -79,6 +131,30 @@ export class AuthService {
     return this.http.post<{ message: string }>(`${this.baseUrl}/change-password`, payload).pipe(
       tap(() => this.clearSession())
     );
+  }
+
+  googleLogin(payload: GoogleLoginPayload): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.baseUrl}/google`, payload).pipe(
+      tap(auth => this.setSession(auth))
+    );
+  }
+
+  sendOtp(identifier: string): Observable<OtpResponse> {
+    return this.http.post<OtpResponse>(`${this.baseUrl}/send-otp`, { identifier });
+  }
+
+  verifyOtp(identifier: string, code: string): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.baseUrl}/verify-otp`, { identifier, code }).pipe(
+      tap(auth => this.setSession(auth))
+    );
+  }
+
+  forgotPassword(email: string): Observable<ForgotPasswordResponse> {
+    return this.http.post<ForgotPasswordResponse>(`${this.baseUrl}/forgot-password`, { email });
+  }
+
+  resetPassword(payload: ResetPasswordPayload): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.baseUrl}/reset-password`, payload);
   }
 
   setSession(auth: AuthResponse): void {

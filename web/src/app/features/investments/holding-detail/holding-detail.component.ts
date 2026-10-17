@@ -12,6 +12,8 @@ import {
 } from '../models/investment.model';
 import { InrCurrencyPipe } from '../../../shared/pipes/inr-currency.pipe';
 import { StatCardComponent } from '../../../shared/components/stat-card/stat-card.component';
+import { DeletionPermissionsService } from '../../../core/services/deletion-permissions.service';
+import { ThemeService } from '../../../core/services/theme.service';
 
 @Component({
   selector: 'app-holding-detail',
@@ -27,7 +29,12 @@ import { StatCardComponent } from '../../../shared/components/stat-card/stat-car
 
         <div class="header-buttons">
           <button type="button" class="btn-outline btn-print" (click)="printReport()">
-            🖨️ Print Report
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" class="mr-1">
+              <polyline points="6 9 6 2 18 2 18 9"/>
+              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+              <rect x="6" y="14" width="12" height="8"/>
+            </svg>
+            <span>Print Report</span>
           </button>
           <button type="button" class="btn-primary" (click)="openAddTxnModal()">
             + Record Transaction
@@ -793,7 +800,9 @@ export class HoldingDetailComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly investmentsService = inject(InvestmentsService);
+  private readonly deletionPermissionsService = inject(DeletionPermissionsService);
   private readonly fb = inject(FormBuilder);
+  public readonly themeService = inject(ThemeService);
 
   readonly detail = signal<HoldingDetail | null>(null);
   readonly loading = signal<boolean>(true);
@@ -890,6 +899,7 @@ export class HoldingDetailComponent implements OnInit {
 
     this.investmentsService.createTransaction(current.holding.id, payload).subscribe({
       next: (res) => {
+        this.themeService.playSuccessSound();
         this.detail.set(res);
         this.submitting.set(false);
         this.closeAddTxnModal();
@@ -901,12 +911,18 @@ export class HoldingDetailComponent implements OnInit {
   }
 
   deleteTransaction(txnId: string): void {
+    if (!this.deletionPermissionsService.canDelete('investments')) {
+      alert('Deletion is disabled for Investments in Settings. Enable it in Settings > Deletion Controls to delete this transaction.');
+      return;
+    }
+
     const current = this.detail();
     if (!current) return;
 
-    if (confirm('Are you sure you want to delete this transaction?')) {
+    if (confirm('Are you sure you want to delete this transaction? It will be moved to the Recycle Bin.')) {
       this.investmentsService.deleteTransaction(current.holding.id, txnId).subscribe({
         next: () => {
+          this.themeService.playDeleteSound();
           this.loadDetail(current.holding.id);
         }
       });
@@ -946,6 +962,7 @@ export class HoldingDetailComponent implements OnInit {
 
     this.investmentsService.updateHolding(current.holding.id, payload).subscribe({
       next: (res) => {
+        this.themeService.playSuccessSound();
         this.detail.set(res);
         this.submitting.set(false);
         this.closeUpdateValModal();
@@ -991,6 +1008,7 @@ export class HoldingDetailComponent implements OnInit {
 
     this.investmentsService.updateHolding(current.holding.id, payload).subscribe({
       next: (res) => {
+        this.themeService.playSuccessSound();
         this.detail.set(res);
         this.submitting.set(false);
         this.closeEditModal();
@@ -1002,12 +1020,18 @@ export class HoldingDetailComponent implements OnInit {
   }
 
   confirmDeleteHolding(): void {
+    if (!this.deletionPermissionsService.canDelete('investments')) {
+      alert('Deletion is disabled for Investments in Settings. Enable it in Settings > Deletion Controls to delete this holding.');
+      return;
+    }
+
     const current = this.detail();
     if (!current) return;
 
-    if (confirm(`Are you sure you want to delete ${current.holding.name}? This will remove all associated transactions.`)) {
+    if (confirm(`Are you sure you want to delete ${current.holding.name}? This will move the holding and its transactions to the Recycle Bin.`)) {
       this.investmentsService.deleteHolding(current.holding.id).subscribe({
         next: () => {
+          this.themeService.playDeleteSound();
           this.router.navigate(['/investments']);
         }
       });
