@@ -22,6 +22,9 @@ public interface IApplicationDbContext
     DbSet<UserDeletionSetting> DeletionSettings { get; }
     DbSet<FinancialGoal> FinancialGoals { get; }
     DbSet<GoalContribution> GoalContributions { get; }
+    DbSet<StockHolding> StockHoldings { get; }
+    DbSet<MarketAgentUserSetting> MarketAgentUserSettings { get; }
+    DbSet<MarketAgentAlertLog> MarketAgentAlertLogs { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

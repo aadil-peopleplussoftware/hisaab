@@ -79,6 +79,11 @@ export const routes: Routes = [
         loadComponent: () => import('./features/investments/holding-detail/holding-detail.component').then(m => m.HoldingDetailComponent)
       },
       {
+        path: 'market-ai',
+        canActivate: [authGuard],
+        loadComponent: () => import('./features/market-ai/market-ai.component').then(m => m.MarketAiComponent)
+      },
+      {
         path: 'business',
         canActivate: [authGuard],
         loadComponent: () => import('./features/business/business.component').then(m => m.BusinessComponent)

@@ -222,6 +222,93 @@ using (var scope = app.Services.CreateScope())
             ALTER TABLE refresh_tokens ADD COLUMN IF NOT EXISTS ""FamilyId"" uuid NOT NULL DEFAULT '00000000-0000-0000-0000-000000000000';
             ALTER TABLE refresh_tokens ADD COLUMN IF NOT EXISTS ""IsRememberMe"" boolean NOT NULL DEFAULT true;
             CREATE INDEX IF NOT EXISTS ""IX_refresh_tokens_FamilyId"" ON refresh_tokens (""FamilyId"");
+
+            -- AI Stock Holdings Table
+            CREATE TABLE IF NOT EXISTS stock_holdings (
+                ""Id"" uuid NOT NULL,
+                ""UserId"" uuid NOT NULL,
+                ""Ticker"" character varying(50) NOT NULL,
+                ""CompanyName"" character varying(200) NOT NULL,
+                ""Exchange"" character varying(20) NOT NULL DEFAULT 'NSE',
+                ""BuyPrice"" numeric(18,2) NOT NULL,
+                ""Quantity"" numeric(18,4) NOT NULL,
+                ""PurchaseDate"" timestamp with time zone NOT NULL,
+                ""TargetProfitPerShare"" numeric(18,2),
+                ""TargetPrice"" numeric(18,2),
+                ""StopLossPrice"" numeric(18,2),
+                ""Notes"" character varying(1000),
+                ""IsArchived"" boolean NOT NULL DEFAULT false,
+                ""CreatedAtUtc"" timestamp with time zone NOT NULL,
+                ""UpdatedAtUtc"" timestamp with time zone,
+                ""CreatedBy"" uuid,
+                ""UpdatedBy"" uuid,
+                ""RowVersion"" bigint NOT NULL DEFAULT 0,
+                ""IsDeleted"" boolean NOT NULL DEFAULT false,
+                ""DeletedAtUtc"" timestamp with time zone,
+                ""DeletedBy"" uuid,
+                ""ImportBatchId"" uuid,
+                CONSTRAINT ""PK_stock_holdings"" PRIMARY KEY (""Id"")
+            );
+
+            CREATE INDEX IF NOT EXISTS ""IX_stock_holdings_UserId_Ticker"" ON stock_holdings (""UserId"", ""Ticker"");
+            CREATE INDEX IF NOT EXISTS ""IX_stock_holdings_UserId_IsArchived"" ON stock_holdings (""UserId"", ""IsArchived"");
+
+            -- Market Agent Settings & Alert Logs
+            CREATE TABLE IF NOT EXISTS market_agent_user_settings (
+                ""Id"" uuid NOT NULL,
+                ""UserId"" uuid NOT NULL,
+                ""WhatsAppPhoneNumber"" character varying(50),
+                ""EmailAddress"" character varying(200),
+                ""EnablePreMarketScan"" boolean NOT NULL DEFAULT true,
+                ""EnableTargetHitAlerts"" boolean NOT NULL DEFAULT true,
+                ""EnableStopLossAlerts"" boolean NOT NULL DEFAULT true,
+                ""EnableEmailDispatch"" boolean NOT NULL DEFAULT true,
+                ""EnableWhatsAppDispatch"" boolean NOT NULL DEFAULT true,
+                ""PreMarketScanTime"" character varying(10) NOT NULL DEFAULT '08:45',
+                ""LastPreMarketReportDate"" character varying(20),
+                ""LastSentinelScanUtc"" timestamp with time zone,
+                ""CreatedAtUtc"" timestamp with time zone NOT NULL,
+                ""UpdatedAtUtc"" timestamp with time zone,
+                ""CreatedBy"" uuid,
+                ""UpdatedBy"" uuid,
+                ""RowVersion"" bigint NOT NULL DEFAULT 0,
+                ""IsDeleted"" boolean NOT NULL DEFAULT false,
+                ""DeletedAtUtc"" timestamp with time zone,
+                ""DeletedBy"" uuid,
+                ""ImportBatchId"" uuid,
+                CONSTRAINT ""PK_market_agent_user_settings"" PRIMARY KEY (""Id"")
+            );
+
+            CREATE INDEX IF NOT EXISTS ""IX_market_agent_user_settings_UserId"" ON market_agent_user_settings (""UserId"");
+
+            CREATE TABLE IF NOT EXISTS market_agent_alert_logs (
+                ""Id"" uuid NOT NULL,
+                ""UserId"" uuid NOT NULL,
+                ""Ticker"" character varying(50) NOT NULL,
+                ""CompanyName"" character varying(200) NOT NULL,
+                ""AlertType"" character varying(50) NOT NULL,
+                ""Title"" character varying(250) NOT NULL,
+                ""Message"" text NOT NULL,
+                ""TriggerPrice"" numeric(18,2) NOT NULL DEFAULT 0,
+                ""TargetPrice"" numeric(18,2),
+                ""ProfitOrLossAmount"" numeric(18,2),
+                ""WhatsAppStatus"" character varying(50) NOT NULL DEFAULT 'Pending',
+                ""EmailStatus"" character varying(50) NOT NULL DEFAULT 'Pending',
+                ""WhatsAppClickUrl"" text,
+                ""CreatedAtUtc"" timestamp with time zone NOT NULL,
+                ""UpdatedAtUtc"" timestamp with time zone,
+                ""CreatedBy"" uuid,
+                ""UpdatedBy"" uuid,
+                ""RowVersion"" bigint NOT NULL DEFAULT 0,
+                ""IsDeleted"" boolean NOT NULL DEFAULT false,
+                ""DeletedAtUtc"" timestamp with time zone,
+                ""DeletedBy"" uuid,
+                ""ImportBatchId"" uuid,
+                CONSTRAINT ""PK_market_agent_alert_logs"" PRIMARY KEY (""Id"")
+            );
+
+            CREATE INDEX IF NOT EXISTS ""IX_market_agent_alert_logs_UserId_CreatedAtUtc"" ON market_agent_alert_logs (""UserId"", ""CreatedAtUtc"");
+            CREATE INDEX IF NOT EXISTS ""IX_market_agent_alert_logs_UserId_Ticker"" ON market_agent_alert_logs (""UserId"", ""Ticker"");
         ");
     }
     catch

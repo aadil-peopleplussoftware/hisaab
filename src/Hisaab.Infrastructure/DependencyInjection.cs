@@ -30,6 +30,18 @@ public static class DependencyInjection
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IDeletionPermissionService, DeletionPermissionService>();
 
+        // Stock Market Real-Time Feed & AI Engine
+        services.AddHttpClient<IStockMarketService, StockMarketService>();
+        services.AddScoped<IStockAiEngine, StockAiEngine>();
+
+        // WhatsApp & Multi-Agent Market AI Services
+        services.AddHttpClient("WhatsAppClient");
+        services.AddScoped<IWhatsAppService, WhatsAppService>();
+        services.AddScoped<IPreMarketIntelligenceAgent, PreMarketIntelligenceAgent>();
+        services.AddScoped<IPortfolioSentinelAgent, PortfolioSentinelAgent>();
+        services.AddScoped<IAlertDispatcherAgent, AlertDispatcherAgent>();
+        services.AddHostedService<MarketAgentWorkerService>();
+
         // QuestPDF Community License for non-commercial/enterprise open use
         QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 

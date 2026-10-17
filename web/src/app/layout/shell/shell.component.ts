@@ -84,6 +84,12 @@ interface CommandItem {
             <span class="nav-label">Investments</span>
           </a>
 
+          <a routerLink="/market-ai" routerLinkActive="active" class="nav-item nav-item-market-ai" title="AI Stock Market Hub">
+            <span class="nav-ai-sparkle">✨</span>
+            <span class="nav-label">AI Stocks & Hub</span>
+            <span class="nav-badge-ai">AI</span>
+          </a>
+
           <a routerLink="/epfo" routerLinkActive="active" class="nav-item" title="EPFO Passbook">
             <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'epfo' }" />
             <span class="nav-label">EPFO Passbook</span>
@@ -732,6 +738,11 @@ interface CommandItem {
                 <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'investments' }" />
                 <span>Investments</span>
               </a>
+              <a routerLink="/market-ai" (click)="closeMobileMenu()" class="drawer-link drawer-market-ai">
+                <span class="drawer-ai-icon">✨</span>
+                <span>AI Stocks & Market Hub</span>
+                <span class="nav-badge-ai">AI</span>
+              </a>
               <a routerLink="/business" (click)="closeMobileMenu()" class="drawer-link">
                 <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'business' }" />
                 <span>Business & Ventures</span>
@@ -1283,6 +1294,23 @@ interface CommandItem {
           background: var(--color-notif-bg);
           color: var(--color-notif-fg);
           line-height: 1;
+        }
+
+        .nav-badge-ai {
+          margin-left: auto;
+          font-size: 0.625rem;
+          font-weight: 800;
+          padding: 0.15rem 0.45rem;
+          border-radius: 9999px;
+          background: linear-gradient(135deg, #0b57d0, #6366f1);
+          color: #ffffff;
+          line-height: 1;
+          letter-spacing: 0.05em;
+        }
+
+        .nav-ai-sparkle, .drawer-ai-icon {
+          font-size: 16px;
+          flex-shrink: 0;
         }
       }
 
