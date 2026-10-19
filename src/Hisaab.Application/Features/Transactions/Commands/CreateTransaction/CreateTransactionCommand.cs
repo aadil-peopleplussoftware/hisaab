@@ -16,7 +16,11 @@ public record CreateTransactionCommand(
     Guid CategoryId,
     DateTime TransactionDate,
     string? Note = null,
-    Guid? AttachmentId = null
+    Guid? AttachmentId = null,
+    string? AttachmentUrl = null,
+    string? AttachmentFileName = null,
+    string? AttachmentFileType = null,
+    long? AttachmentFileSize = null
 ) : IRequest<Result<TransactionDto>>;
 
 public class CreateTransactionCommandHandler : IRequestHandler<CreateTransactionCommand, Result<TransactionDto>>
@@ -51,6 +55,24 @@ public class CreateTransactionCommandHandler : IRequestHandler<CreateTransaction
 
         var money = new Money(request.Amount, "INR");
 
+        string? attachUrl = request.AttachmentUrl;
+        string? attachFileName = request.AttachmentFileName;
+        string? attachFileType = request.AttachmentFileType;
+        long? attachFileSize = request.AttachmentFileSize;
+
+        if (request.AttachmentId.HasValue && string.IsNullOrEmpty(attachUrl))
+        {
+            var attachment = await _context.Attachments
+                .FirstOrDefaultAsync(a => a.Id == request.AttachmentId.Value, cancellationToken);
+            if (attachment != null)
+            {
+                attachUrl = attachment.FileUrl;
+                attachFileName = attachment.OriginalFileName;
+                attachFileType = attachment.ContentType;
+                attachFileSize = attachment.FileSizeBytes;
+            }
+        }
+
         var transaction = new Transaction
         {
             UserId = userId.Value,
@@ -59,7 +81,11 @@ public class CreateTransactionCommandHandler : IRequestHandler<CreateTransaction
             CategoryId = category.Id,
             TransactionDate = DateTime.SpecifyKind(request.TransactionDate, DateTimeKind.Utc),
             Note = request.Note?.Trim(),
-            AttachmentId = request.AttachmentId
+            AttachmentId = request.AttachmentId,
+            AttachmentUrl = attachUrl,
+            AttachmentFileName = attachFileName,
+            AttachmentFileType = attachFileType,
+            AttachmentFileSize = attachFileSize
         };
 
         _context.Transactions.Add(transaction);
@@ -76,7 +102,11 @@ public class CreateTransactionCommandHandler : IRequestHandler<CreateTransaction
             category.Color,
             transaction.TransactionDate,
             transaction.Note,
-            transaction.AttachmentId
+            transaction.AttachmentId,
+            transaction.AttachmentUrl,
+            transaction.AttachmentFileName,
+            transaction.AttachmentFileType,
+            transaction.AttachmentFileSize
         );
 
         return Result<TransactionDto>.Success(dto);

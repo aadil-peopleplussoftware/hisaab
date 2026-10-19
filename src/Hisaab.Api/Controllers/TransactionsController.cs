@@ -41,7 +41,11 @@ public class TransactionsController : ApiControllerBase
             request.CategoryId,
             request.TransactionDate,
             request.Note,
-            request.AttachmentId);
+            request.AttachmentId,
+            request.AttachmentUrl,
+            request.AttachmentFileName,
+            request.AttachmentFileType,
+            request.AttachmentFileSize);
 
         var result = await Mediator.Send(command, cancellationToken);
         if (!result.Succeeded)
@@ -68,7 +72,11 @@ public class TransactionsController : ApiControllerBase
             request.CategoryId,
             request.TransactionDate,
             request.Note,
-            request.AttachmentId);
+            request.AttachmentId,
+            request.AttachmentUrl,
+            request.AttachmentFileName,
+            request.AttachmentFileType,
+            request.AttachmentFileSize);
 
         var result = await Mediator.Send(command, cancellationToken);
         if (!result.Succeeded)
@@ -106,7 +114,11 @@ public record CreateTransactionRequest(
     Guid CategoryId,
     DateTime TransactionDate,
     string? Note = null,
-    Guid? AttachmentId = null
+    Guid? AttachmentId = null,
+    string? AttachmentUrl = null,
+    string? AttachmentFileName = null,
+    string? AttachmentFileType = null,
+    long? AttachmentFileSize = null
 );
 
 public record UpdateTransactionRequest(
@@ -115,6 +127,10 @@ public record UpdateTransactionRequest(
     Guid CategoryId,
     DateTime TransactionDate,
     string? Note = null,
-    Guid? AttachmentId = null
+    Guid? AttachmentId = null,
+    string? AttachmentUrl = null,
+    string? AttachmentFileName = null,
+    string? AttachmentFileType = null,
+    long? AttachmentFileSize = null
 );
 

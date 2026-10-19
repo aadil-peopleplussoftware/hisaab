@@ -309,6 +309,35 @@ using (var scope = app.Services.CreateScope())
 
             CREATE INDEX IF NOT EXISTS ""IX_market_agent_alert_logs_UserId_CreatedAtUtc"" ON market_agent_alert_logs (""UserId"", ""CreatedAtUtc"");
             CREATE INDEX IF NOT EXISTS ""IX_market_agent_alert_logs_UserId_Ticker"" ON market_agent_alert_logs (""UserId"", ""Ticker"");
+
+            CREATE TABLE IF NOT EXISTS attachments (
+                ""Id"" uuid NOT NULL,
+                ""FileName"" character varying(255) NOT NULL,
+                ""OriginalFileName"" character varying(255) NOT NULL,
+                ""ContentType"" character varying(100) NOT NULL,
+                ""FileSizeBytes"" bigint NOT NULL,
+                ""FilePath"" character varying(1000) NOT NULL,
+                ""FileUrl"" character varying(1000),
+                ""CreatedAtUtc"" timestamp with time zone NOT NULL,
+                ""UpdatedAtUtc"" timestamp with time zone,
+                ""CreatedBy"" uuid,
+                ""UpdatedBy"" uuid,
+                ""RowVersion"" bigint NOT NULL DEFAULT 0,
+                ""UserId"" uuid NOT NULL,
+                ""IsDeleted"" boolean NOT NULL DEFAULT false,
+                ""DeletedAtUtc"" timestamp with time zone,
+                ""DeletedBy"" uuid,
+                ""ImportBatchId"" uuid,
+                CONSTRAINT ""PK_attachments"" PRIMARY KEY (""Id"")
+            );
+
+            CREATE INDEX IF NOT EXISTS ""IX_attachments_UserId_CreatedAtUtc"" ON attachments (""UserId"", ""CreatedAtUtc"");
+
+            ALTER TABLE transactions ADD COLUMN IF NOT EXISTS ""AttachmentId"" uuid;
+            ALTER TABLE transactions ADD COLUMN IF NOT EXISTS ""AttachmentUrl"" character varying(1000);
+            ALTER TABLE transactions ADD COLUMN IF NOT EXISTS ""AttachmentFileName"" character varying(255);
+            ALTER TABLE transactions ADD COLUMN IF NOT EXISTS ""AttachmentFileType"" character varying(100);
+            ALTER TABLE transactions ADD COLUMN IF NOT EXISTS ""AttachmentFileSize"" bigint;
         ");
     }
     catch

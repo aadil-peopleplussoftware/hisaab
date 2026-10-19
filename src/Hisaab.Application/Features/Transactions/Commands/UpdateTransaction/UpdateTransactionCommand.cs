@@ -17,7 +17,11 @@ public record UpdateTransactionCommand(
     Guid CategoryId,
     DateTime TransactionDate,
     string? Note = null,
-    Guid? AttachmentId = null
+    Guid? AttachmentId = null,
+    string? AttachmentUrl = null,
+    string? AttachmentFileName = null,
+    string? AttachmentFileType = null,
+    long? AttachmentFileSize = null
 ) : IRequest<Result<TransactionDto>>;
 
 public class UpdateTransactionCommandValidator : AbstractValidator<UpdateTransactionCommand>
@@ -78,12 +82,41 @@ public class UpdateTransactionCommandHandler : IRequestHandler<UpdateTransaction
 
         var money = new Money(request.Amount, "INR");
 
+        string? attachUrl = request.AttachmentUrl;
+        string? attachFileName = request.AttachmentFileName;
+        string? attachFileType = request.AttachmentFileType;
+        long? attachFileSize = request.AttachmentFileSize;
+
+        if (request.AttachmentId.HasValue && string.IsNullOrEmpty(attachUrl))
+        {
+            var attachment = await _context.Attachments
+                .FirstOrDefaultAsync(a => a.Id == request.AttachmentId.Value, cancellationToken);
+            if (attachment != null)
+            {
+                attachUrl = attachment.FileUrl;
+                attachFileName = attachment.OriginalFileName;
+                attachFileType = attachment.ContentType;
+                attachFileSize = attachment.FileSizeBytes;
+            }
+        }
+        else if (!request.AttachmentId.HasValue && string.IsNullOrEmpty(request.AttachmentUrl))
+        {
+            attachUrl = null;
+            attachFileName = null;
+            attachFileType = null;
+            attachFileSize = null;
+        }
+
         transaction.Type = request.Type;
         transaction.Amount = money.Amount;
         transaction.CategoryId = category.Id;
         transaction.TransactionDate = DateTime.SpecifyKind(request.TransactionDate, DateTimeKind.Utc);
         transaction.Note = request.Note?.Trim();
         transaction.AttachmentId = request.AttachmentId;
+        transaction.AttachmentUrl = attachUrl;
+        transaction.AttachmentFileName = attachFileName;
+        transaction.AttachmentFileType = attachFileType;
+        transaction.AttachmentFileSize = attachFileSize;
 
         await _context.SaveChangesAsync(cancellationToken);
 
@@ -98,7 +131,11 @@ public class UpdateTransactionCommandHandler : IRequestHandler<UpdateTransaction
             category.Color,
             transaction.TransactionDate,
             transaction.Note,
-            transaction.AttachmentId
+            transaction.AttachmentId,
+            transaction.AttachmentUrl,
+            transaction.AttachmentFileName,
+            transaction.AttachmentFileType,
+            transaction.AttachmentFileSize
         );
 
         return Result<TransactionDto>.Success(dto);

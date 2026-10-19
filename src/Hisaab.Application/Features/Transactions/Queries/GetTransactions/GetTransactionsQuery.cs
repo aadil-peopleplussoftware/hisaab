@@ -115,7 +115,11 @@ public class GetTransactionsQueryHandler : IRequestHandler<GetTransactionsQuery,
                 CategoryColor = t.Category != null ? t.Category.Color : "#4f46e5",
                 t.TransactionDate,
                 t.Note,
-                t.AttachmentId
+                t.AttachmentId,
+                t.AttachmentUrl,
+                t.AttachmentFileName,
+                t.AttachmentFileType,
+                t.AttachmentFileSize
             })
             .ToListAsync(cancellationToken);
 
@@ -130,7 +134,11 @@ public class GetTransactionsQueryHandler : IRequestHandler<GetTransactionsQuery,
             t.CategoryColor,
             t.TransactionDate,
             t.Note,
-            t.AttachmentId
+            t.AttachmentId,
+            t.AttachmentUrl,
+            t.AttachmentFileName,
+            t.AttachmentFileType,
+            t.AttachmentFileSize
         )).ToList();
 
         var paginated = new PaginatedList<TransactionDto>(items, totalCount, pageIndex, pageSize);

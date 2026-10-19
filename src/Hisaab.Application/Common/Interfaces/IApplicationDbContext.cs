@@ -25,6 +25,7 @@ public interface IApplicationDbContext
     DbSet<StockHolding> StockHoldings { get; }
     DbSet<MarketAgentUserSetting> MarketAgentUserSettings { get; }
     DbSet<MarketAgentAlertLog> MarketAgentAlertLogs { get; }
+    DbSet<Attachment> Attachments { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

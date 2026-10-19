@@ -35,6 +35,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<StockHolding> StockHoldings => Set<StockHolding>();
     public DbSet<MarketAgentUserSetting> MarketAgentUserSettings => Set<MarketAgentUserSetting>();
     public DbSet<MarketAgentAlertLog> MarketAgentAlertLogs => Set<MarketAgentAlertLog>();
+    public DbSet<Attachment> Attachments => Set<Attachment>();
 
     public ApplicationDbContext(
         DbContextOptions<ApplicationDbContext> options,

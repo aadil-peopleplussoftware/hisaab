@@ -1,8 +1,10 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { RouterModule } from '@angular/router';
 import { TransactionsService } from './services/transactions.service';
-import { Category, MonthlySummary, Transaction, TransactionType } from './models/transaction.model';
+import { AttachmentMetadata, Category, MonthlySummary, Transaction, TransactionType } from './models/transaction.model';
 import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
 import { MonthPickerComponent } from '../../shared/components/month-picker/month-picker.component';
 import { DeletionPermissionsService } from '../../core/services/deletion-permissions.service';
@@ -11,7 +13,7 @@ import { ThemeService } from '../../core/services/theme.service';
 @Component({
   selector: 'app-transactions',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, InrCurrencyPipe, MonthPickerComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, InrCurrencyPipe, MonthPickerComponent],
   template: `
     <div class="google-console-page">
       <!-- Top Page Header (Google Play Console Style, Hisaab Content) -->
@@ -19,7 +21,7 @@ import { ThemeService } from '../../core/services/theme.service';
         <div class="console-header-left">
           <h1 class="console-title">Transactions</h1>
           <p class="console-subtitle">
-            Manage daily income, expenses, and ledger records with real-time balance calculations.
+            Manage daily income, expenses, and ledger records with real-time balance calculations and receipt attachments.
           </p>
         </div>
 
@@ -202,7 +204,7 @@ import { ThemeService } from '../../core/services/theme.service';
                 <tr>
                   <th class="col-date">Date</th>
                   <th class="col-app">Category</th>
-                  <th class="col-note">Description / Note</th>
+                  <th class="col-note">Description & Receipt</th>
                   <th class="col-status">Type</th>
                   <th class="col-amount text-right">Amount</th>
                   <th class="col-actions text-right no-print">Actions</th>
@@ -233,9 +235,24 @@ import { ThemeService } from '../../core/services/theme.service';
                       </div>
                     </td>
 
-                    <!-- Note / Description -->
+                    <!-- Note / Description & Attachment pill -->
                     <td class="col-note">
-                      <span class="note-text">{{ txn.note || '—' }}</span>
+                      <div class="note-container">
+                        <span class="note-text">{{ txn.note || '—' }}</span>
+                        @if (txn.attachmentUrl || txn.attachmentId) {
+                          <button
+                            type="button"
+                            class="receipt-pill-btn"
+                            (click)="openViewerForTxn(txn, $event)"
+                            title="View attached bill / receipt"
+                          >
+                            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+                              <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+                            </svg>
+                            <span>{{ isPdfFile(txn.attachmentFileType, txn.attachmentFileName) ? 'PDF Receipt' : 'Bill' }}</span>
+                          </button>
+                        }
+                      </div>
                     </td>
 
                     <!-- Status Pill (Income / Expense) -->
@@ -258,6 +275,20 @@ import { ThemeService } from '../../core/services/theme.service';
 
                     <!-- Actions -->
                     <td class="col-actions text-right no-print" (click)="$event.stopPropagation()">
+                      @if (txn.attachmentUrl || txn.attachmentId) {
+                        <button
+                          type="button"
+                          class="btn-table-action view-bill"
+                          (click)="openViewerForTxn(txn, $event)"
+                          title="View attached bill or receipt"
+                        >
+                          <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                          </svg>
+                          <span>Bill</span>
+                        </button>
+                      }
                       <button type="button" class="btn-table-action" (click)="openEditModal(txn)">
                         Edit
                       </button>
@@ -289,7 +320,7 @@ import { ThemeService } from '../../core/services/theme.service';
         <div class="modal-backdrop" (click)="closeModal()">
           <div class="modal-sheet" (click)="$event.stopPropagation()">
             <div class="modal-header">
-              <h3>{{ editingId() ? 'Edit Order Transaction' : 'Record New Transaction' }}</h3>
+              <h3>{{ editingId() ? 'Edit Transaction' : 'Record New Transaction' }}</h3>
               <button type="button" class="btn-close" (click)="closeModal()">✕</button>
             </div>
 
@@ -341,16 +372,195 @@ import { ThemeService } from '../../core/services/theme.service';
               <!-- Note -->
               <div class="form-group">
                 <label for="txnNote">Note / Description (Optional)</label>
-                <input id="txnNote" type="text" formControlName="note" placeholder="e.g. Server hosting, API subscription" />
+                <input id="txnNote" type="text" formControlName="note" placeholder="e.g. Electricity bill, grocery shopping, invoice" />
+              </div>
+
+              <!-- Bill / Receipt Attachment (Optional) -->
+              <div class="form-group attachment-section">
+                <div class="attachment-label-row">
+                  <label>Bill / Receipt Attachment</label>
+                  <span class="optional-tag">Optional</span>
+                </div>
+
+                @if (currentAttachment()) {
+                  <div class="attachment-preview-box">
+                    <div class="attachment-thumb-wrap" (click)="openViewerForCurrent()">
+                      @if (isImageFile(currentAttachment()?.contentType, currentAttachment()?.originalFileName)) {
+                        <img [src]="currentAttachment()?.fileUrl" alt="Receipt preview" class="attachment-thumbnail" />
+                      } @else {
+                        <div class="pdf-thumbnail-badge">
+                          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                          </svg>
+                          <span>PDF</span>
+                        </div>
+                      }
+                    </div>
+
+                    <div class="attachment-meta" (click)="openViewerForCurrent()">
+                      <span class="attachment-name" [title]="currentAttachment()?.originalFileName">
+                        {{ currentAttachment()?.originalFileName }}
+                      </span>
+                      <span class="attachment-size">
+                        {{ formatFileSize(currentAttachment()?.fileSizeBytes) }}
+                      </span>
+                    </div>
+
+                    <div class="attachment-btns">
+                      <button type="button" class="btn-att-pill view" (click)="openViewerForCurrent()" title="View full size">
+                        <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                          <circle cx="12" cy="12" r="3"></circle>
+                        </svg>
+                        <span>View</span>
+                      </button>
+                      <button type="button" class="btn-att-pill remove" (click)="removeAttachment()" title="Remove attachment">
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                } @else {
+                  <div
+                    class="dropzone-area"
+                    [class.dragging]="isDragging()"
+                    (dragover)="onDragOver($event)"
+                    (dragleave)="onDragLeave($event)"
+                    (drop)="onDrop($event)"
+                    (click)="fileInput.click()"
+                  >
+                    <input
+                      #fileInput
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp,image/gif,image/bmp,image/svg+xml,application/pdf"
+                      (change)="onFileSelected($event)"
+                      style="display: none;"
+                    />
+                    @if (isUploadingAttachment()) {
+                      <div class="upload-loader">
+                        <div class="spinner-material-sm"></div>
+                        <span>Uploading receipt...</span>
+                      </div>
+                    } @else {
+                      <div class="dropzone-inner">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" class="upload-icon">
+                          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                          <polyline points="17 8 12 3 7 8"></polyline>
+                          <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        <p class="dropzone-prompt">
+                          <strong>Click to upload</strong> or drag & drop / paste image (Ctrl+V)
+                        </p>
+                        <span class="dropzone-subtext">PNG, JPG, JPEG, WEBP, GIF, or PDF (up to 15 MB)</span>
+                      </div>
+                    }
+                  </div>
+                }
+
+                @if (uploadError()) {
+                  <div class="upload-error-msg">{{ uploadError() }}</div>
+                }
               </div>
 
               <div class="modal-actions">
                 <button type="button" class="btn-secondary" (click)="closeModal()">Cancel</button>
-                <button type="submit" class="btn-primary" [disabled]="txnForm.invalid || isSaving()">
+                <button type="submit" class="btn-primary" [disabled]="txnForm.invalid || isSaving() || isUploadingAttachment()">
                   {{ isSaving() ? 'Saving...' : (editingId() ? 'Save Changes' : 'Record Transaction') }}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      }
+
+      <!-- Full-Screen Lightbox / Document Viewer Modal -->
+      @if (viewerModalOpen() && viewerItem()) {
+        <div class="lightbox-backdrop" (click)="closeViewer()">
+          <div class="lightbox-dialog" (click)="$event.stopPropagation()">
+            <!-- Header -->
+            <div class="lightbox-header">
+              <div class="lightbox-title-box">
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" class="title-icon">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                </svg>
+                <span class="lightbox-filename" [title]="viewerItem()?.fileName">{{ viewerItem()?.fileName }}</span>
+                @if (viewerItem()?.size) {
+                  <span class="lightbox-size">{{ formatFileSize(viewerItem()?.size) }}</span>
+                }
+              </div>
+
+              <div class="lightbox-actions">
+                @if (isImageFile(viewerItem()?.fileType, viewerItem()?.fileName)) {
+                  <div class="lightbox-zoom-group">
+                    <button type="button" class="btn-lightbox-icon" (click)="zoomOut()" title="Zoom out (-)">
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                      </svg>
+                    </button>
+                    <span class="zoom-value">{{ (viewerZoom() * 100).toFixed(0) }}%</span>
+                    <button type="button" class="btn-lightbox-icon" (click)="zoomIn()" title="Zoom in (+)">
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                      </svg>
+                    </button>
+                    <button type="button" class="btn-lightbox-icon" (click)="rotate()" title="Rotate 90°">
+                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="23 4 23 10 17 10"></polyline>
+                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path>
+                      </svg>
+                    </button>
+                    <button type="button" class="btn-lightbox-text" (click)="resetView()" title="Reset view">
+                      Reset
+                    </button>
+                  </div>
+                }
+
+                <a
+                  [href]="getDownloadUrl(viewerItem()?.url)"
+                  [download]="viewerItem()?.fileName"
+                  class="btn-lightbox-download"
+                  title="Download original receipt"
+                >
+                  <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="7 10 12 15 17 10"></polyline>
+                    <line x1="12" y1="15" x2="12" y2="3"></line>
+                  </svg>
+                  <span>Download</span>
+                </a>
+
+                <button type="button" class="btn-lightbox-close" (click)="closeViewer()" title="Close viewer (Esc)">✕</button>
+              </div>
+            </div>
+
+            <!-- Body / Stage -->
+            <div class="lightbox-stage">
+              @if (isImageFile(viewerItem()?.fileType, viewerItem()?.fileName)) {
+                <div class="image-stage-wrap">
+                  <img
+                    [src]="viewerItem()?.url"
+                    [alt]="viewerItem()?.fileName"
+                    class="lightbox-image"
+                    [style.transform]="'scale(' + viewerZoom() + ') rotate(' + viewerRotation() + 'deg)'"
+                  />
+                </div>
+              } @else if (isPdfFile(viewerItem()?.fileType, viewerItem()?.fileName)) {
+                <div class="pdf-stage-wrap">
+                  @if (safeViewerUrl()) {
+                    <iframe [src]="safeViewerUrl()" class="pdf-frame" title="PDF Document"></iframe>
+                  }
+                </div>
+              } @else {
+                <div class="generic-stage-wrap">
+                  <p>Preview is not directly supported in-browser for this file format.</p>
+                  <a [href]="getDownloadUrl(viewerItem()?.url)" class="btn-console-pill primary" download>Download File</a>
+                </div>
+              }
+            </div>
           </div>
         </div>
       }
@@ -361,6 +571,7 @@ import { ThemeService } from '../../core/services/theme.service';
 export class TransactionsComponent implements OnInit {
   private readonly transactionsService = inject(TransactionsService);
   private readonly fb = inject(FormBuilder);
+  private readonly sanitizer = inject(DomSanitizer);
   public readonly deletionPermissionsService = inject(DeletionPermissionsService);
   public readonly themeService = inject(ThemeService);
 
@@ -377,6 +588,19 @@ export class TransactionsComponent implements OnInit {
   readonly isModalOpen = signal<boolean>(false);
   readonly isSaving = signal<boolean>(false);
   readonly editingId = signal<string | null>(null);
+
+  // Attachment state for Create/Edit Modal
+  readonly currentAttachment = signal<AttachmentMetadata | null>(null);
+  readonly isUploadingAttachment = signal<boolean>(false);
+  readonly uploadError = signal<string | null>(null);
+  readonly isDragging = signal<boolean>(false);
+
+  // Lightbox Viewer state
+  readonly viewerModalOpen = signal<boolean>(false);
+  readonly viewerItem = signal<{ url: string; fileName: string; fileType?: string; size?: number } | null>(null);
+  readonly viewerZoom = signal<number>(1);
+  readonly viewerRotation = signal<number>(0);
+  readonly safeViewerUrl = signal<SafeResourceUrl | null>(null);
 
   readonly txnForm = this.fb.group({
     type: [2 as TransactionType, [Validators.required]],
@@ -451,6 +675,8 @@ export class TransactionsComponent implements OnInit {
 
   openCreateModal(): void {
     this.editingId.set(null);
+    this.currentAttachment.set(null);
+    this.uploadError.set(null);
     const initialType = (this.selectedType() || 2) as TransactionType;
     this.txnForm.reset({
       type: initialType,
@@ -465,6 +691,21 @@ export class TransactionsComponent implements OnInit {
 
   openEditModal(txn: Transaction): void {
     this.editingId.set(txn.id);
+    this.uploadError.set(null);
+
+    if (txn.attachmentUrl || txn.attachmentId) {
+      this.currentAttachment.set({
+        id: txn.attachmentId || '',
+        fileName: txn.attachmentFileName || 'Receipt',
+        originalFileName: txn.attachmentFileName || 'Receipt',
+        contentType: txn.attachmentFileType || 'image/jpeg',
+        fileSizeBytes: txn.attachmentFileSize || 0,
+        fileUrl: txn.attachmentUrl || `/api/v1/attachments/${txn.attachmentId}`
+      });
+    } else {
+      this.currentAttachment.set(null);
+    }
+
     this.txnForm.patchValue({
       type: txn.type,
       amount: txn.amount,
@@ -479,18 +720,213 @@ export class TransactionsComponent implements OnInit {
     this.isModalOpen.set(false);
   }
 
+  // --- Attachment Upload & Drag-and-Drop & Clipboard Paste Handlers ---
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.uploadFile(input.files[0]);
+      input.value = '';
+    }
+  }
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging.set(true);
+  }
+
+  onDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging.set(false);
+  }
+
+  onDrop(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging.set(false);
+
+    if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
+      this.uploadFile(event.dataTransfer.files[0]);
+    }
+  }
+
+  @HostListener('window:paste', ['$event'])
+  onWindowPaste(event: ClipboardEvent): void {
+    if (!this.isModalOpen()) return;
+    const items = event.clipboardData?.items;
+    if (!items) return;
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item.kind === 'file') {
+        const file = item.getAsFile();
+        if (file) {
+          event.preventDefault();
+          this.uploadFile(file);
+          break;
+        }
+      }
+    }
+  }
+
+  uploadFile(file: File): void {
+    // Check 15MB limit
+    if (file.size > 15 * 1024 * 1024) {
+      this.uploadError.set('File size exceeds the 15 MB limit.');
+      return;
+    }
+
+    this.isUploadingAttachment.set(true);
+    this.uploadError.set(null);
+
+    this.transactionsService.uploadAttachment(file).subscribe({
+      next: (metadata) => {
+        this.currentAttachment.set(metadata);
+        this.isUploadingAttachment.set(false);
+        this.themeService.playSuccessSound();
+      },
+      error: (err) => {
+        this.isUploadingAttachment.set(false);
+        const msg = err?.error?.error || 'Failed to upload attachment. Please ensure it is an image or PDF.';
+        this.uploadError.set(msg);
+      }
+    });
+  }
+
+  removeAttachment(): void {
+    this.currentAttachment.set(null);
+    this.uploadError.set(null);
+  }
+
+  // --- Lightbox / Viewer Helpers ---
+  openViewerForTxn(txn: Transaction, event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+    }
+    const url = txn.attachmentUrl || (txn.attachmentId ? `/api/v1/attachments/${txn.attachmentId}` : '');
+    if (!url) return;
+
+    this.viewerItem.set({
+      url,
+      fileName: txn.attachmentFileName || 'Receipt',
+      fileType: txn.attachmentFileType,
+      size: txn.attachmentFileSize
+    });
+
+    if (this.isPdfFile(txn.attachmentFileType, txn.attachmentFileName)) {
+      this.safeViewerUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(url));
+    } else {
+      this.safeViewerUrl.set(null);
+    }
+
+    this.viewerZoom.set(1);
+    this.viewerRotation.set(0);
+    this.viewerModalOpen.set(true);
+  }
+
+  openViewerForCurrent(): void {
+    const att = this.currentAttachment();
+    if (!att) return;
+
+    this.viewerItem.set({
+      url: att.fileUrl,
+      fileName: att.originalFileName,
+      fileType: att.contentType,
+      size: att.fileSizeBytes
+    });
+
+    if (this.isPdfFile(att.contentType, att.originalFileName)) {
+      this.safeViewerUrl.set(this.sanitizer.bypassSecurityTrustResourceUrl(att.fileUrl));
+    } else {
+      this.safeViewerUrl.set(null);
+    }
+
+    this.viewerZoom.set(1);
+    this.viewerRotation.set(0);
+    this.viewerModalOpen.set(true);
+  }
+
+  closeViewer(): void {
+    this.viewerModalOpen.set(false);
+    this.viewerItem.set(null);
+    this.safeViewerUrl.set(null);
+  }
+
+  zoomIn(): void {
+    this.viewerZoom.update(z => Math.min(Number((z + 0.25).toFixed(2)), 3.0));
+  }
+
+  zoomOut(): void {
+    this.viewerZoom.update(z => Math.max(Number((z - 0.25).toFixed(2)), 0.5));
+  }
+
+  rotate(): void {
+    this.viewerRotation.update(r => (r + 90) % 360);
+  }
+
+  resetView(): void {
+    this.viewerZoom.set(1);
+    this.viewerRotation.set(0);
+  }
+
+  @HostListener('window:keydown.escape')
+  onEscapeKey(): void {
+    if (this.viewerModalOpen()) {
+      this.closeViewer();
+    } else if (this.isModalOpen()) {
+      this.closeModal();
+    }
+  }
+
+  isImageFile(fileType?: string, fileName?: string): boolean {
+    if (fileType && fileType.startsWith('image/')) return true;
+    if (!fileName) return true; // Default fallback to image display
+    const lower = fileName.toLowerCase();
+    return lower.endsWith('.png') || lower.endsWith('.jpg') || lower.endsWith('.jpeg') ||
+           lower.endsWith('.webp') || lower.endsWith('.gif') || lower.endsWith('.bmp') || lower.endsWith('.svg');
+  }
+
+  isPdfFile(fileType?: string, fileName?: string): boolean {
+    if (fileType === 'application/pdf') return true;
+    if (!fileName) return false;
+    return fileName.toLowerCase().endsWith('.pdf');
+  }
+
+  formatFileSize(bytes?: number): string {
+    if (!bytes || bytes <= 0) return '';
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  }
+
+  getDownloadUrl(url?: string): string {
+    if (!url) return '';
+    if (url.includes('/api/v1/attachments/') && !url.includes('/download')) {
+      return `${url}/download`;
+    }
+    return url;
+  }
+
+  // --- Submit & Delete ---
   onSubmit(): void {
     if (this.txnForm.invalid) return;
 
     this.isSaving.set(true);
     const val = this.txnForm.getRawValue();
+    const att = this.currentAttachment();
 
     const payload = {
       type: val.type!,
       amount: Number(val.amount!),
       categoryId: val.categoryId!,
       transactionDate: val.transactionDate!,
-      note: val.note || undefined
+      note: val.note || undefined,
+      attachmentId: att ? att.id : undefined,
+      attachmentUrl: att ? att.fileUrl : undefined,
+      attachmentFileName: att ? att.originalFileName : undefined,
+      attachmentFileType: att ? att.contentType : undefined,
+      attachmentFileSize: att ? att.fileSizeBytes : undefined
     };
 
     if (this.editingId()) {
