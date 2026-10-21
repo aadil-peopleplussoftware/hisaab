@@ -29,6 +29,7 @@ public static class DependencyInjection
         services.AddScoped<IDataTransferService, DataTransferService>();
         services.AddScoped<IEmailService, EmailService>();
         services.AddScoped<IDeletionPermissionService, DeletionPermissionService>();
+        services.AddScoped<IRoleRightsService, RoleRightsService>();
 
         // Stock Market Real-Time Feed & AI Engine
         services.AddHttpClient<IStockMarketService, StockMarketService>();

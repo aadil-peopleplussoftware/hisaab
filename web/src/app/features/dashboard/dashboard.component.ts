@@ -7,6 +7,7 @@ import { DashboardResponse, MonthlyTrend } from './models/dashboard.model';
 import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
 import { StatCardComponent } from '../../shared/components/stat-card/stat-card.component';
 import { PeriodFilterComponent } from '../../shared/components/period-filter/period-filter.component';
+import { RoleRightsService } from '../../core/services/role-rights.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -24,13 +25,15 @@ import { PeriodFilterComponent } from '../../shared/components/period-filter/per
         </div>
 
         <div class="header-picker-wrap">
-          <a routerLink="/analytics" class="btn-analytics-shortcut" title="Open Module KPI Analytics Studio">
-            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M3 3v18h18" />
-              <path d="m19 9-5 5-4-4-3 3" />
-            </svg>
-            <span>KPI Analytics Studio →</span>
-          </a>
+          @if (roleRightsService.canView('Reports')) {
+            <a routerLink="/analytics" class="btn-analytics-shortcut" title="Open Module KPI Analytics Studio">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 3v18h18" />
+                <path d="m19 9-5 5-4-4-3 3" />
+              </svg>
+              <span>KPI Analytics Studio →</span>
+            </a>
+          }
           <app-period-filter [initialFilter]="periodFilter()" (filterChange)="onPeriodFilterChange($event)" />
         </div>
       </header>
@@ -75,28 +78,36 @@ import { PeriodFilterComponent } from '../../shared/components/period-filter/per
 
           <!-- Asset Breakdown Pill Grid -->
           <div class="balance-pills-grid">
-            <div class="balance-pill">
-              <span class="pill-title">Liquid Cash</span>
-              <span class="pill-amount" [class.negative]="d.netWorth.liquidCash < 0">
-                {{ d.netWorth.formattedLiquidCash }}
-              </span>
-            </div>
-            <div class="balance-pill">
-              <span class="pill-title">Investments</span>
-              <span class="pill-amount">{{ d.netWorth.formattedInvestmentsValue }}</span>
-            </div>
-            <div class="balance-pill">
-              <span class="pill-title">EPF Balance</span>
-              <span class="pill-amount">{{ d.netWorth.formattedEpfBalance }}</span>
-            </div>
-            <div class="balance-pill">
-              <span class="pill-title">Loans Receivable</span>
-              <span class="pill-amount text-success">{{ d.netWorth.formattedLoansReceivable }}</span>
-            </div>
-            <div class="balance-pill">
-              <span class="pill-title">Loans Payable</span>
-              <span class="pill-amount text-danger">{{ d.netWorth.formattedLoansPayable }}</span>
-            </div>
+            @if (roleRightsService.canView('Transactions')) {
+              <div class="balance-pill">
+                <span class="pill-title">Liquid Cash</span>
+                <span class="pill-amount" [class.negative]="d.netWorth.liquidCash < 0">
+                  {{ d.netWorth.formattedLiquidCash }}
+                </span>
+              </div>
+            }
+            @if (roleRightsService.canView('Investments')) {
+              <div class="balance-pill">
+                <span class="pill-title">Investments</span>
+                <span class="pill-amount">{{ d.netWorth.formattedInvestmentsValue }}</span>
+              </div>
+            }
+            @if (roleRightsService.canView('Epfo')) {
+              <div class="balance-pill">
+                <span class="pill-title">EPF Balance</span>
+                <span class="pill-amount">{{ d.netWorth.formattedEpfBalance }}</span>
+              </div>
+            }
+            @if (roleRightsService.canView('Loans')) {
+              <div class="balance-pill">
+                <span class="pill-title">Loans Receivable</span>
+                <span class="pill-amount text-success">{{ d.netWorth.formattedLoansReceivable }}</span>
+              </div>
+              <div class="balance-pill">
+                <span class="pill-title">Loans Payable</span>
+                <span class="pill-amount text-danger">{{ d.netWorth.formattedLoansPayable }}</span>
+              </div>
+            }
           </div>
         </div>
 
@@ -197,10 +208,18 @@ import { PeriodFilterComponent } from '../../shared/components/period-filter/per
               <h4>Quick Actions</h4>
             </div>
             <div class="action-buttons-group">
-              <a routerLink="/transactions" class="btn-action">+ Transaction</a>
-              <a routerLink="/loans" class="btn-action">+ Loan</a>
-              <a routerLink="/investments" class="btn-action">+ Investment</a>
-              <a routerLink="/epfo" class="btn-action">+ EPFO</a>
+              @if (roleRightsService.canCreate('Transactions')) {
+                <a routerLink="/transactions" class="btn-action">+ Transaction</a>
+              }
+              @if (roleRightsService.canCreate('Loans')) {
+                <a routerLink="/loans" class="btn-action">+ Loan</a>
+              }
+              @if (roleRightsService.canCreate('Investments')) {
+                <a routerLink="/investments" class="btn-action">+ Investment</a>
+              }
+              @if (roleRightsService.canCreate('Epfo')) {
+                <a routerLink="/epfo" class="btn-action">+ EPFO</a>
+              }
             </div>
           </div>
         </div>
@@ -286,101 +305,109 @@ import { PeriodFilterComponent } from '../../shared/components/period-filter/per
           </div>
 
           <!-- Upcoming Loan Dues Card -->
-          <div class="dues-card">
-            <div class="card-header">
-              <h3>Active Loans & Upcoming Dues</h3>
-              <a routerLink="/loans" class="link-view-all">View All</a>
-            </div>
-
-            @if (d.upcomingLoanDues.length === 0) {
-              <div class="empty-mini">
-                <p>No active loan dues or outstanding balances.</p>
-                <a routerLink="/loans" class="link-btn">Create Loan</a>
+          @if (roleRightsService.canView('Loans')) {
+            <div class="dues-card">
+              <div class="card-header">
+                <h3>Active Loans & Upcoming Dues</h3>
+                <a routerLink="/loans" class="link-view-all">View All</a>
               </div>
-            } @else {
-              <div class="dues-list">
-                @for (loan of d.upcomingLoanDues; track loan.id) {
-                  <div class="due-item">
-                    <div class="due-main">
-                      <div class="due-title-row">
-                        <span class="due-name">{{ loan.name }}</span>
-                        <span
-                          class="due-dir-badge"
-                          [class.given]="loan.direction === 1"
-                          [class.taken]="loan.direction === 2"
-                        >
-                          {{ loan.direction === 1 ? 'Receivable (Given)' : 'Payable (Taken)' }}
-                        </span>
-                      </div>
-                      <div class="due-sub">
-                        <span>Counterparty: <strong>{{ loan.counterparty }}</strong></span>
-                        @if (loan.dueDate) {
-                          <span class="due-date-text">
-                            Due: {{ loan.dueDate | date:'mediumDate' }}
-                            @if (loan.isOverdue) {
-                              <span class="badge-overdue">OVERDUE</span>
-                            } @else if (loan.daysUntilDue !== null && loan.daysUntilDue <= 7) {
-                              <span class="badge-due-soon">Due in {{ loan.daysUntilDue }}d</span>
-                            }
-                          </span>
-                        }
-                      </div>
-                    </div>
-                    <div class="due-amount-box">
-                      <span class="due-amount">{{ loan.formattedOutstandingBalance }}</span>
-                      <a [routerLink]="['/loans', loan.id]" class="btn-due-view">Ledger →</a>
-                    </div>
-                  </div>
-                }
-              </div>
-            }
-          </div>
-        </div>
 
-        <!-- Recent Transactions Card -->
-        <div class="recent-card">
-          <div class="card-header">
-            <h3>Recent Transactions</h3>
-            <a routerLink="/transactions" class="link-view-all">All Transactions</a>
-          </div>
-
-          @if (d.recentTransactions.length === 0) {
-            <div class="empty-mini">
-              <p>No transactions found. Start recording income and expenses to track your financial health.</p>
-              <a routerLink="/transactions" class="link-btn">+ Add Transaction</a>
-            </div>
-          } @else {
-            <div class="recent-table-wrapper">
-              <table class="recent-table">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Category</th>
-                    <th>Note</th>
-                    <th class="text-right">Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (tx of d.recentTransactions; track tx.id) {
-                    <tr>
-                      <td class="date-cell">{{ tx.transactionDate | date:'mediumDate' }}</td>
-                      <td>
-                        <span class="cat-pill">
-                          <span class="cat-dot" [style.background-color]="tx.categoryColor"></span>
-                          {{ tx.categoryName }}
-                        </span>
-                      </td>
-                      <td class="note-cell">{{ tx.note || '—' }}</td>
-                      <td class="text-right amount-cell" [class.income]="tx.type === 1" [class.expense]="tx.type === 2">
-                        {{ tx.type === 1 ? '+' : '-' }}{{ tx.formattedAmount }}
-                      </td>
-                    </tr>
+              @if (d.upcomingLoanDues.length === 0) {
+                <div class="empty-mini">
+                  <p>No active loan dues or outstanding balances.</p>
+                  @if (roleRightsService.canCreate('Loans')) {
+                    <a routerLink="/loans" class="link-btn">Create Loan</a>
                   }
-                </tbody>
-              </table>
+                </div>
+              } @else {
+                <div class="dues-list">
+                  @for (loan of d.upcomingLoanDues; track loan.id) {
+                    <div class="due-item">
+                      <div class="due-main">
+                        <div class="due-title-row">
+                          <span class="due-name">{{ loan.name }}</span>
+                          <span
+                            class="due-dir-badge"
+                            [class.given]="loan.direction === 1"
+                            [class.taken]="loan.direction === 2"
+                          >
+                            {{ loan.direction === 1 ? 'Receivable (Given)' : 'Payable (Taken)' }}
+                          </span>
+                        </div>
+                        <div class="due-sub">
+                          <span>Counterparty: <strong>{{ loan.counterparty }}</strong></span>
+                          @if (loan.dueDate) {
+                            <span class="due-date-text">
+                              Due: {{ loan.dueDate | date:'mediumDate' }}
+                              @if (loan.isOverdue) {
+                                <span class="badge-overdue">OVERDUE</span>
+                              } @else if (loan.daysUntilDue !== null && loan.daysUntilDue <= 7) {
+                                <span class="badge-due-soon">Due in {{ loan.daysUntilDue }}d</span>
+                              }
+                            </span>
+                          }
+                        </div>
+                      </div>
+                      <div class="due-amount-box">
+                        <span class="due-amount">{{ loan.formattedOutstandingBalance }}</span>
+                        <a [routerLink]="['/loans', loan.id]" class="btn-due-view">Ledger →</a>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
             </div>
           }
         </div>
+
+        <!-- Recent Transactions Card -->
+        @if (roleRightsService.canView('Transactions')) {
+          <div class="recent-card">
+            <div class="card-header">
+              <h3>Recent Transactions</h3>
+              <a routerLink="/transactions" class="link-view-all">All Transactions</a>
+            </div>
+
+            @if (d.recentTransactions.length === 0) {
+              <div class="empty-mini">
+                <p>No transactions found. Start recording income and expenses to track your financial health.</p>
+                @if (roleRightsService.canCreate('Transactions')) {
+                  <a routerLink="/transactions" class="link-btn">+ Add Transaction</a>
+                }
+              </div>
+            } @else {
+              <div class="recent-table-wrapper">
+                <table class="recent-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Category</th>
+                      <th>Note</th>
+                      <th class="text-right">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (tx of d.recentTransactions; track tx.id) {
+                      <tr>
+                        <td class="date-cell">{{ tx.transactionDate | date:'mediumDate' }}</td>
+                        <td>
+                          <span class="cat-pill">
+                            <span class="cat-dot" [style.background-color]="tx.categoryColor"></span>
+                            {{ tx.categoryName }}
+                          </span>
+                        </td>
+                        <td class="note-cell">{{ tx.note || '—' }}</td>
+                        <td class="text-right amount-cell" [class.income]="tx.type === 1" [class.expense]="tx.type === 2">
+                          {{ tx.type === 1 ? '+' : '-' }}{{ tx.formattedAmount }}
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
+        }
       }
     </div>
   `,
@@ -1413,6 +1440,7 @@ import { PeriodFilterComponent } from '../../shared/components/period-filter/per
 })
 export class DashboardComponent implements OnInit {
   private readonly dashboardService = inject(DashboardService);
+  public readonly roleRightsService = inject(RoleRightsService);
 
   readonly selectedMonth = signal<string>(this.getCurrentMonthString());
   readonly periodFilter = signal<PeriodFilterParams>({

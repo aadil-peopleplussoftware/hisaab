@@ -338,11 +338,38 @@ using (var scope = app.Services.CreateScope())
             ALTER TABLE transactions ADD COLUMN IF NOT EXISTS ""AttachmentFileName"" character varying(255);
             ALTER TABLE transactions ADD COLUMN IF NOT EXISTS ""AttachmentFileType"" character varying(100);
             ALTER TABLE transactions ADD COLUMN IF NOT EXISTS ""AttachmentFileSize"" bigint;
+
+            -- Role Rights Table
+            CREATE TABLE IF NOT EXISTS role_rights (
+                ""Id"" uuid NOT NULL,
+                ""RoleName"" character varying(100) NOT NULL,
+                ""Module"" character varying(100) NOT NULL,
+                ""CanView"" boolean NOT NULL DEFAULT true,
+                ""CanCreate"" boolean NOT NULL DEFAULT true,
+                ""CanEdit"" boolean NOT NULL DEFAULT true,
+                ""CanDelete"" boolean NOT NULL DEFAULT true,
+                ""CanExport"" boolean NOT NULL DEFAULT true,
+                ""UpdatedAtUtc"" timestamp with time zone NOT NULL,
+                CONSTRAINT ""PK_role_rights"" PRIMARY KEY (""Id"")
+            );
+
+            CREATE UNIQUE INDEX IF NOT EXISTS ""IX_role_rights_RoleName_Module"" ON role_rights (""RoleName"", ""Module"");
         ");
     }
     catch
     {
         // Ignored for non-Postgres providers (e.g. SQLite test runners)
+    }
+
+    // Initialize default roles and module rights
+    try
+    {
+        var roleRightsService = scope.ServiceProvider.GetRequiredService<Hisaab.Application.Common.Interfaces.IRoleRightsService>();
+        await roleRightsService.GetRolesAsync();
+    }
+    catch
+    {
+        // Ignored during startup if not ready
     }
 }
 
@@ -350,7 +377,7 @@ using (var scope = app.Services.CreateScope())
 app.UseMiddleware<SecurityHeadersMiddleware>();
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Configuration.GetValue<bool>("EnableSwagger", true))
 {
     app.UseSwagger();
     app.UseSwaggerUI(c =>
@@ -363,6 +390,9 @@ else
 {
     app.UseHsts();
 }
+
+app.UseDefaultFiles();
+app.UseStaticFiles();
 
 app.UseCors("HisaabCorsPolicy");
 
@@ -410,6 +440,7 @@ app.MapHealthChecks("/health/ready", new HealthCheckOptions
 });
 
 app.MapControllers();
+app.MapFallbackToFile("index.html");
 
 app.Run();
 

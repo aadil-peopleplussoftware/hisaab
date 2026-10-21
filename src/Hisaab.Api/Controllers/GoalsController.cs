@@ -83,9 +83,18 @@ public class GoalsController : ApiControllerBase
 
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteGoal([FromRoute] Guid id, CancellationToken cancellationToken)
     {
+        if (!await CheckDeletePermissionAsync("Goals", cancellationToken))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new {
+                error = "DeletionDisabled",
+                message = "Deletion is disabled for Goals in Settings. Please enable it under Settings > Deletion Controls."
+            });
+        }
+
         await Mediator.Send(new DeleteGoalCommand(id), cancellationToken);
         return NoContent();
     }
@@ -113,12 +122,21 @@ public class GoalsController : ApiControllerBase
 
     [HttpDelete("{id:guid}/contributions/{contributionId:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteContribution(
         [FromRoute] Guid id,
         [FromRoute] Guid contributionId,
         CancellationToken cancellationToken)
     {
+        if (!await CheckDeletePermissionAsync("Goals", cancellationToken))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new {
+                error = "DeletionDisabled",
+                message = "Deletion is disabled for Goals in Settings. Please enable it under Settings > Deletion Controls."
+            });
+        }
+
         await Mediator.Send(new DeleteGoalContributionCommand(id, contributionId), cancellationToken);
         return NoContent();
     }

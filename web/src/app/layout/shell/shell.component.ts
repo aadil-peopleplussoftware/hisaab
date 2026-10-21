@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { filter } from 'rxjs/operators';
 import { ThemeService, ThemeName, IconStyle, SidebarPosition, DisplayCurrency } from '../../core/services/theme.service';
 import { AuthService } from '../../core/services/auth.service';
+import { RoleRightsService } from '../../core/services/role-rights.service';
 import { TransactionsService } from '../../features/transactions/services/transactions.service';
 import { Category, CreateTransactionPayload, TransactionType } from '../../features/transactions/models/transaction.model';
 import { RecycleBinService } from '../../features/recycle-bin/services/recycle-bin.service';
@@ -54,71 +55,93 @@ interface CommandItem {
             <span class="nav-label">Dashboard</span>
           </a>
 
-          <a routerLink="/analytics" routerLinkActive="active" class="nav-item" title="KPI Analytics">
-            <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'analytics' }" />
-            <span class="nav-label">KPI Analytics</span>
-          </a>
+          @if (roleRightsService.canView('Reports')) {
+            <a routerLink="/analytics" routerLinkActive="active" class="nav-item" title="KPI Analytics">
+              <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'analytics' }" />
+              <span class="nav-label">KPI Analytics</span>
+            </a>
+          }
 
-          <a routerLink="/transactions" routerLinkActive="active" class="nav-item" title="Transactions">
-            <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'transactions' }" />
-            <span class="nav-label">Transactions</span>
-          </a>
+          @if (roleRightsService.canView('Transactions')) {
+            <a routerLink="/transactions" routerLinkActive="active" class="nav-item" title="Transactions">
+              <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'transactions' }" />
+              <span class="nav-label">Transactions</span>
+            </a>
+          }
 
-          <a routerLink="/business" routerLinkActive="active" class="nav-item" title="Business">
-            <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'business' }" />
-            <span class="nav-label">Business</span>
-          </a>
+          @if (roleRightsService.canView('Business')) {
+            <a routerLink="/business" routerLinkActive="active" class="nav-item" title="Business">
+              <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'business' }" />
+              <span class="nav-label">Business</span>
+            </a>
+          }
 
-          <a routerLink="/loans" routerLinkActive="active" class="nav-item" title="Loans">
-            <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'loans' }" />
-            <span class="nav-label">Loans</span>
-          </a>
+          @if (roleRightsService.canView('Loans')) {
+            <a routerLink="/loans" routerLinkActive="active" class="nav-item" title="Loans">
+              <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'loans' }" />
+              <span class="nav-label">Loans</span>
+            </a>
+          }
 
-          <a routerLink="/goals" routerLinkActive="active" class="nav-item" title="Dreams & Goals">
-            <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'goals' }" />
-            <span class="nav-label">Dreams & Goals</span>
-          </a>
+          @if (roleRightsService.canView('Goals')) {
+            <a routerLink="/goals" routerLinkActive="active" class="nav-item" title="Dreams & Goals">
+              <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'goals' }" />
+              <span class="nav-label">Dreams & Goals</span>
+            </a>
+          }
 
-          <a routerLink="/investments" routerLinkActive="active" class="nav-item" title="Investments">
-            <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'investments' }" />
-            <span class="nav-label">Investments</span>
-          </a>
+          @if (roleRightsService.canView('Investments')) {
+            <a routerLink="/investments" routerLinkActive="active" class="nav-item" title="Investments">
+              <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'investments' }" />
+              <span class="nav-label">Investments</span>
+            </a>
 
-          <a routerLink="/market-ai" routerLinkActive="active" class="nav-item nav-item-market-ai" title="AI Stock Market Hub">
-            <span class="nav-ai-sparkle">✨</span>
-            <span class="nav-label">AI Stocks & Hub</span>
-            <span class="nav-badge-ai">AI</span>
-          </a>
+            <a routerLink="/market-ai" routerLinkActive="active" class="nav-item nav-item-market-ai" title="AI Stock Market Hub">
+              <span class="nav-ai-sparkle">✨</span>
+              <span class="nav-label">AI Stocks & Hub</span>
+              <span class="nav-badge-ai">AI</span>
+            </a>
+          }
 
-          <a routerLink="/epfo" routerLinkActive="active" class="nav-item" title="EPFO Passbook">
-            <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'epfo' }" />
-            <span class="nav-label">EPFO Passbook</span>
-          </a>
+          @if (roleRightsService.canView('Epfo')) {
+            <a routerLink="/epfo" routerLinkActive="active" class="nav-item" title="EPFO Passbook">
+              <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'epfo' }" />
+              <span class="nav-label">EPFO Passbook</span>
+            </a>
+          }
 
-          <a routerLink="/reports" routerLinkActive="active" class="nav-item" title="Reports">
-            <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'reports' }" />
-            <span class="nav-label">Reports</span>
-          </a>
+          @if (roleRightsService.canView('Reports')) {
+            <a routerLink="/reports" routerLinkActive="active" class="nav-item" title="Reports">
+              <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'reports' }" />
+              <span class="nav-label">Reports</span>
+            </a>
+          }
 
-          <a routerLink="/data-transfer" routerLinkActive="active" class="nav-item" title="Data Transfer">
-            <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'datatransfer' }" />
-            <span class="nav-label">Data Transfer</span>
-          </a>
+          @if (roleRightsService.canView('Reports') || roleRightsService.canView('Settings')) {
+            <a routerLink="/data-transfer" routerLinkActive="active" class="nav-item" title="Data Transfer">
+              <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'datatransfer' }" />
+              <span class="nav-label">Data Transfer</span>
+            </a>
+          }
 
-          <a routerLink="/recycle-bin" routerLinkActive="active" class="nav-item" title="Recycle Bin">
-            <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'recyclebin' }" />
-            <span class="nav-label">Recycle Bin</span>
-            @if (recycleBinService.moduleCounts().all > 0) {
-              <span class="nav-badge-pill">{{ recycleBinService.moduleCounts().all }}</span>
-            }
-          </a>
+          @if (roleRightsService.canView('Settings') || roleRightsService.canView('Transactions')) {
+            <a routerLink="/recycle-bin" routerLinkActive="active" class="nav-item" title="Recycle Bin">
+              <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'recyclebin' }" />
+              <span class="nav-label">Recycle Bin</span>
+              @if (recycleBinService.moduleCounts().all > 0) {
+                <span class="nav-badge-pill">{{ recycleBinService.moduleCounts().all }}</span>
+              }
+            </a>
+          }
 
-          <div class="sidebar-divider-line"></div>
+          @if (roleRightsService.canView('Settings')) {
+            <div class="sidebar-divider-line"></div>
 
-          <a routerLink="/settings" routerLinkActive="active" class="nav-item" title="Settings">
-            <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'settings' }" />
-            <span class="nav-label">Settings</span>
-          </a>
+            <a routerLink="/settings" routerLinkActive="active" class="nav-item" title="Settings">
+              <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'settings' }" />
+              <span class="nav-label">Settings</span>
+            </a>
+          }
         </nav>
 
         <!-- User profile widget at bottom of sidebar -->
@@ -194,18 +217,20 @@ interface CommandItem {
             </button>
 
             <!-- Quick Add Global Button -->
-            <button
-              type="button"
-              class="btn-quick-add desktop-only"
-              (click)="themeService.openQuickAdd()"
-              title="Record transaction or entry from anywhere (Press 'c')"
-            >
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-              <span>Add Entry</span>
-            </button>
+            @if (roleRightsService.canCreate('Transactions')) {
+              <button
+                type="button"
+                class="btn-quick-add desktop-only"
+                (click)="themeService.openQuickAdd()"
+                title="Record transaction or entry from anywhere (Press 'c')"
+              >
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                <span>Add Entry</span>
+              </button>
+            }
           </div>
 
           <div class="header-right">
@@ -714,58 +739,93 @@ interface CommandItem {
                 <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'dashboard' }" />
                 <span>Dashboard</span>
               </a>
-              <a routerLink="/analytics" (click)="closeMobileMenu()" class="drawer-link">
-                <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'analytics' }" />
-                <span>KPI Analytics</span>
-              </a>
-              <a routerLink="/transactions" (click)="closeMobileMenu()" class="drawer-link">
-                <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'transactions' }" />
-                <span>Income & Expenses</span>
-              </a>
-              <a routerLink="/loans" (click)="closeMobileMenu()" class="drawer-link">
-                <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'loans' }" />
-                <span>Loans</span>
-              </a>
-              <a routerLink="/goals" (click)="closeMobileMenu()" class="drawer-link">
-                <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'goals' }" />
-                <span>Dreams & Goals</span>
-              </a>
-              <a routerLink="/epfo" (click)="closeMobileMenu()" class="drawer-link">
-                <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'epfo' }" />
-                <span>EPFO Passbook</span>
-              </a>
-              <a routerLink="/investments" (click)="closeMobileMenu()" class="drawer-link">
-                <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'investments' }" />
-                <span>Investments</span>
-              </a>
-              <a routerLink="/market-ai" (click)="closeMobileMenu()" class="drawer-link drawer-market-ai">
-                <span class="drawer-ai-icon">✨</span>
-                <span>AI Stocks & Market Hub</span>
-                <span class="nav-badge-ai">AI</span>
-              </a>
-              <a routerLink="/business" (click)="closeMobileMenu()" class="drawer-link">
-                <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'business' }" />
-                <span>Business & Ventures</span>
-              </a>
-              <a routerLink="/reports" (click)="closeMobileMenu()" class="drawer-link">
-                <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'reports' }" />
-                <span>Reports & PDF</span>
-              </a>
-              <a routerLink="/data-transfer" (click)="closeMobileMenu()" class="drawer-link">
-                <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'datatransfer' }" />
-                <span>Data Transfer</span>
-              </a>
-              <a routerLink="/recycle-bin" (click)="closeMobileMenu()" class="drawer-link">
-                <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'recyclebin' }" />
-                <span>Recycle Bin</span>
-                @if (recycleBinService.moduleCounts().all > 0) {
-                  <span class="nav-badge-pill">{{ recycleBinService.moduleCounts().all }}</span>
-                }
-              </a>
-              <a routerLink="/settings" (click)="closeMobileMenu()" class="drawer-link">
-                <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'settings' }" />
-                <span>Settings</span>
-              </a>
+
+              @if (roleRightsService.canView('Reports')) {
+                <a routerLink="/analytics" (click)="closeMobileMenu()" class="drawer-link">
+                  <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'analytics' }" />
+                  <span>KPI Analytics</span>
+                </a>
+              }
+
+              @if (roleRightsService.canView('Transactions')) {
+                <a routerLink="/transactions" (click)="closeMobileMenu()" class="drawer-link">
+                  <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'transactions' }" />
+                  <span>Income & Expenses</span>
+                </a>
+              }
+
+              @if (roleRightsService.canView('Loans')) {
+                <a routerLink="/loans" (click)="closeMobileMenu()" class="drawer-link">
+                  <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'loans' }" />
+                  <span>Loans</span>
+                </a>
+              }
+
+              @if (roleRightsService.canView('Goals')) {
+                <a routerLink="/goals" (click)="closeMobileMenu()" class="drawer-link">
+                  <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'goals' }" />
+                  <span>Dreams & Goals</span>
+                </a>
+              }
+
+              @if (roleRightsService.canView('Epfo')) {
+                <a routerLink="/epfo" (click)="closeMobileMenu()" class="drawer-link">
+                  <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'epfo' }" />
+                  <span>EPFO Passbook</span>
+                </a>
+              }
+
+              @if (roleRightsService.canView('Investments')) {
+                <a routerLink="/investments" (click)="closeMobileMenu()" class="drawer-link">
+                  <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'investments' }" />
+                  <span>Investments</span>
+                </a>
+
+                <a routerLink="/market-ai" (click)="closeMobileMenu()" class="drawer-link drawer-market-ai">
+                  <span class="drawer-ai-icon">✨</span>
+                  <span>AI Stocks & Market Hub</span>
+                  <span class="nav-badge-ai">AI</span>
+                </a>
+              }
+
+              @if (roleRightsService.canView('Business')) {
+                <a routerLink="/business" (click)="closeMobileMenu()" class="drawer-link">
+                  <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'business' }" />
+                  <span>Business & Ventures</span>
+                </a>
+              }
+
+              @if (roleRightsService.canView('Reports')) {
+                <a routerLink="/reports" (click)="closeMobileMenu()" class="drawer-link">
+                  <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'reports' }" />
+                  <span>Reports & PDF</span>
+                </a>
+              }
+
+              @if (roleRightsService.canView('Reports') || roleRightsService.canView('Settings')) {
+                <a routerLink="/data-transfer" (click)="closeMobileMenu()" class="drawer-link">
+                  <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'datatransfer' }" />
+                  <span>Data Transfer</span>
+                </a>
+              }
+
+              @if (roleRightsService.canView('Settings') || roleRightsService.canView('Transactions')) {
+                <a routerLink="/recycle-bin" (click)="closeMobileMenu()" class="drawer-link">
+                  <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'recyclebin' }" />
+                  <span>Recycle Bin</span>
+                  @if (recycleBinService.moduleCounts().all > 0) {
+                    <span class="nav-badge-pill">{{ recycleBinService.moduleCounts().all }}</span>
+                  }
+                </a>
+              }
+
+              @if (roleRightsService.canView('Settings')) {
+                <a routerLink="/settings" (click)="closeMobileMenu()" class="drawer-link">
+                  <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'settings' }" />
+                  <span>Settings</span>
+                </a>
+              }
+
               <a routerLink="/profile" (click)="closeMobileMenu()" class="drawer-link">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
@@ -801,20 +861,26 @@ interface CommandItem {
           <span>Dashboard</span>
         </a>
 
-        <a routerLink="/transactions" routerLinkActive="active" class="bottom-nav-item">
-          <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'transactions' }" />
-          <span>Txns</span>
-        </a>
+        @if (roleRightsService.canView('Transactions')) {
+          <a routerLink="/transactions" routerLinkActive="active" class="bottom-nav-item">
+            <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'transactions' }" />
+            <span>Txns</span>
+          </a>
+        }
 
-        <a routerLink="/loans" routerLinkActive="active" class="bottom-nav-item">
-          <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'loans' }" />
-          <span>Loans</span>
-        </a>
+        @if (roleRightsService.canView('Loans')) {
+          <a routerLink="/loans" routerLinkActive="active" class="bottom-nav-item">
+            <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'loans' }" />
+            <span>Loans</span>
+          </a>
+        }
 
-        <a routerLink="/epfo" routerLinkActive="active" class="bottom-nav-item">
-          <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'epfo' }" />
-          <span>EPFO</span>
-        </a>
+        @if (roleRightsService.canView('Epfo')) {
+          <a routerLink="/epfo" routerLinkActive="active" class="bottom-nav-item">
+            <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'epfo' }" />
+            <span>EPFO</span>
+          </a>
+        }
 
         <button type="button" class="bottom-nav-item btn-more" (click)="toggleMobileMenu()">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
@@ -2377,6 +2443,7 @@ interface CommandItem {
 export class ShellComponent implements OnInit {
   readonly themeService = inject(ThemeService);
   readonly authService = inject(AuthService);
+  readonly roleRightsService = inject(RoleRightsService);
   readonly recycleBinService = inject(RecycleBinService);
   private readonly transactionsService = inject(TransactionsService);
   private readonly router = inject(Router);
@@ -2601,6 +2668,9 @@ export class ShellComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.roleRightsService.loadMyRights().subscribe({
+      error: () => {}
+    });
     this.loadCategoriesForQuickAdd();
   }
 
@@ -2705,28 +2775,28 @@ export class ShellComponent implements OnInit {
           this.router.navigate(['/dashboard']);
           break;
         case 'a':
-          this.router.navigate(['/analytics']);
+          if (this.roleRightsService.canView('Reports')) this.router.navigate(['/analytics']);
           break;
         case 't':
-          this.router.navigate(['/transactions']);
+          if (this.roleRightsService.canView('Transactions')) this.router.navigate(['/transactions']);
           break;
         case 'l':
-          this.router.navigate(['/loans']);
+          if (this.roleRightsService.canView('Loans')) this.router.navigate(['/loans']);
           break;
         case 'e':
-          this.router.navigate(['/epfo']);
+          if (this.roleRightsService.canView('Epfo')) this.router.navigate(['/epfo']);
           break;
         case 'i':
-          this.router.navigate(['/investments']);
+          if (this.roleRightsService.canView('Investments')) this.router.navigate(['/investments']);
           break;
         case 'b':
-          this.router.navigate(['/business']);
+          if (this.roleRightsService.canView('Business')) this.router.navigate(['/business']);
           break;
         case 'r':
-          this.router.navigate(['/reports']);
+          if (this.roleRightsService.canView('Reports')) this.router.navigate(['/reports']);
           break;
         case 's':
-          this.router.navigate(['/settings']);
+          if (this.roleRightsService.canView('Settings')) this.router.navigate(['/settings']);
           break;
       }
     }
@@ -2734,11 +2804,26 @@ export class ShellComponent implements OnInit {
 
   filterCommands(): void {
     const q = this.commandQuery.trim().toLowerCase();
+    const visible = this.allCommands.filter(c => {
+      if (c.id === 'goto-analytics' && !this.roleRightsService.canView('Reports')) return false;
+      if (c.id === 'goto-transactions' && !this.roleRightsService.canView('Transactions')) return false;
+      if (c.id === 'goto-loans' && !this.roleRightsService.canView('Loans')) return false;
+      if (c.id === 'goto-epfo' && !this.roleRightsService.canView('Epfo')) return false;
+      if (c.id === 'goto-investments' && !this.roleRightsService.canView('Investments')) return false;
+      if (c.id === 'goto-business' && !this.roleRightsService.canView('Business')) return false;
+      if (c.id === 'goto-goals' && !this.roleRightsService.canView('Goals')) return false;
+      if (c.id === 'goto-reports' && !this.roleRightsService.canView('Reports')) return false;
+      if (c.id === 'goto-settings' && !this.roleRightsService.canView('Settings')) return false;
+      if (c.id === 'goto-data-transfer' && !this.roleRightsService.canView('Reports') && !this.roleRightsService.canView('Settings')) return false;
+      if (c.id === 'goto-recycle-bin' && !this.roleRightsService.canView('Settings') && !this.roleRightsService.canView('Transactions')) return false;
+      return true;
+    });
+
     if (!q) {
-      this.filteredCommands = [...this.allCommands];
+      this.filteredCommands = visible;
       return;
     }
-    this.filteredCommands = this.allCommands.filter(
+    this.filteredCommands = visible.filter(
       c => c.title.toLowerCase().includes(q) || c.category.toLowerCase().includes(q)
     );
   }

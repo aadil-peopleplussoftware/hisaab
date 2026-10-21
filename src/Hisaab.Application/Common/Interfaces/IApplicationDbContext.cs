@@ -26,6 +26,7 @@ public interface IApplicationDbContext
     DbSet<MarketAgentUserSetting> MarketAgentUserSettings { get; }
     DbSet<MarketAgentAlertLog> MarketAgentAlertLogs { get; }
     DbSet<Attachment> Attachments { get; }
+    DbSet<RoleRight> RoleRights { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

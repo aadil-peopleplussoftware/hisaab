@@ -10,6 +10,7 @@ import { TransactionsService } from '../transactions/services/transactions.servi
 import { Category, TransactionType } from '../transactions/models/transaction.model';
 import { HttpClient } from '@angular/common/http';
 import { DeletionPermissionsService, DeletionPermissions } from '../../core/services/deletion-permissions.service';
+import { RoleRightsService, ModuleRight, RoleSummary, UserRoleAssignment } from '../../core/services/role-rights.service';
 
 @Component({
   selector: 'app-settings',
@@ -48,18 +49,20 @@ import { DeletionPermissionsService, DeletionPermissions } from '../../core/serv
           </svg>
           <span>Appearance & Studio</span>
         </button>
-        <button
-          type="button"
-          class="tab-btn"
-          [class.active]="activeTab() === 'categories'"
-          (click)="setTab('categories')"
-        >
-          <svg class="tab-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
-            <line x1="7" y1="7" x2="7.01" y2="7" />
-          </svg>
-          <span>Categories</span>
-        </button>
+        @if (roleRightsService.canView('Categories')) {
+          <button
+            type="button"
+            class="tab-btn"
+            [class.active]="activeTab() === 'categories'"
+            (click)="setTab('categories')"
+          >
+            <svg class="tab-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z" />
+              <line x1="7" y1="7" x2="7.01" y2="7" />
+            </svg>
+            <span>Categories</span>
+          </button>
+        }
         <button
           type="button"
           class="tab-btn"
@@ -73,20 +76,36 @@ import { DeletionPermissionsService, DeletionPermissions } from '../../core/serv
           </svg>
           <span>Data Backup & Export</span>
         </button>
-        <button
-          type="button"
-          class="tab-btn"
-          [class.active]="activeTab() === 'deletion-rights'"
-          (click)="setTab('deletion-rights')"
-        >
-          <svg class="tab-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="3 6 5 6 21 6" />
-            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-            <line x1="10" y1="11" x2="10" y2="17" />
-            <line x1="14" y1="11" x2="14" y2="17" />
-          </svg>
-          <span>Deletion Controls</span>
-        </button>
+        @if (roleRightsService.canView('Settings')) {
+          <button
+            type="button"
+            class="tab-btn"
+            [class.active]="activeTab() === 'deletion-rights'"
+            (click)="setTab('deletion-rights')"
+          >
+            <svg class="tab-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6" />
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+              <line x1="10" y1="11" x2="10" y2="17" />
+              <line x1="14" y1="11" x2="14" y2="17" />
+            </svg>
+            <span>Deletion Controls</span>
+          </button>
+        }
+        @if (isAdmin || roleRightsService.canView('Users')) {
+          <button
+            type="button"
+            class="tab-btn"
+            [class.active]="activeTab() === 'role-rights'"
+            (click)="setTab('role-rights')"
+          >
+            <svg class="tab-svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+              <path d="m9 12 2 2 4-4" />
+            </svg>
+            <span>Role & Rights</span>
+          </button>
+        }
         <button
           type="button"
           class="tab-btn"
@@ -881,11 +900,14 @@ import { DeletionPermissionsService, DeletionPermissions } from '../../core/serv
 
           <!-- Quick Actions Bar -->
           <div class="perm-quick-actions">
-            <button type="button" class="btn-sm-action" (click)="setAllPermissions(true)">
+            <button type="button" class="btn-sm-action" (click)="setAllPermissions(true)" [disabled]="deletionPermissionsService.isUpdating()">
               ✓ Allow All Deletions
             </button>
-            <button type="button" class="btn-sm-action" (click)="setAllPermissions(false)">
+            <button type="button" class="btn-sm-action" (click)="setAllPermissions(false)" [disabled]="deletionPermissionsService.isUpdating()">
               🔒 Lock All Deletions (High Security)
+            </button>
+            <button type="button" class="btn-sm-action" (click)="reloadDeletionPermissions()" [disabled]="deletionPermissionsService.isUpdating()">
+              🔄 Sync From Database
             </button>
           </div>
 
@@ -1060,6 +1082,291 @@ import { DeletionPermissionsService, DeletionPermissions } from '../../core/serv
               </div>
             </div>
           </div>
+        </div>
+      }
+
+      <!-- TAB: Role & Rights Matrix -->
+      @if (activeTab() === 'role-rights') {
+        <div class="card-section role-rights-container">
+          <div class="card-title-row">
+            <div>
+              <div class="title-with-icon">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="title-svg-primary">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                  <path d="m9 12 2 2 4-4" />
+                </svg>
+                <h3>Role & Rights Management</h3>
+              </div>
+              <p class="section-desc">
+                Configure role-based access control (RBAC). Select a role to customize module permissions (View, Create, Edit, Delete, Export) or assign roles to registered users.
+              </p>
+            </div>
+            <div class="quick-header-tools">
+              <button type="button" class="btn-create-role" (click)="openCreateRoleModal()">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="5" x2="12" y2="19" />
+                  <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                <span>+ New Custom Role</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Sub-view toggle (Permissions Matrix vs User Role Assignment) -->
+          <div class="role-subtabs">
+            <button
+              type="button"
+              class="subtab-btn"
+              [class.active]="roleRightsSubView() === 'matrix'"
+              (click)="roleRightsSubView.set('matrix')"
+            >
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" class="mr-1">
+                <rect x="3" y="3" width="7" height="7" />
+                <rect x="14" y="3" width="7" height="7" />
+                <rect x="14" y="14" width="7" height="7" />
+                <rect x="3" y="14" width="7" height="7" />
+              </svg>
+              <span>Permissions Matrix</span>
+            </button>
+            <button
+              type="button"
+              class="subtab-btn"
+              [class.active]="roleRightsSubView() === 'users'"
+              (click)="roleRightsSubView.set('users')"
+            >
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" class="mr-1">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+              </svg>
+              <span>User Role Assignments ({{ userRoleAssignments().length }})</span>
+            </button>
+          </div>
+
+          @if (roleRightsSubView() === 'matrix') {
+            <!-- Role Selector Bar -->
+            <div class="role-selector-bar">
+              <span class="role-sel-label">Roles:</span>
+              <div class="role-pills-list">
+                @for (r of rolesList(); track r.name) {
+                  <button
+                    type="button"
+                    class="role-pill-btn"
+                    [class.active]="selectedRole() === r.name"
+                    (click)="selectRole(r.name)"
+                  >
+                    <span class="role-name-text">{{ r.name }}</span>
+                    <span class="role-badge-count">{{ r.userCount }} users</span>
+                    @if (!r.isSystemRole) {
+                      <span
+                        class="btn-delete-role-icon"
+                        title="Delete Role"
+                        (click)="$event.stopPropagation(); deleteCustomRole(r.name)"
+                      >✕</span>
+                    }
+                  </button>
+                }
+              </div>
+            </div>
+
+            <!-- Active Role Details Card & Presets -->
+            <div class="active-role-card">
+              <div class="active-role-info">
+                <div class="role-title-line">
+                  <h4>Configuring Rights for: <span class="highlight-role">{{ selectedRole() }}</span></h4>
+                  @if (selectedRole() === 'Admin') {
+                    <span class="system-role-badge">Super Admin</span>
+                  }
+                </div>
+                <p class="role-desc-text">{{ getActiveRoleDescription() }}</p>
+              </div>
+              <div class="matrix-presets-actions">
+                <span class="preset-label">Quick Presets:</span>
+                <button type="button" class="btn-preset" (click)="applyRolePreset('all')">✓ Full Access</button>
+                <button type="button" class="btn-preset" (click)="applyRolePreset('readonly')">👁️ Read Only</button>
+                <button type="button" class="btn-preset" (click)="applyRolePreset('nodelete')">🔒 Lock Deletions</button>
+                <button type="button" class="btn-preset" (click)="applyRolePreset('clear')">✕ Clear All</button>
+              </div>
+            </div>
+
+            <!-- Rights Matrix Table -->
+            @if (roleRightsLoading()) {
+              <div class="matrix-loading">
+                <span class="spinner-sm"></span> Loading permissions matrix...
+              </div>
+            } @else {
+              <div class="table-responsive matrix-table-wrapper">
+                <table class="rights-matrix-table">
+                  <thead>
+                    <tr>
+                      <th class="col-module">Module / Feature</th>
+                      <th class="col-perm text-center">View (Read)</th>
+                      <th class="col-perm text-center">Create (Add)</th>
+                      <th class="col-perm text-center">Edit (Update)</th>
+                      <th class="col-perm text-center">Delete (Remove)</th>
+                      <th class="col-perm text-center">Export (Data)</th>
+                      <th class="col-actions text-center">Row Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (row of roleRightsMatrix(); track row.module; let idx = $index) {
+                      <tr [class.row-all-allowed]="isRowAllAllowed(row)" [class.row-none-allowed]="isRowNoneAllowed(row)">
+                        <td class="col-module">
+                          <div class="module-title-wrap">
+                            <span class="module-name">{{ row.displayName }}</span>
+                            <span class="module-hint">{{ row.description }}</span>
+                          </div>
+                        </td>
+                        <td class="col-perm text-center">
+                          <label class="custom-toggle">
+                            <input
+                              type="checkbox"
+                              [checked]="row.canView"
+                              (change)="toggleRight(idx, 'canView')"
+                            />
+                            <span class="toggle-slider"></span>
+                          </label>
+                        </td>
+                        <td class="col-perm text-center">
+                          <label class="custom-toggle" [class.toggle-disabled]="!row.canView">
+                            <input
+                              type="checkbox"
+                              [checked]="row.canCreate"
+                              [disabled]="!row.canView"
+                              (change)="toggleRight(idx, 'canCreate')"
+                            />
+                            <span class="toggle-slider"></span>
+                          </label>
+                        </td>
+                        <td class="col-perm text-center">
+                          <label class="custom-toggle" [class.toggle-disabled]="!row.canView">
+                            <input
+                              type="checkbox"
+                              [checked]="row.canEdit"
+                              [disabled]="!row.canView"
+                              (change)="toggleRight(idx, 'canEdit')"
+                            />
+                            <span class="toggle-slider"></span>
+                          </label>
+                        </td>
+                        <td class="col-perm text-center">
+                          <label class="custom-toggle danger-slider" [class.toggle-disabled]="!row.canView">
+                            <input
+                              type="checkbox"
+                              [checked]="row.canDelete"
+                              [disabled]="!row.canView"
+                              (change)="toggleRight(idx, 'canDelete')"
+                            />
+                            <span class="toggle-slider"></span>
+                          </label>
+                        </td>
+                        <td class="col-perm text-center">
+                          <label class="custom-toggle" [class.toggle-disabled]="!row.canView">
+                            <input
+                              type="checkbox"
+                              [checked]="row.canExport"
+                              [disabled]="!row.canView"
+                              (change)="toggleRight(idx, 'canExport')"
+                            />
+                            <span class="toggle-slider"></span>
+                          </label>
+                        </td>
+                        <td class="col-actions text-center">
+                          <button
+                            type="button"
+                            class="btn-row-toggle"
+                            (click)="toggleAllModuleRights(idx)"
+                            title="Toggle all rights for this module"
+                          >
+                            {{ isRowAllAllowed(row) ? 'Clear Row' : 'Allow Row' }}
+                          </button>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Save Bar -->
+              <div class="matrix-save-footer">
+                <div class="footer-status-text">
+                  <span>Modifications to <strong>{{ selectedRole() }}</strong> will take effect for all users assigned to this role.</span>
+                </div>
+                <button
+                  type="button"
+                  class="btn-save-rights"
+                  [disabled]="roleRightsSaving()"
+                  (click)="saveRoleRights()"
+                >
+                  @if (roleRightsSaving()) {
+                    <span class="spinner-sm"></span> Saving Rights...
+                  } @else {
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                      <polyline points="17 21 17 13 7 13 7 21"/>
+                      <polyline points="7 3 7 8 15 8"/>
+                    </svg>
+                    <span>Save Rights for {{ selectedRole() }}</span>
+                  }
+                </button>
+              </div>
+            }
+          }
+
+          @if (roleRightsSubView() === 'users') {
+            <!-- User Role Assignments Subview -->
+            <div class="user-assignments-wrap">
+              <div class="table-responsive">
+                <table class="admin-table">
+                  <thead>
+                    <tr>
+                      <th>Full Name</th>
+                      <th>Email</th>
+                      <th>Registered</th>
+                      <th>Status</th>
+                      <th>Assigned Role</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (u of userRoleAssignments(); track u.userId) {
+                      <tr>
+                        <td class="bold">{{ u.fullName }}</td>
+                        <td>{{ u.email }}</td>
+                        <td>{{ u.createdAtUtc | date:'mediumDate' }}</td>
+                        <td>
+                          <span class="status-pill" [class.active]="u.isActive">
+                            {{ u.isActive ? 'Active' : 'Inactive' }}
+                          </span>
+                        </td>
+                        <td>
+                          <select
+                            class="form-control select-role-dropdown"
+                            [ngModel]="u.role"
+                            (ngModelChange)="onUserRoleChange(u, $event)"
+                          >
+                            @for (r of rolesList(); track r.name) {
+                              <option [value]="r.name">{{ r.name }}</option>
+                            }
+                          </select>
+                        </td>
+                        <td>
+                          <button
+                            type="button"
+                            class="btn-sm-action"
+                            (click)="assignRoleToUser(u.userId, u.role)"
+                          >
+                            Save Role
+                          </button>
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          }
         </div>
       }
 
@@ -1345,6 +1652,56 @@ import { DeletionPermissionsService, DeletionPermissions } from '../../core/serv
                 (click)="confirmDeleteAccount()"
               >
                 Delete Account
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- Create Custom Role Modal -->
+      @if (showCreateRoleModal()) {
+        <div class="modal-backdrop" (click)="closeCreateRoleModal()">
+          <div class="modal-card" (click)="$event.stopPropagation()">
+            <h3>Create Custom Role</h3>
+            <div class="form-group">
+              <label>Role Name <span style="color: var(--color-danger)">*</span></label>
+              <input
+                type="text"
+                [(ngModel)]="newRoleName"
+                placeholder="e.g. Auditor, BillingStaff, JuniorAccountant"
+                class="form-control"
+              />
+            </div>
+            <div class="form-group">
+              <label>Description</label>
+              <input
+                type="text"
+                [(ngModel)]="newRoleDescription"
+                placeholder="Brief description of this role"
+                class="form-control"
+              />
+            </div>
+            <div class="form-group">
+              <label>Copy Initial Rights From Template</label>
+              <select [(ngModel)]="newRoleCopyFrom" class="form-control">
+                <option value="User">User (Standard Personal Access)</option>
+                <option value="Viewer">Viewer (Read Only Access)</option>
+                <option value="Accountant">Accountant (Ledgers & Reports)</option>
+                <option value="Manager">Manager (Operations & Approvals)</option>
+                <option value="Admin">Admin (Full Access)</option>
+              </select>
+            </div>
+            <div class="modal-actions">
+              <button type="button" class="btn-cancel" (click)="closeCreateRoleModal()">
+                Cancel
+              </button>
+              <button
+                type="button"
+                class="btn-primary"
+                [disabled]="!newRoleName.trim()"
+                (click)="createCustomRole()"
+              >
+                Create Role
               </button>
             </div>
           </div>
@@ -3191,6 +3548,373 @@ import { DeletionPermissionsService, DeletionPermissions } from '../../core/serv
         }
       }
     }
+
+    /* =========================================================
+       ROLE & RIGHTS MANAGEMENT STYLES
+       ========================================================= */
+    .role-rights-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .title-svg-primary {
+      color: var(--color-primary);
+    }
+
+    .btn-create-role {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.5rem 0.85rem;
+      background: var(--color-primary);
+      color: #fff;
+      font-size: 0.825rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: opacity 0.15s ease;
+
+      &:hover {
+        opacity: 0.9;
+      }
+    }
+
+    .role-subtabs {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--color-border);
+      padding-bottom: 0.5rem;
+    }
+
+    .role-selector-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+      background: var(--color-surface, rgba(0, 0, 0, 0.02));
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      border: 1px solid var(--color-border);
+
+      .role-sel-label {
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--color-text-muted);
+      }
+
+      .role-pills-list {
+        display: flex;
+        gap: 0.5rem;
+        flex-wrap: wrap;
+      }
+    }
+
+    .role-pill-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 0.85rem;
+      border: 1px solid var(--color-border);
+      background: var(--color-bg-card);
+      border-radius: 20px;
+      cursor: pointer;
+      font-size: 0.825rem;
+      color: var(--color-text-main);
+      transition: all 0.15s ease;
+
+      .role-badge-count {
+        font-size: 0.7rem;
+        padding: 0.1rem 0.45rem;
+        background: var(--color-border);
+        border-radius: 10px;
+        color: var(--color-text-muted);
+      }
+
+      .btn-delete-role-icon {
+        font-size: 0.75rem;
+        padding: 0 0.2rem;
+        color: var(--color-danger);
+        &:hover {
+          font-weight: bold;
+        }
+      }
+
+      &.active {
+        background: var(--color-primary);
+        color: #fff;
+        border-color: var(--color-primary);
+
+        .role-badge-count {
+          background: rgba(255, 255, 255, 0.25);
+          color: #fff;
+        }
+
+        .btn-delete-role-icon {
+          color: #fee2e2;
+        }
+      }
+    }
+
+    .active-role-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      background: var(--color-surface, rgba(0, 0, 0, 0.02));
+      border: 1px solid var(--color-border);
+      border-radius: 10px;
+
+      .active-role-info {
+        .role-title-line {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+
+          h4 {
+            margin: 0;
+            font-size: 1rem;
+            color: var(--color-text-main);
+          }
+
+          .highlight-role {
+            color: var(--color-primary);
+            font-weight: 700;
+          }
+
+          .system-role-badge {
+            font-size: 0.7rem;
+            padding: 0.15rem 0.5rem;
+            background: rgba(14, 165, 233, 0.15);
+            color: #0284c7;
+            border-radius: 4px;
+            font-weight: 600;
+          }
+        }
+
+        .role-desc-text {
+          margin: 0.25rem 0 0;
+          font-size: 0.8rem;
+          color: var(--color-text-muted);
+        }
+      }
+
+      .matrix-presets-actions {
+        display: flex;
+        align-items: center;
+        gap: 0.4rem;
+        flex-wrap: wrap;
+
+        .preset-label {
+          font-size: 0.775rem;
+          color: var(--color-text-muted);
+          font-weight: 600;
+          margin-right: 0.25rem;
+        }
+
+        .btn-preset {
+          padding: 0.35rem 0.65rem;
+          font-size: 0.75rem;
+          border: 1px solid var(--color-border);
+          background: var(--color-bg-card);
+          color: var(--color-text-main);
+          border-radius: 6px;
+          cursor: pointer;
+          transition: all 0.15s ease;
+
+          &:hover {
+            border-color: var(--color-primary);
+            color: var(--color-primary);
+          }
+        }
+      }
+    }
+
+    .matrix-table-wrapper {
+      border: 1px solid var(--color-border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .rights-matrix-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.85rem;
+
+      th {
+        background: var(--color-surface, rgba(0, 0, 0, 0.02));
+        padding: 0.85rem 1rem;
+        font-weight: 600;
+        color: var(--color-text-muted);
+        border-bottom: 1px solid var(--color-border);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+
+        &.text-center {
+          text-align: center;
+        }
+      }
+
+      td {
+        padding: 0.85rem 1rem;
+        border-bottom: 1px solid var(--color-border);
+        color: var(--color-text-main);
+        vertical-align: middle;
+
+        &.text-center {
+          text-align: center;
+        }
+      }
+
+      tr:last-child td {
+        border-bottom: none;
+      }
+
+      tr:hover td {
+        background: rgba(0, 0, 0, 0.015);
+      }
+
+      .module-title-wrap {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+
+        .module-name {
+          font-weight: 600;
+          color: var(--color-text-main);
+        }
+
+        .module-hint {
+          font-size: 0.75rem;
+          color: var(--color-text-muted);
+        }
+      }
+
+      .btn-row-toggle {
+        padding: 0.3rem 0.6rem;
+        font-size: 0.75rem;
+        border: 1px solid var(--color-border);
+        background: transparent;
+        color: var(--color-text-muted);
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+
+        &:hover {
+          color: var(--color-text-main);
+          border-color: var(--color-text-muted);
+        }
+      }
+    }
+
+    /* Custom Toggle Switch */
+    .custom-toggle {
+      position: relative;
+      display: inline-block;
+      width: 38px;
+      height: 22px;
+      cursor: pointer;
+
+      input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .toggle-slider {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--color-border, #cbd5e1);
+        transition: 0.2s ease;
+        border-radius: 22px;
+
+        &:before {
+          position: absolute;
+          content: "";
+          height: 16px;
+          width: 16px;
+          left: 3px;
+          bottom: 3px;
+          background-color: white;
+          transition: 0.2s ease;
+          border-radius: 50%;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+      }
+
+      input:checked + .toggle-slider {
+        background-color: var(--color-success, #10b981);
+      }
+
+      &.danger-slider input:checked + .toggle-slider {
+        background-color: var(--color-danger, #ef4444);
+      }
+
+      input:checked + .toggle-slider:before {
+        transform: translateX(16px);
+      }
+
+      &.toggle-disabled,
+      input:disabled + .toggle-slider {
+        opacity: 0.35;
+        cursor: not-allowed;
+      }
+    }
+
+    .matrix-save-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      padding: 1rem 0;
+
+      .footer-status-text {
+        font-size: 0.8rem;
+        color: var(--color-text-muted);
+      }
+
+      .btn-save-rights {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.65rem 1.4rem;
+        background: var(--color-primary);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity 0.15s ease;
+
+        &:hover:not(:disabled) {
+          opacity: 0.9;
+        }
+
+        &:disabled {
+          opacity: 0.6;
+          cursor: not-allowed;
+        }
+      }
+    }
+
+    .select-role-dropdown {
+      padding: 0.35rem 0.65rem;
+      font-size: 0.825rem;
+      border: 1px solid var(--color-border);
+      border-radius: 6px;
+      background: var(--color-bg-card);
+      color: var(--color-text-main);
+      max-width: 160px;
+    }
   `]
 })
 export class SettingsComponent implements OnInit {
@@ -3202,14 +3926,29 @@ export class SettingsComponent implements OnInit {
   readonly authService = inject(AuthService);
   public readonly deletionPermissionsService = inject(DeletionPermissionsService);
   public readonly deletionPerms = this.deletionPermissionsService.permissions;
+  public readonly roleRightsService = inject(RoleRightsService);
 
-  readonly activeTab = signal<'preferences' | 'appearance' | 'categories' | 'export' | 'deletion-rights' | 'privacy' | 'admin'>('preferences');
+  readonly activeTab = signal<'preferences' | 'appearance' | 'categories' | 'export' | 'deletion-rights' | 'role-rights' | 'privacy' | 'admin'>('preferences');
   readonly profile = signal<UserProfile | null>(null);
   readonly categories = signal<Category[]>([]);
   readonly saving = signal<boolean>(false);
   readonly exporting = signal<string | null>(null);
   readonly alertMessage = signal<string | null>(null);
   readonly isAlertError = signal<boolean>(false);
+
+  // Role & Rights signals
+  readonly roleRightsSubView = signal<'matrix' | 'users'>('matrix');
+  readonly rolesList = signal<RoleSummary[]>([]);
+  readonly selectedRole = signal<string>('Admin');
+  readonly roleRightsMatrix = signal<ModuleRight[]>([]);
+  readonly roleRightsLoading = signal<boolean>(false);
+  readonly roleRightsSaving = signal<boolean>(false);
+  readonly userRoleAssignments = signal<UserRoleAssignment[]>([]);
+  readonly userRolesLoading = signal<boolean>(false);
+  readonly showCreateRoleModal = signal<boolean>(false);
+  newRoleName = '';
+  newRoleDescription = '';
+  newRoleCopyFrom = 'User';
 
   // Theme category filter & computed helpers
   readonly themeCategoryFilter = signal<'all' | 'light' | 'dark'>('all');
@@ -3273,12 +4012,23 @@ export class SettingsComponent implements OnInit {
   ngOnInit(): void {
     this.loadPreferences();
     this.loadCategories();
+    this.deletionPermissionsService.fetchPermissions().subscribe({
+      error: (e) => console.warn('Could not fetch deletion permissions on settings init:', e)
+    });
   }
 
-  setTab(tab: 'preferences' | 'appearance' | 'categories' | 'export' | 'deletion-rights' | 'privacy' | 'admin'): void {
+  setTab(tab: 'preferences' | 'appearance' | 'categories' | 'export' | 'deletion-rights' | 'role-rights' | 'privacy' | 'admin'): void {
     this.activeTab.set(tab);
     if (tab === 'admin') {
       this.loadAdminData();
+    }
+    if (tab === 'role-rights') {
+      this.loadRoleRightsData();
+    }
+    if (tab === 'deletion-rights') {
+      this.deletionPermissionsService.fetchPermissions().subscribe({
+        error: (e) => console.warn('Could not refresh deletion permissions on tab open:', e)
+      });
     }
   }
 
@@ -3289,7 +4039,7 @@ export class SettingsComponent implements OnInit {
     this.deletionPermissionsService.updatePermissions(payload).subscribe({
       next: () => {
         this.themeService.playClickSound();
-        this.alertMessage.set(`Deletion for ${module.toUpperCase()} is now ${updatedVal ? 'ON (Allowed)' : 'OFF (Blocked)'}.`);
+        this.alertMessage.set(`Deletion for ${module.toUpperCase()} is now ${updatedVal ? 'ON (Allowed)' : 'OFF (Blocked)'} and saved to database.`);
         this.isAlertError.set(false);
       },
       error: () => {
@@ -3312,11 +4062,25 @@ export class SettingsComponent implements OnInit {
     this.deletionPermissionsService.updatePermissions(payload).subscribe({
       next: () => {
         this.themeService.playClickSound();
-        this.alertMessage.set(`All modules deletion permissions set to ${allow ? 'ALLOWED (ON)' : 'LOCKED (OFF)'}.`);
+        this.alertMessage.set(`All modules deletion permissions saved in database as ${allow ? 'ALLOWED (ON)' : 'LOCKED (OFF)'}.`);
         this.isAlertError.set(false);
       },
       error: () => {
         this.alertMessage.set('Failed to update deletion permissions.');
+        this.isAlertError.set(true);
+      }
+    });
+  }
+
+  reloadDeletionPermissions(): void {
+    this.deletionPermissionsService.fetchPermissions().subscribe({
+      next: () => {
+        this.themeService.playClickSound();
+        this.alertMessage.set('Deletion controls successfully re-synchronized from database.');
+        this.isAlertError.set(false);
+      },
+      error: () => {
+        this.alertMessage.set('Failed to re-sync deletion permissions from server.');
         this.isAlertError.set(true);
       }
     });
@@ -3360,7 +4124,7 @@ export class SettingsComponent implements OnInit {
           this.isAlertError.set(false);
           this.loadCategories();
         },
-        error: (err) => {
+        error: (err: any) => {
           const msg = err?.error?.message || err?.error?.error || 'Failed to delete category.';
           this.alertMessage.set(msg);
           this.isAlertError.set(true);
@@ -3495,6 +4259,223 @@ export class SettingsComponent implements OnInit {
   loadSystemHealth(): void {
     this.settingsService.getSystemHealth().subscribe({
       next: (h) => this.systemHealth.set(h)
+    });
+  }
+
+  // ==========================================
+  // Role & Rights Management Methods
+  // ==========================================
+  loadRoleRightsData(): void {
+    this.roleRightsLoading.set(true);
+    this.roleRightsService.getRoles().subscribe({
+      next: (roles) => {
+        this.rolesList.set(roles);
+        if (roles.length > 0 && !roles.some(r => r.name.toLowerCase() === this.selectedRole().toLowerCase())) {
+          this.selectedRole.set(roles[0].name);
+        }
+        this.loadSelectedRoleRights();
+      },
+      error: () => {
+        this.roleRightsLoading.set(false);
+        this.showAlert('Failed to load roles list.', true);
+      }
+    });
+
+    this.loadUserRoles();
+  }
+
+  loadSelectedRoleRights(): void {
+    const role = this.selectedRole();
+    if (!role) return;
+    this.roleRightsLoading.set(true);
+    this.roleRightsService.getRoleRights(role).subscribe({
+      next: (rights) => {
+        this.roleRightsMatrix.set(rights);
+        this.roleRightsLoading.set(false);
+      },
+      error: () => {
+        this.roleRightsLoading.set(false);
+        this.showAlert(`Failed to load rights for ${role}.`, true);
+      }
+    });
+  }
+
+  selectRole(roleName: string): void {
+    this.selectedRole.set(roleName);
+    this.loadSelectedRoleRights();
+  }
+
+  getActiveRoleDescription(): string {
+    const role = this.rolesList().find(r => r.name.toLowerCase() === this.selectedRole().toLowerCase());
+    return role?.description || 'Custom role permissions matrix.';
+  }
+
+  toggleRight(moduleIndex: number, field: 'canView' | 'canCreate' | 'canEdit' | 'canDelete' | 'canExport'): void {
+    const current = [...this.roleRightsMatrix()];
+    if (!current[moduleIndex]) return;
+    const nextVal = !current[moduleIndex][field];
+
+    if (field !== 'canView' && nextVal && !current[moduleIndex].canView) {
+      // If user enables any operation (Create/Edit/Delete/Export), automatically enable View right
+      current[moduleIndex] = {
+        ...current[moduleIndex],
+        canView: true,
+        [field]: true
+      };
+    } else if (field === 'canView' && !nextVal) {
+      // If user disables View right, automatically disable all operation rights
+      current[moduleIndex] = {
+        ...current[moduleIndex],
+        canView: false,
+        canCreate: false,
+        canEdit: false,
+        canDelete: false,
+        canExport: false
+      };
+    } else {
+      current[moduleIndex] = {
+        ...current[moduleIndex],
+        [field]: nextVal
+      };
+    }
+    this.roleRightsMatrix.set(current);
+  }
+
+  toggleAllModuleRights(moduleIndex: number): void {
+    const current = [...this.roleRightsMatrix()];
+    const row = current[moduleIndex];
+    if (!row) return;
+    const shouldAllow = !this.isRowAllAllowed(row);
+    current[moduleIndex] = {
+      ...row,
+      canView: shouldAllow,
+      canCreate: shouldAllow,
+      canEdit: shouldAllow,
+      canDelete: shouldAllow,
+      canExport: shouldAllow
+    };
+    this.roleRightsMatrix.set(current);
+  }
+
+  isRowAllAllowed(row: ModuleRight): boolean {
+    return row.canView && row.canCreate && row.canEdit && row.canDelete && row.canExport;
+  }
+
+  isRowNoneAllowed(row: ModuleRight): boolean {
+    return !row.canView && !row.canCreate && !row.canEdit && !row.canDelete && !row.canExport;
+  }
+
+  applyRolePreset(preset: 'all' | 'readonly' | 'nodelete' | 'clear'): void {
+    const current = this.roleRightsMatrix().map(r => {
+      switch (preset) {
+        case 'all':
+          return { ...r, canView: true, canCreate: true, canEdit: true, canDelete: true, canExport: true };
+        case 'readonly':
+          return { ...r, canView: true, canCreate: false, canEdit: false, canDelete: false, canExport: true };
+        case 'nodelete':
+          return { ...r, canDelete: false };
+        case 'clear':
+          return { ...r, canView: false, canCreate: false, canEdit: false, canDelete: false, canExport: false };
+        default:
+          return r;
+      }
+    });
+    this.roleRightsMatrix.set(current);
+  }
+
+  saveRoleRights(): void {
+    const role = this.selectedRole();
+    if (!role) return;
+
+    this.roleRightsSaving.set(true);
+    this.roleRightsService.updateRoleRights(role, this.roleRightsMatrix()).subscribe({
+      next: (res) => {
+        this.roleRightsSaving.set(false);
+        this.showAlert(res.message || `Rights successfully saved for ${role}!`);
+        this.roleRightsService.loadMyRights().subscribe();
+      },
+      error: (err) => {
+        this.roleRightsSaving.set(false);
+        this.showAlert(err?.error?.message || 'Failed to save role rights.', true);
+      }
+    });
+  }
+
+  loadUserRoles(): void {
+    this.userRolesLoading.set(true);
+    this.roleRightsService.getUserRoles().subscribe({
+      next: (users) => {
+        this.userRoleAssignments.set(users);
+        this.userRolesLoading.set(false);
+      },
+      error: () => {
+        this.userRolesLoading.set(false);
+      }
+    });
+  }
+
+  onUserRoleChange(user: UserRoleAssignment, newRole: string): void {
+    user.role = newRole;
+  }
+
+  assignRoleToUser(userId: string, newRole: string): void {
+    this.roleRightsService.assignUserRole(userId, newRole).subscribe({
+      next: (res) => {
+        this.showAlert(res.message || 'User role updated successfully.');
+        this.loadRoleRightsData();
+        this.roleRightsService.loadMyRights().subscribe();
+      },
+      error: (err) => {
+        this.showAlert(err?.error?.message || 'Failed to update user role.', true);
+      }
+    });
+  }
+
+  openCreateRoleModal(): void {
+    this.newRoleName = '';
+    this.newRoleDescription = '';
+    this.newRoleCopyFrom = 'User';
+    this.showCreateRoleModal.set(true);
+  }
+
+  closeCreateRoleModal(): void {
+    this.showCreateRoleModal.set(false);
+  }
+
+  createCustomRole(): void {
+    if (!this.newRoleName.trim()) return;
+
+    this.roleRightsService.createRole({
+      roleName: this.newRoleName.trim(),
+      description: this.newRoleDescription.trim(),
+      copyFromRole: this.newRoleCopyFrom
+    }).subscribe({
+      next: (res) => {
+        this.showCreateRoleModal.set(false);
+        this.showAlert(res.message || 'Custom role created successfully.');
+        this.selectedRole.set(this.newRoleName.trim());
+        this.loadRoleRightsData();
+      },
+      error: (err) => {
+        this.showAlert(err?.error?.message || 'Failed to create role.', true);
+      }
+    });
+  }
+
+  deleteCustomRole(roleName: string): void {
+    if (!confirm(`Are you sure you want to delete role '${roleName}'? Any users assigned to this role will be reassigned to 'User'.`)) {
+      return;
+    }
+
+    this.roleRightsService.deleteRole(roleName).subscribe({
+      next: (res) => {
+        this.showAlert(res.message || `Role '${roleName}' deleted successfully.`);
+        this.selectedRole.set('User');
+        this.loadRoleRightsData();
+      },
+      error: (err) => {
+        this.showAlert(err?.error?.message || 'Cannot delete role.', true);
+      }
     });
   }
 

@@ -2,6 +2,8 @@ import { Injectable, signal, computed, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap, of, catchError } from 'rxjs';
 import { User, AuthResponse } from '../models/user.model';
+import { RoleRightsService } from './role-rights.service';
+import { DeletionPermissionsService } from './deletion-permissions.service';
 
 export interface RegisterPayload {
   email: string;
@@ -157,9 +159,21 @@ export class AuthService {
     return this.http.post<{ message: string }>(`${this.baseUrl}/reset-password`, payload);
   }
 
+  private readonly roleRightsService = inject(RoleRightsService);
+  private readonly deletionPermissionsService = inject(DeletionPermissionsService);
+
   setSession(auth: AuthResponse): void {
     this.inMemoryAccessToken = auth.accessToken;
     this.currentUser.set(auth.user);
+    if (auth.user?.role) {
+      this.roleRightsService.setUserRole(auth.user.role);
+    }
+    this.roleRightsService.loadMyRights().subscribe({
+      error: () => {}
+    });
+    this.deletionPermissionsService.fetchPermissions().subscribe({
+      error: () => {}
+    });
   }
 
   getAccessToken(): string | null {
@@ -169,5 +183,7 @@ export class AuthService {
   clearSession(): void {
     this.inMemoryAccessToken = null;
     this.currentUser.set(null);
+    this.roleRightsService.clearCache();
+    this.deletionPermissionsService.clearCache();
   }
 }

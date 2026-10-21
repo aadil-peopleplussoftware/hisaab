@@ -36,6 +36,7 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<MarketAgentUserSetting> MarketAgentUserSettings => Set<MarketAgentUserSetting>();
     public DbSet<MarketAgentAlertLog> MarketAgentAlertLogs => Set<MarketAgentAlertLog>();
     public DbSet<Attachment> Attachments => Set<Attachment>();
+    public DbSet<RoleRight> RoleRights => Set<RoleRight>();
 
     public ApplicationDbContext(
         DbContextOptions<ApplicationDbContext> options,
@@ -84,6 +85,13 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
             b.ToTable("user_deletion_settings");
             b.HasKey(x => x.Id);
             b.HasIndex(x => x.UserId).IsUnique();
+        });
+
+        builder.Entity<RoleRight>(b =>
+        {
+            b.ToTable("role_rights");
+            b.HasKey(x => x.Id);
+            b.HasIndex(x => new { x.RoleName, x.Module }).IsUnique();
         });
 
         // Global conventions & filters
