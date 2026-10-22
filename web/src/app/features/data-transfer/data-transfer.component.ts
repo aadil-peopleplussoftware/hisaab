@@ -177,7 +177,7 @@ interface ModuleOption {
           @if (importStep() === 2) {
             <div class="step-content">
               <h3>Step 2: Upload Excel or CSV File for {{ getModuleName(selectedModule()) }}</h3>
-              <p class="step-desc">Upload .xlsx, .xls, or .csv file (Max 10 MB, up to 50,000 rows).</p>
+              <p class="step-desc">{{ selectedModule() === 'Epfo' ? 'Upload .xlsx, .xls, .csv, or official EPFO Member Passbook .pdf (Max 10 MB).' : 'Upload .xlsx, .xls, or .csv file (Max 10 MB, up to 50,000 rows).' }}</p>
 
               <div
                 class="dropzone"
@@ -189,7 +189,7 @@ interface ModuleOption {
                 <input
                   #fileInput
                   type="file"
-                  accept=".xlsx,.xls,.csv"
+                  [accept]="selectedModule() === 'Epfo' ? '.xlsx,.xls,.csv,.pdf,application/pdf' : '.xlsx,.xls,.csv'"
                   (change)="onFileSelected($event)"
                   style="display: none;" />
 
@@ -202,7 +202,7 @@ interface ModuleOption {
                     </svg>
                   </span>
                   <h4>Click or Drag & Drop File Here</h4>
-                  <p>.xlsx, .xls, or .csv up to 10 MB</p>
+                  <p>{{ selectedModule() === 'Epfo' ? '.xlsx, .xls, .csv, or official EPFO Passbook .pdf' : '.xlsx, .xls, or .csv up to 10 MB' }}</p>
                 </div>
               </div>
 

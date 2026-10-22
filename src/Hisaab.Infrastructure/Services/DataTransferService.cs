@@ -19,12 +19,17 @@ public class DataTransferService : IDataTransferService
 {
     private readonly IApplicationDbContext _context;
     private readonly IAuditService _auditService;
+    private readonly IEpfoPdfParserService _epfoPdfParserService;
     private readonly string _uploadDirectory;
 
-    public DataTransferService(IApplicationDbContext context, IAuditService auditService)
+    public DataTransferService(
+        IApplicationDbContext context,
+        IAuditService auditService,
+        IEpfoPdfParserService? epfoPdfParserService = null)
     {
         _context = context;
         _auditService = auditService;
+        _epfoPdfParserService = epfoPdfParserService ?? new EpfoPdfParserService();
         _uploadDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "uploads", "imports");
         Directory.CreateDirectory(_uploadDirectory);
 
@@ -246,7 +251,14 @@ public class DataTransferService : IDataTransferService
         var ext = Path.GetExtension(fileName).ToLowerInvariant();
         if (ext != ".xlsx" && ext != ".xls" && ext != ".csv")
         {
-            throw new ArgumentException("Unsupported file format. Please upload an Excel (.xlsx, .xls) or CSV file.");
+            if (ext == ".pdf" && string.Equals(meta.Module, "Epfo", StringComparison.OrdinalIgnoreCase))
+            {
+                // PDF passbook is supported for EPFO
+            }
+            else
+            {
+                throw new ArgumentException("Unsupported file format. Please upload an Excel (.xlsx, .xls) or CSV file (or official PDF for EPFO passbooks).");
+            }
         }
 
         var batchId = Guid.NewGuid();
@@ -925,6 +937,15 @@ public class DataTransferService : IDataTransferService
                 throw new InvalidOperationException("Invalid Excel file format signature.");
             }
         }
+
+        // For .pdf, verify PDF header (%PDF)
+        if (ext == ".pdf")
+        {
+            if (read >= 4 && (buffer[0] != 0x25 || buffer[1] != 0x50 || buffer[2] != 0x44 || buffer[3] != 0x46))
+            {
+                throw new InvalidOperationException("Invalid PDF file format signature.");
+            }
+        }
     }
 
     internal static bool IsNonDataRow(Dictionary<string, string> dict)
@@ -948,10 +969,37 @@ public class DataTransferService : IDataTransferService
         return false;
     }
 
-    private static (List<string> sheets, string selectedSheet, List<string> headers, List<Dictionary<string, string>> sampleRows, int totalRows)
+    private (List<string> sheets, string selectedSheet, List<string> headers, List<Dictionary<string, string>> sampleRows, int totalRows)
         InspectFileContent(string filePath, string ext)
     {
-        if (ext == ".csv")
+        if (ext == ".pdf")
+        {
+            using var pdfStream = File.OpenRead(filePath);
+            var preview = _epfoPdfParserService.ParsePassbookPdfAsync(pdfStream).GetAwaiter().GetResult();
+            var headers = new List<string> { "Month", "Employee Share", "Employer Share", "Pension Share", "Interest", "Withdrawal", "Note" };
+            var sampleRows = new List<Dictionary<string, string>>();
+
+            foreach (var item in preview.MonthlyEntries)
+            {
+                var dict = new Dictionary<string, string>
+                {
+                    ["Month"] = item.Month.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    ["Employee Share"] = item.EmployeeShare.ToString(CultureInfo.InvariantCulture),
+                    ["Employer Share"] = item.EmployerShare.ToString(CultureInfo.InvariantCulture),
+                    ["Pension Share"] = item.PensionShare.ToString(CultureInfo.InvariantCulture),
+                    ["Interest"] = item.Interest.ToString(CultureInfo.InvariantCulture),
+                    ["Withdrawal"] = item.Withdrawal.ToString(CultureInfo.InvariantCulture),
+                    ["Note"] = item.Note
+                };
+                if (sampleRows.Count < 5)
+                {
+                    sampleRows.Add(dict);
+                }
+            }
+
+            return (new List<string> { "EPFO Passbook" }, "EPFO Passbook", headers, sampleRows, preview.MonthlyEntries.Count);
+        }
+        else if (ext == ".csv")
         {
             using var reader = new StreamReader(filePath, Encoding.UTF8);
             using var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture) { HasHeaderRecord = true });
@@ -1062,11 +1110,31 @@ public class DataTransferService : IDataTransferService
         return map;
     }
 
-    private static List<Dictionary<string, string>> ReadAllRows(string filePath, string ext, int maxRows = 50000)
+    private List<Dictionary<string, string>> ReadAllRows(string filePath, string ext, int maxRows = 50000)
     {
         var rows = new List<Dictionary<string, string>>();
 
-        if (ext == ".csv")
+        if (ext == ".pdf")
+        {
+            using var pdfStream = File.OpenRead(filePath);
+            var preview = _epfoPdfParserService.ParsePassbookPdfAsync(pdfStream).GetAwaiter().GetResult();
+            foreach (var item in preview.MonthlyEntries)
+            {
+                var dict = new Dictionary<string, string>
+                {
+                    ["Month"] = item.Month.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    ["Employee Share"] = item.EmployeeShare.ToString(CultureInfo.InvariantCulture),
+                    ["Employer Share"] = item.EmployerShare.ToString(CultureInfo.InvariantCulture),
+                    ["Pension Share"] = item.PensionShare.ToString(CultureInfo.InvariantCulture),
+                    ["Interest"] = item.Interest.ToString(CultureInfo.InvariantCulture),
+                    ["Withdrawal"] = item.Withdrawal.ToString(CultureInfo.InvariantCulture),
+                    ["Note"] = item.Note
+                };
+                rows.Add(dict);
+            }
+            return rows;
+        }
+        else if (ext == ".csv")
         {
             using var reader = new StreamReader(filePath, Encoding.UTF8);
             using var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture) { HasHeaderRecord = true });
