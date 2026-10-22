@@ -196,16 +196,21 @@ import { ThemeService } from '../../core/services/theme.service';
         <!-- Mobile Cards (< 768px) -->
         <div class="mobile-entry-list">
           @for (entry of entries(); track entry.id) {
-            <div class="entry-card card">
+            <div class="entry-card card" [class.card-withdrawal]="entry.withdrawal > 0">
               <div class="entry-header">
                 <div>
-                  <h4 class="month-title">{{ entry.monthLabel }}</h4>
+                  <h4 class="month-title" [class.text-danger]="entry.withdrawal > 0">
+                    {{ entry.monthLabel }}
+                    @if (entry.withdrawal > 0) {
+                      <span class="badge-mini-claim">CLAIM</span>
+                    }
+                  </h4>
                   @if (entry.note) {
                     <div class="entry-note">{{ entry.note }}</div>
                   }
                 </div>
-                <div class="badge badge-inflow">
-                  +{{ entry.netInflow | inrCurrency }}
+                <div class="badge" [class.badge-inflow]="entry.netInflow >= 0" [class.badge-outflow]="entry.netInflow < 0">
+                  {{ entry.netInflow >= 0 ? '+' : '' }}{{ entry.netInflow | inrCurrency }}
                 </div>
               </div>
 
@@ -270,9 +275,14 @@ import { ThemeService } from '../../core/services/theme.service';
             </thead>
             <tbody>
               @for (entry of entries(); track entry.id) {
-                <tr class="table-row">
+                <tr class="table-row" [class.row-withdrawal]="entry.withdrawal > 0">
                   <td class="col-month">
-                    <div class="month-cell font-bold">{{ entry.monthLabel }}</div>
+                    <div class="month-cell font-bold" [class.text-danger]="entry.withdrawal > 0">
+                      {{ entry.monthLabel }}
+                      @if (entry.withdrawal > 0) {
+                        <span class="badge-mini-claim">CLAIM</span>
+                      }
+                    </div>
                     @if (entry.note) {
                       <div class="note-subtext" [title]="entry.note">{{ entry.note }}</div>
                     }
@@ -283,11 +293,11 @@ import { ThemeService } from '../../core/services/theme.service';
                   <td class="text-right tabular-nums col-num text-green">
                     {{ entry.interest > 0 ? ('+' + (entry.interest | inrCurrency)) : '—' }}
                   </td>
-                  <td class="text-right tabular-nums col-num text-danger">
+                  <td class="text-right tabular-nums col-num text-danger font-semibold">
                     {{ entry.withdrawal > 0 ? ('-' + (entry.withdrawal | inrCurrency)) : '—' }}
                   </td>
-                  <td class="text-right tabular-nums col-num font-semibold text-teal">
-                    +{{ entry.netInflow | inrCurrency }}
+                  <td class="text-right tabular-nums col-num font-bold" [class.text-teal]="entry.netInflow >= 0" [class.text-danger]="entry.netInflow < 0">
+                    {{ entry.netInflow >= 0 ? '+' : '' }}{{ entry.netInflow | inrCurrency }}
                   </td>
                   <td class="text-right tabular-nums col-num font-bold text-main">
                     {{ entry.runningBalance | inrCurrency }}
@@ -590,19 +600,26 @@ import { ThemeService } from '../../core/services/theme.service';
                             </tr>
                           </thead>
                           <tbody>
-                            @for (item of p.monthlyEntries; track item.month) {
-                              <tr>
-                                <td class="font-bold text-main">{{ item.monthLabel }}</td>
+                            @for (item of p.monthlyEntries; track $index) {
+                              <tr [class.row-withdrawal]="item.withdrawal > 0">
+                                <td class="font-bold text-main">
+                                  <div class="month-title-row">
+                                    <span [class.text-danger]="item.withdrawal > 0">{{ item.monthLabel }}</span>
+                                    @if (item.withdrawal > 0) {
+                                      <span class="badge-mini-claim">CLAIM</span>
+                                    }
+                                  </div>
+                                </td>
                                 <td class="text-right tabular-nums">{{ item.employeeShare | inrCurrency }}</td>
                                 <td class="text-right tabular-nums">{{ item.employerShare | inrCurrency }}</td>
                                 <td class="text-right tabular-nums text-muted">{{ item.pensionShare | inrCurrency }}</td>
-                                <td class="text-right tabular-nums" [class.text-danger]="item.withdrawal > 0">
+                                <td class="text-right tabular-nums font-semibold" [class.text-danger]="item.withdrawal > 0">
                                   {{ item.withdrawal > 0 ? ('-' + (item.withdrawal | inrCurrency)) : '—' }}
                                 </td>
                                 <td class="text-right tabular-nums text-green">
                                   {{ item.interest > 0 ? ('+' + (item.interest | inrCurrency)) : '—' }}
                                 </td>
-                                <td class="text-right tabular-nums font-semibold" [class.text-teal]="item.netInflow >= 0" [class.text-danger]="item.netInflow < 0">
+                                <td class="text-right tabular-nums font-bold" [class.text-teal]="item.netInflow >= 0" [class.text-danger]="item.netInflow < 0">
                                   {{ item.netInflow >= 0 ? '+' : '' }}{{ item.netInflow | inrCurrency }}
                                 </td>
                                 <td class="cell-note" [title]="item.note">{{ item.note }}</td>
@@ -968,6 +985,45 @@ import { ThemeService } from '../../core/services/theme.service';
     .btn-icon-danger:hover {
       background: #fee2e2;
       border-color: #fca5a5;
+    }
+
+    /* Distinct Withdrawal & Claim Rows */
+    .row-withdrawal {
+      background: rgba(239, 68, 68, 0.04);
+      &:hover {
+        background: rgba(239, 68, 68, 0.08) !important;
+      }
+    }
+
+    .card-withdrawal {
+      border-left: 3px solid #ef4444;
+      background: rgba(239, 68, 68, 0.02);
+    }
+
+    .badge-mini-claim {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #dc2626;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 4px;
+      padding: 1px 5px;
+      margin-left: 0.35rem;
+      letter-spacing: 0.03em;
+      vertical-align: middle;
+      display: inline-block;
+    }
+
+    .badge-outflow {
+      background: rgba(239, 68, 68, 0.12);
+      color: #dc2626;
+      border: 1px solid rgba(239, 68, 68, 0.25);
+    }
+
+    .month-title-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
     }
 
     /* Modals */

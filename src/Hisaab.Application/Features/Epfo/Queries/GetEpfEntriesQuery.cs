@@ -35,6 +35,8 @@ public class GetEpfEntriesQueryHandler : IRequestHandler<GetEpfEntriesQuery, Epf
         var allEntries = await _context.EpfEntries
             .Where(e => e.UserId == currentUserId)
             .OrderBy(e => e.Month)
+            .ThenByDescending(e => e.EmployeeShare)
+            .ThenBy(e => e.CreatedAtUtc)
             .ToListAsync(cancellationToken);
 
         // Compute running balances chronologically
@@ -48,7 +50,12 @@ public class GetEpfEntriesQueryHandler : IRequestHandler<GetEpfEntriesQuery, Epf
             runningEpf += netInflow;
             runningPension += entry.PensionShare;
 
-            var monthLabel = entry.Month.ToString("MMM yyyy", CultureInfo.InvariantCulture);
+            var baseMonth = entry.Month.ToString("MMM yyyy", CultureInfo.InvariantCulture);
+            var monthLabel = entry.Withdrawal > 0 && entry.EmployeeShare == 0 && entry.EmployerShare == 0
+                ? $"{baseMonth} (Claim)"
+                : (entry.Interest > 0 && entry.EmployeeShare == 0 && entry.EmployerShare == 0
+                    ? $"{baseMonth} (Interest)"
+                    : baseMonth);
 
             computedEntries.Add(new EpfEntryDto(
                 entry.Id,

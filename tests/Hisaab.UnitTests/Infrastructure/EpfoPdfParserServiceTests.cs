@@ -75,4 +75,41 @@ public class EpfoPdfParserServiceTests
         marchEntry.Interest.Should().Be(520m);
         marchEntry.NetInflow.Should().Be(520m);
     }
+
+    [Fact]
+    public async Task ParsePassbookPdfAsync_With2025Passbook_ExtractsWithdrawalsCorrectly()
+    {
+        // Arrange
+        const string pdf2025 = @"C:\Users\Aadil\.gemini\antigravity\scratch\hisaab\src\Hisaab.Api\bin\Debug\net8.0\uploads\imports\19697ed8-c813-4aaa-8337-c638f6b4a0c7\82d011b1-4eb2-45fa-b6a0-e32b4ef99305_KDMAL00949970000010195_2025.pdf";
+        if (!File.Exists(pdf2025)) return;
+
+        var service = new EpfoPdfParserService();
+        using var stream = File.OpenRead(pdf2025);
+
+        // Act
+        var result = await service.ParsePassbookPdfAsync(stream);
+
+        // Assert
+        result.TotalWithdrawalsEmployee.Should().Be(49700m);
+        var rawDr = result.RawTransactions.Where(t => t.Type == "DR").ToList();
+        rawDr.Should().NotBeEmpty();
+        rawDr[0].EmployeeShare.Should().Be(49700m);
+
+        // Verify distinct row for the withdrawal/claim
+        var claimEntry = result.MonthlyEntries.FirstOrDefault(e => e.Withdrawal == 49700m);
+        claimEntry.Should().NotBeNull();
+        claimEntry!.Withdrawal.Should().Be(49700m);
+        claimEntry.NetInflow.Should().Be(-49700m);
+        claimEntry.MonthLabel.Should().Contain("Claim");
+        claimEntry.EmployeeShare.Should().Be(0m);
+        claimEntry.EmployerShare.Should().Be(0m);
+
+        // Verify regular April contribution row also exists
+        var aprContrib = result.MonthlyEntries.FirstOrDefault(e => e.MonthLabel == "Apr 2025");
+        aprContrib.Should().NotBeNull();
+        aprContrib!.EmployeeShare.Should().Be(1800m);
+        aprContrib.EmployerShare.Should().Be(1800m);
+        aprContrib.Withdrawal.Should().Be(0m);
+        aprContrib.NetInflow.Should().Be(3600m);
+    }
 }

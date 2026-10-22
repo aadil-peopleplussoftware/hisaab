@@ -156,7 +156,9 @@ public class EpfoPdfParserService : IEpfoPdfParserService
         }
 
         // 7. Group into Monthly Normalized Entries for Hisaab
-        var monthlyMap = new Dictionary<string, (DateTime MonthDate, decimal Ee, decimal Er, decimal Eps, decimal Withdrawal, List<string> Particulars)>();
+        // Separate regular monthly contributions (CR) and explicit withdrawals / claims (DR)
+        var monthlyMap = new Dictionary<string, (DateTime MonthDate, decimal Ee, decimal Er, decimal Eps, List<string> Particulars)>();
+        var withdrawalEntries = new List<ParsedEpfoMonthlyEntryDto>();
 
         foreach (var txn in rawTransactions)
         {
@@ -166,33 +168,56 @@ public class EpfoPdfParserService : IEpfoPdfParserService
             }
 
             var normalizedMonth = new DateTime(parsedDate.Year, parsedDate.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-            var key = txn.WageMonth;
             var isDebit = string.Equals(txn.Type, "DR", StringComparison.OrdinalIgnoreCase);
 
-            decimal txnEe = isDebit ? 0m : txn.EmployeeShare;
-            decimal txnEr = isDebit ? 0m : txn.EmployerShare;
-            decimal txnEps = isDebit ? 0m : txn.PensionShare;
-            decimal txnWithdrawal = isDebit ? (txn.EmployeeShare + txn.EmployerShare) : 0m;
-            var partLabel = isDebit
-                ? $"Withdrawal: {txn.Particulars} (₹{txnWithdrawal:N0})"
-                : txn.Particulars;
-
-            if (!monthlyMap.ContainsKey(key))
+            if (isDebit)
             {
-                monthlyMap[key] = (normalizedMonth, txnEe, txnEr, txnEps, txnWithdrawal, new List<string> { partLabel });
+                // Each DR transaction is an explicit claim / advance withdrawal row
+                var withAmount = txn.EmployeeShare + txn.EmployerShare;
+                var withLabel = $"{parsedDate.ToString("MMM yyyy", CultureInfo.InvariantCulture)} (Claim)";
+                var withNoteParts = new List<string>();
+                if (!string.IsNullOrWhiteSpace(estName) && estName != "—")
+                {
+                    withNoteParts.Add(estName);
+                }
+                withNoteParts.Add($"Claim / Withdrawal: {txn.Particulars} ({txn.TransactionDate})");
+                if (txn.EmployerShare > 0)
+                {
+                    withNoteParts.Add($"EE: ₹{txn.EmployeeShare:N0}, ER: ₹{txn.EmployerShare:N0}");
+                }
+
+                withdrawalEntries.Add(new ParsedEpfoMonthlyEntryDto(
+                    normalizedMonth,
+                    withLabel,
+                    0m, // Contribution EE
+                    0m, // Contribution ER
+                    0m, // Contribution EPS
+                    0m, // Interest
+                    withAmount, // Withdrawal
+                    -withAmount, // Net Inflow
+                    string.Join(" | ", withNoteParts)
+                ));
             }
             else
             {
-                var cur = monthlyMap[key];
-                cur.Particulars.Add(partLabel);
-                monthlyMap[key] = (
-                    normalizedMonth,
-                    cur.Ee + txnEe,
-                    cur.Er + txnEr,
-                    cur.Eps + txnEps,
-                    cur.Withdrawal + txnWithdrawal,
-                    cur.Particulars
-                );
+                // Credit (CR) monthly contribution
+                var key = txn.WageMonth;
+                if (!monthlyMap.ContainsKey(key))
+                {
+                    monthlyMap[key] = (normalizedMonth, txn.EmployeeShare, txn.EmployerShare, txn.PensionShare, new List<string> { txn.Particulars });
+                }
+                else
+                {
+                    var cur = monthlyMap[key];
+                    cur.Particulars.Add(txn.Particulars);
+                    monthlyMap[key] = (
+                        normalizedMonth,
+                        cur.Ee + txn.EmployeeShare,
+                        cur.Er + txn.EmployerShare,
+                        cur.Eps + txn.PensionShare,
+                        cur.Particulars
+                    );
+                }
             }
         }
 
@@ -226,11 +251,14 @@ public class EpfoPdfParserService : IEpfoPdfParserService
                 data.Er,
                 data.Eps,
                 0m, // Interest attached separately or to March
-                data.Withdrawal, // Withdrawal
-                data.Ee + data.Er - data.Withdrawal, // Net Inflow
+                0m, // Withdrawal
+                data.Ee + data.Er, // Net Inflow
                 note
             ));
         }
+
+        // Add all explicit withdrawal entries
+        monthlyEntries.AddRange(withdrawalEntries);
 
         // If the passbook summary reported withdrawals but no DR rows existed in the monthly table,
         // attach the missing withdrawal amount to the latest month or March entry so user's records match EPFO closing balance.
@@ -287,9 +315,19 @@ public class EpfoPdfParserService : IEpfoPdfParserService
                     withNote
                 ));
 
-                monthlyEntries = monthlyEntries.OrderBy(e => e.Month).ToList();
+                monthlyEntries = monthlyEntries
+                    .OrderBy(e => e.Month)
+                    .ThenByDescending(e => e.EmployeeShare)
+                    .ThenBy(e => e.Interest)
+                    .ToList();
             }
         }
+
+        monthlyEntries = monthlyEntries
+            .OrderBy(e => e.Month)
+            .ThenByDescending(e => e.EmployeeShare)
+            .ThenBy(e => e.Interest)
+            .ToList();
 
         // Attach annual interest if present (total interest = EE interest + ER interest)
         var totalAnnualInterest = annualIntEe + annualIntEr;
@@ -343,9 +381,19 @@ public class EpfoPdfParserService : IEpfoPdfParserService
                     intNote
                 ));
 
-                monthlyEntries = monthlyEntries.OrderBy(e => e.Month).ToList();
+                monthlyEntries = monthlyEntries
+                    .OrderBy(e => e.Month)
+                    .ThenByDescending(e => e.EmployeeShare)
+                    .ThenBy(e => e.Interest)
+                    .ToList();
             }
         }
+
+        monthlyEntries = monthlyEntries
+            .OrderBy(e => e.Month)
+            .ThenByDescending(e => e.EmployeeShare)
+            .ThenBy(e => e.Interest)
+            .ToList();
 
         var result = new EpfoPassbookParsePreviewDto(
             estId,
