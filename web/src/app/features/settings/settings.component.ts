@@ -324,6 +324,14 @@ import { RoleRightsService, ModuleRight, RoleSummary, UserRoleAssignment } from 
                 <button
                   type="button"
                   class="theme-filter-btn"
+                  [class.active]="themeCategoryFilter() === 'combination'"
+                  (click)="themeCategoryFilter.set('combination'); themeService.playClickSound()"
+                >
+                  ✨ Combination (4)
+                </button>
+                <button
+                  type="button"
+                  class="theme-filter-btn"
                   [class.active]="themeCategoryFilter() === 'light'"
                   (click)="themeCategoryFilter.set('light'); themeService.playClickSound()"
                 >
@@ -3995,7 +4003,7 @@ export class SettingsComponent implements OnInit {
   newRoleCopyFrom = 'User';
 
   // Theme category filter & computed helpers
-  readonly themeCategoryFilter = signal<'all' | 'light' | 'dark'>('all');
+  readonly themeCategoryFilter = signal<'all' | 'combination' | 'light' | 'dark'>('all');
   readonly filteredThemes = computed(() => {
     const filter = this.themeCategoryFilter();
     if (filter === 'all') return this.themeService.availableThemes;

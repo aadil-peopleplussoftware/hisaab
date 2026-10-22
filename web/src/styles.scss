@@ -911,6 +911,414 @@
   --primary-hover: #4c6a92;
 }
 
+/* ======================================================== */
+/* COMBINATION THEMES (Dark Sidebar/Topbar + Light Canvas) */
+/* ======================================================== */
+
+/* Theme 11: Combination - Olive Green + Sand */
+[data-theme='olive-sand'] {
+  /* Main Canvas (Sand - Warm Sandy Beige) */
+  --color-canvas-default: #f2ebe0;
+  --color-canvas-subtle: #e8dfd1;
+  --color-canvas-surface: #fbf8f2;
+  --color-border-default: #ddd1c0;
+  --color-border-muted: #e6dcce;
+  --color-border-subtle: #e8dfd2;
+  --color-fg-default: #272a1e;
+  --color-fg-muted: #5e634e;
+  --color-fg-subtle: #797e68;
+  --color-accent-fg: #5a603c;
+  --color-accent-emphasis: #4f5436;
+  --color-accent-subtle: rgba(79, 84, 54, 0.12);
+
+  --color-bg-app: #f2ebe0;
+  --color-bg-card: #fbf8f2;
+  --color-bg-subtle: #e8dfd1;
+  --color-bg-hover: #eae1d3;
+  --color-border: #ddd1c0;
+  --color-border-subtle: #e8dfd2;
+  --color-text-main: #272a1e;
+  --color-text-secondary: #484c39;
+  --color-text-muted: #6f745e;
+  --color-text-subtle: #898e78;
+  --color-primary: #4f5436;
+  --color-primary-hover: #3f432a;
+  --color-primary-active: #353823;
+  --color-primary-light: rgba(79, 84, 54, 0.12);
+  --color-primary-contrast: #ffffff;
+
+  --color-btn-text: #272a1e;
+  --color-btn-bg: #f5eee4;
+  --color-btn-border: #d8cdbc;
+  --color-btn-hover-bg: #ece3d7;
+  --color-btn-hover-border: #cbbfae;
+
+  --color-btn-primary-text: #ffffff;
+  --color-btn-primary-bg: #4f5436;
+  --color-btn-primary-border: #3f432a;
+  --color-btn-primary-hover-bg: #3f432a;
+
+  --color-income: #2d7a46;
+  --color-income-bg: rgba(45, 122, 70, 0.12);
+  --color-income-border: #2d7a46;
+  --color-expense: #ba3828;
+  --color-expense-bg: rgba(186, 56, 40, 0.12);
+  --color-expense-border: #ba3828;
+  --color-loan: #b58022;
+  --color-loan-bg: rgba(181, 128, 34, 0.12);
+  --color-loan-border: #b58022;
+  --color-investment: #4f5436;
+  --color-investment-bg: rgba(79, 84, 54, 0.12);
+  --color-investment-border: #4f5436;
+  --color-epf: #0d9488;
+  --color-epf-bg: rgba(13, 148, 136, 0.12);
+  --color-epf-border: #0d9488;
+
+  --shadow-sm: 0 1px 3px rgba(79, 84, 54, 0.06);
+  --shadow-md: 0 4px 8px rgba(79, 84, 54, 0.08);
+  --bg-surface: #fbf8f2;
+  --color-bg-main: #fbf8f2;
+  --text-primary: #272a1e;
+  --text-secondary: #484c39;
+  --border-color: #ddd1c0;
+  --primary: #4f5436;
+  --primary-hover: #3f432a;
+
+  /* Sidebar & Header (Olive Green with Gold Trim) */
+  --color-sidebar-bg: #4f5436;
+  --color-sidebar-border: #c5a059; /* Signature Gold Divider */
+  --color-sidebar-border-inner: rgba(255, 255, 255, 0.12);
+  --color-sidebar-fg: #f7f4ed;
+  --color-sidebar-muted: #c4c9b0;
+  --color-sidebar-nav-fg: #ede8dc;
+  --color-sidebar-nav-icon: #c2c7ab;
+  --color-nav-hover-bg: rgba(255, 255, 255, 0.12);
+  --color-nav-hover-fg: #ffffff;
+  --color-nav-active-bg: rgba(197, 160, 89, 0.28);
+  --color-nav-active-fg: #ffffff;
+  --color-nav-active-icon: #f4d38c;
+  --color-notif-bg: #c5a059;
+  --color-notif-fg: #272a1e;
+
+  --color-header-bg: #4f5436;
+  --color-header-border: #c5a059; /* Signature Gold Divider */
+  --color-header-fg: #f7f4ed;
+  --color-header-btn-bg: rgba(255, 255, 255, 0.12);
+  --color-header-btn-border: rgba(197, 160, 89, 0.45);
+  --color-header-btn-fg: #f4eee2;
+  --color-header-key-bg: rgba(255, 255, 255, 0.16);
+  --color-header-key-border: rgba(255, 255, 255, 0.25);
+  --color-header-key-fg: #f7f4ed;
+  --color-header-tool-fg: #dce1cb;
+  --color-header-tool-hover-bg: rgba(255, 255, 255, 0.18);
+  --color-header-tool-hover-border: #c5a059;
+
+  --gold-accent: #c5a059;
+}
+
+/* Theme 12: Combination - Deep Plum + Cream */
+[data-theme='plum-cream'] {
+  /* Main Canvas (Cream - Warm Ivory Cream) */
+  --color-canvas-default: #faf3ea;
+  --color-canvas-subtle: #f3e8da;
+  --color-canvas-surface: #ffffff;
+  --color-border-default: #e5d7c5;
+  --color-border-muted: #eee3d4;
+  --color-border-subtle: #efe4d5;
+  --color-fg-default: #281320;
+  --color-fg-muted: #624357;
+  --color-fg-subtle: #826377;
+  --color-accent-fg: #54203e;
+  --color-accent-emphasis: #42152f;
+  --color-accent-subtle: rgba(84, 32, 62, 0.12);
+
+  --color-bg-app: #faf3ea;
+  --color-bg-card: #ffffff;
+  --color-bg-subtle: #f3e8da;
+  --color-bg-hover: #f1e3d2;
+  --color-border: #e5d7c5;
+  --color-border-subtle: #efe4d5;
+  --color-text-main: #281320;
+  --color-text-secondary: #4a293f;
+  --color-text-muted: #735067;
+  --color-text-subtle: #937187;
+  --color-primary: #54203e;
+  --color-primary-hover: #42152f;
+  --color-primary-active: #351025;
+  --color-primary-light: rgba(84, 32, 62, 0.12);
+  --color-primary-contrast: #ffffff;
+
+  --color-btn-text: #281320;
+  --color-btn-bg: #f8efe5;
+  --color-btn-border: #e1d1be;
+  --color-btn-hover-bg: #f0e3d4;
+  --color-btn-hover-border: #d4c2ac;
+
+  --color-btn-primary-text: #ffffff;
+  --color-btn-primary-bg: #54203e;
+  --color-btn-primary-border: #42152f;
+  --color-btn-primary-hover-bg: #42152f;
+
+  --color-income: #247a46;
+  --color-income-bg: rgba(36, 122, 70, 0.12);
+  --color-income-border: #247a46;
+  --color-expense: #b82645;
+  --color-expense-bg: rgba(184, 38, 69, 0.12);
+  --color-expense-border: #b82645;
+  --color-loan: #c48c27;
+  --color-loan-bg: rgba(196, 140, 39, 0.12);
+  --color-loan-border: #c48c27;
+  --color-investment: #54203e;
+  --color-investment-bg: rgba(84, 32, 62, 0.12);
+  --color-investment-border: #54203e;
+  --color-epf: #0d9488;
+  --color-epf-bg: rgba(13, 148, 136, 0.12);
+  --color-epf-border: #0d9488;
+
+  --shadow-sm: 0 1px 3px rgba(84, 32, 62, 0.06);
+  --shadow-md: 0 4px 8px rgba(84, 32, 62, 0.08);
+  --bg-surface: #ffffff;
+  --color-bg-main: #ffffff;
+  --text-primary: #281320;
+  --text-secondary: #4a293f;
+  --border-color: #e5d7c5;
+  --primary: #54203e;
+  --primary-hover: #42152f;
+
+  /* Sidebar & Header (Deep Plum with Champagne Gold Trim) */
+  --color-sidebar-bg: #54203e;
+  --color-sidebar-border: #d6b77e; /* Signature Champagne Gold Divider */
+  --color-sidebar-border-inner: rgba(255, 255, 255, 0.12);
+  --color-sidebar-fg: #fdf7fa;
+  --color-sidebar-muted: #d9b8cb;
+  --color-sidebar-nav-fg: #f5e4ee;
+  --color-sidebar-nav-icon: #cf9dbb;
+  --color-nav-hover-bg: rgba(255, 255, 255, 0.12);
+  --color-nav-hover-fg: #ffffff;
+  --color-nav-active-bg: rgba(214, 183, 126, 0.28);
+  --color-nav-active-fg: #ffffff;
+  --color-nav-active-icon: #f6e0b5;
+  --color-notif-bg: #d6b77e;
+  --color-notif-fg: #351025;
+
+  --color-header-bg: #54203e;
+  --color-header-border: #d6b77e; /* Signature Champagne Gold Divider */
+  --color-header-fg: #fdf7fa;
+  --color-header-btn-bg: rgba(255, 255, 255, 0.12);
+  --color-header-btn-border: rgba(214, 183, 126, 0.45);
+  --color-header-btn-fg: #f8ebf3;
+  --color-header-key-bg: rgba(255, 255, 255, 0.16);
+  --color-header-key-border: rgba(255, 255, 255, 0.25);
+  --color-header-key-fg: #fdf7fa;
+  --color-header-tool-fg: #e2c0d4;
+  --color-header-tool-hover-bg: rgba(255, 255, 255, 0.18);
+  --color-header-tool-hover-border: #d6b77e;
+
+  --gold-accent: #d6b77e;
+}
+
+/* Theme 13: Combination - Dusty Blue + White */
+[data-theme='dusty-blue-white'] {
+  /* Main Canvas (White - Crisp Porcelain Canvas) */
+  --color-canvas-default: #f5f7fa;
+  --color-canvas-subtle: #eaeff4;
+  --color-canvas-surface: #ffffff;
+  --color-border-default: #d5dde5;
+  --color-border-muted: #e2e8f0;
+  --color-border-subtle: #e4ebf2;
+  --color-fg-default: #1b2530;
+  --color-fg-muted: #4e5f70;
+  --color-fg-subtle: #728394;
+  --color-accent-fg: #5b7488;
+  --color-accent-emphasis: #4b6173;
+  --color-accent-subtle: rgba(91, 116, 136, 0.12);
+
+  --color-bg-app: #f5f7fa;
+  --color-bg-card: #ffffff;
+  --color-bg-subtle: #eaeff4;
+  --color-bg-hover: #e5ebf1;
+  --color-border: #d5dde5;
+  --color-border-subtle: #e4ebf2;
+  --color-text-main: #1b2530;
+  --color-text-secondary: #3b4c5c;
+  --color-text-muted: #647688;
+  --color-text-subtle: #8294a6;
+  --color-primary: #5b7488;
+  --color-primary-hover: #4b6173;
+  --color-primary-active: #3e5161;
+  --color-primary-light: rgba(91, 116, 136, 0.12);
+  --color-primary-contrast: #ffffff;
+
+  --color-btn-text: #1b2530;
+  --color-btn-bg: #edf2f7;
+  --color-btn-border: #cbd6e2;
+  --color-btn-hover-bg: #e2e9f1;
+  --color-btn-hover-border: #b8c7d6;
+
+  --color-btn-primary-text: #ffffff;
+  --color-btn-primary-bg: #5b7488;
+  --color-btn-primary-border: #4b6173;
+  --color-btn-primary-hover-bg: #4b6173;
+
+  --color-income: #1b804d;
+  --color-income-bg: rgba(27, 128, 77, 0.12);
+  --color-income-border: #1b804d;
+  --color-expense: #c83232;
+  --color-expense-bg: rgba(200, 50, 50, 0.12);
+  --color-expense-border: #c83232;
+  --color-loan: #c78f24;
+  --color-loan-bg: rgba(199, 143, 36, 0.12);
+  --color-loan-border: #c78f24;
+  --color-investment: #5b7488;
+  --color-investment-bg: rgba(91, 116, 136, 0.12);
+  --color-investment-border: #5b7488;
+  --color-epf: #0d9488;
+  --color-epf-bg: rgba(13, 148, 136, 0.12);
+  --color-epf-border: #0d9488;
+
+  --shadow-sm: 0 1px 3px rgba(91, 116, 136, 0.06);
+  --shadow-md: 0 4px 8px rgba(91, 116, 136, 0.08);
+  --bg-surface: #ffffff;
+  --color-bg-main: #ffffff;
+  --text-primary: #1b2530;
+  --text-secondary: #3b4c5c;
+  --border-color: #d5dde5;
+  --primary: #5b7488;
+  --primary-hover: #4b6173;
+
+  /* Sidebar & Header (Dusty Slate Blue with Gold Trim) */
+  --color-sidebar-bg: #5b7488;
+  --color-sidebar-border: #cca762; /* Signature Gold Divider */
+  --color-sidebar-border-inner: rgba(255, 255, 255, 0.15);
+  --color-sidebar-fg: #ffffff;
+  --color-sidebar-muted: #d0dde8;
+  --color-sidebar-nav-fg: #f0f4f8;
+  --color-sidebar-nav-icon: #c5d4e1;
+  --color-nav-hover-bg: rgba(255, 255, 255, 0.15);
+  --color-nav-hover-fg: #ffffff;
+  --color-nav-active-bg: rgba(204, 167, 98, 0.28);
+  --color-nav-active-fg: #ffffff;
+  --color-nav-active-icon: #f4d89a;
+  --color-notif-bg: #cca762;
+  --color-notif-fg: #1b2530;
+
+  --color-header-bg: #5b7488;
+  --color-header-border: #cca762; /* Signature Gold Divider */
+  --color-header-fg: #ffffff;
+  --color-header-btn-bg: rgba(255, 255, 255, 0.15);
+  --color-header-btn-border: rgba(204, 167, 98, 0.45);
+  --color-header-btn-fg: #f0f5fa;
+  --color-header-key-bg: rgba(255, 255, 255, 0.18);
+  --color-header-key-border: rgba(255, 255, 255, 0.28);
+  --color-header-key-fg: #ffffff;
+  --color-header-tool-fg: #dce7f0;
+  --color-header-tool-hover-bg: rgba(255, 255, 255, 0.2);
+  --color-header-tool-hover-border: #cca762;
+
+  --gold-accent: #cca762;
+}
+
+/* Theme 14: Combination - Terracotta + Beige */
+[data-theme='terracotta-beige'] {
+  /* Main Canvas (Beige - Warm Tuscan Beige) */
+  --color-canvas-default: #f7efe5;
+  --color-canvas-subtle: #eedecf;
+  --color-canvas-surface: #fffdfa;
+  --color-border-default: #dfcdbc;
+  --color-border-muted: #eadbce;
+  --color-border-subtle: #ebdcd0;
+  --color-fg-default: #311d17;
+  --color-fg-muted: #6e4c41;
+  --color-fg-subtle: #8e6d62;
+  --color-accent-fg: #ba4836;
+  --color-accent-emphasis: #9f3a2a;
+  --color-accent-subtle: rgba(186, 72, 54, 0.12);
+
+  --color-bg-app: #f7efe5;
+  --color-bg-card: #fffdfa;
+  --color-bg-subtle: #eedecf;
+  --color-bg-hover: #edd9c8;
+  --color-border: #dfcdbc;
+  --color-border-subtle: #ebdcd0;
+  --color-text-main: #311d17;
+  --color-text-secondary: #57362d;
+  --color-text-muted: #7d594f;
+  --color-text-subtle: #9c786e;
+  --color-primary: #ba4836;
+  --color-primary-hover: #9f3a2a;
+  --color-primary-active: #863022;
+  --color-primary-light: rgba(186, 72, 54, 0.12);
+  --color-primary-contrast: #ffffff;
+
+  --color-btn-text: #311d17;
+  --color-btn-bg: #f4e8dc;
+  --color-btn-border: #dcc8b6;
+  --color-btn-hover-bg: #ebdccd;
+  --color-btn-hover-border: #cfb9a5;
+
+  --color-btn-primary-text: #ffffff;
+  --color-btn-primary-bg: #ba4836;
+  --color-btn-primary-border: #9f3a2a;
+  --color-btn-primary-hover-bg: #9f3a2a;
+
+  --color-income: #267b49;
+  --color-income-bg: rgba(38, 123, 73, 0.12);
+  --color-income-border: #267b49;
+  --color-expense: #ba4836;
+  --color-expense-bg: rgba(186, 72, 54, 0.12);
+  --color-expense-border: #ba4836;
+  --color-loan: #c78d26;
+  --color-loan-bg: rgba(199, 141, 38, 0.12);
+  --color-loan-border: #c78d26;
+  --color-investment: #ba4836;
+  --color-investment-bg: rgba(186, 72, 54, 0.12);
+  --color-investment-border: #ba4836;
+  --color-epf: #0d9488;
+  --color-epf-bg: rgba(13, 148, 136, 0.12);
+  --color-epf-border: #0d9488;
+
+  --shadow-sm: 0 1px 3px rgba(186, 72, 54, 0.06);
+  --shadow-md: 0 4px 8px rgba(186, 72, 54, 0.08);
+  --bg-surface: #fffdfa;
+  --color-bg-main: #fffdfa;
+  --text-primary: #311d17;
+  --text-secondary: #57362d;
+  --border-color: #dfcdbc;
+  --primary: #ba4836;
+  --primary-hover: #9f3a2a;
+
+  /* Sidebar & Header (Terracotta with Brass Gold Trim) */
+  --color-sidebar-bg: #ba4836;
+  --color-sidebar-border: #deb16d; /* Signature Brass Gold Divider */
+  --color-sidebar-border-inner: rgba(255, 255, 255, 0.15);
+  --color-sidebar-fg: #fff8f5;
+  --color-sidebar-muted: #f8cfc7;
+  --color-sidebar-nav-fg: #fdeee9;
+  --color-sidebar-nav-icon: #f5beb5;
+  --color-nav-hover-bg: rgba(255, 255, 255, 0.15);
+  --color-nav-hover-fg: #ffffff;
+  --color-nav-active-bg: rgba(222, 177, 109, 0.28);
+  --color-nav-active-fg: #ffffff;
+  --color-nav-active-icon: #ffebb8;
+  --color-notif-bg: #deb16d;
+  --color-notif-fg: #311d17;
+
+  --color-header-bg: #ba4836;
+  --color-header-border: #deb16d; /* Signature Brass Gold Divider */
+  --color-header-fg: #fff8f5;
+  --color-header-btn-bg: rgba(255, 255, 255, 0.15);
+  --color-header-btn-border: rgba(222, 177, 109, 0.45);
+  --color-header-btn-fg: #fef0ea;
+  --color-header-key-bg: rgba(255, 255, 255, 0.18);
+  --color-header-key-border: rgba(255, 255, 255, 0.28);
+  --color-header-key-fg: #fff8f5;
+  --color-header-tool-fg: #f8d5cf;
+  --color-header-tool-hover-bg: rgba(255, 255, 255, 0.2);
+  --color-header-tool-hover-border: #deb16d;
+
+  --gold-accent: #deb16d;
+}
+
 /* Typography Font Presets */
 [data-font='jakarta'] {
   --font-family-base: 'Plus Jakarta Sans', 'Google Sans', 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;

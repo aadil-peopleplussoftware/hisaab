@@ -10,7 +10,11 @@ export type ThemeName =
   | 'sepia-paper'
   | 'github-dark'
   | 'nord'
-  | 'midnight-emerald';
+  | 'midnight-emerald'
+  | 'olive-sand'
+  | 'plum-cream'
+  | 'dusty-blue-white'
+  | 'terracotta-beige';
 export type IconStyle = 'linear' | 'filled' | 'duotone' | 'monoline';
 export type SidebarPosition = 'left' | 'right' | 'top' | 'collapsed';
 export type DensityMode = 'comfortable' | 'compact';
@@ -21,7 +25,7 @@ export type RadiusPreset = 'sharp' | 'modern' | 'rounded' | 'pill';
 export interface ThemeDefinition {
   id: ThemeName;
   name: string;
-  category: 'light' | 'dark';
+  category: 'light' | 'dark' | 'combination';
   description: string;
   previewColors: string[];
 }
@@ -114,6 +118,34 @@ export class ThemeService {
   ];
 
   readonly availableThemes: ThemeDefinition[] = [
+    {
+      id: 'olive-sand',
+      name: 'Olive Green + Sand',
+      category: 'combination',
+      description: 'Artisan dual-tone: deep earthy olive green sidebar/topbar with warm sand canvas and gold trim',
+      previewColors: ['#4f5436', '#f2ebe0', '#c5a059', '#272a1e']
+    },
+    {
+      id: 'plum-cream',
+      name: 'Deep Plum + Cream',
+      category: 'combination',
+      description: 'Regal luxury dual-tone: deep plum wine sidebar/topbar with warm ivory cream canvas and champagne gold trim',
+      previewColors: ['#54203e', '#faf3ea', '#d6b77e', '#281320']
+    },
+    {
+      id: 'dusty-blue-white',
+      name: 'Dusty Blue + White',
+      category: 'combination',
+      description: 'Nordic editorial dual-tone: serene slate dusty blue sidebar/topbar with clean porcelain white canvas and warm gold trim',
+      previewColors: ['#5b7488', '#f5f7fa', '#cca762', '#1b2530']
+    },
+    {
+      id: 'terracotta-beige',
+      name: 'Terracotta + Beige',
+      category: 'combination',
+      description: 'Warm Mediterranean dual-tone: rich terracotta earth sidebar/topbar with sunlit beige canvas and brass gold trim',
+      previewColors: ['#ba4836', '#f7efe5', '#deb16d', '#311d17']
+    },
     {
       id: 'google-play-light',
       name: 'Google Play Console',

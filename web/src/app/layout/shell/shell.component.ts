@@ -398,7 +398,7 @@ interface CommandItem {
             <div class="customizer-body">
               <!-- Section 1: 5 Premium Themes -->
               <div class="studio-section">
-                <label class="studio-section-label">Color Themes (5 Styles)</label>
+                <label class="studio-section-label">Color & Combination Themes ({{ themeService.availableThemes.length }} Styles)</label>
                 <div class="theme-cards-grid">
                   @for (t of themeService.availableThemes; track t.id) {
                     <div
@@ -1249,12 +1249,12 @@ interface CommandItem {
         }
       }
 
-      /* Desktop Sidebar (Theme-Reactive Google Play Console Style) */
+      /* Desktop Sidebar (Theme-Reactive Style) */
       .desktop-sidebar {
         display: none;
         width: 256px;
         background: var(--color-sidebar-bg, var(--color-bg-card));
-        border-right: 1px solid var(--color-sidebar-border, var(--color-border));
+        border-right: 1.5px solid var(--color-sidebar-border, var(--color-border));
         flex-direction: column;
         position: sticky;
         top: 0;
@@ -1273,7 +1273,7 @@ interface CommandItem {
         align-items: center;
         gap: 0.75rem;
         padding: 0.25rem 1.25rem 1rem 1.5rem;
-        border-bottom: 1px solid var(--color-sidebar-border, var(--color-border-subtle));
+        border-bottom: 1px solid var(--color-sidebar-border-inner, var(--color-sidebar-border, var(--color-border-subtle)));
         margin-bottom: 0.75rem;
       }
 
@@ -1301,7 +1301,7 @@ interface CommandItem {
         font-size: 1.15rem;
         font-weight: 500;
         font-family: var(--font-family-google);
-        color: var(--color-text-main);
+        color: var(--color-sidebar-fg, var(--color-text-main));
         letter-spacing: -0.015em;
         line-height: 1.2;
       }
@@ -1309,7 +1309,7 @@ interface CommandItem {
       .brand-tagline {
         font-size: 0.72rem;
         font-weight: 400;
-        color: var(--color-text-muted);
+        color: var(--color-sidebar-muted, var(--color-text-muted));
       }
 
       .side-nav {
@@ -1322,7 +1322,7 @@ interface CommandItem {
 
       .sidebar-divider-line {
         height: 1px;
-        background: var(--color-sidebar-border, var(--color-border));
+        background: var(--color-sidebar-border-inner, var(--color-sidebar-border, var(--color-border)));
         margin: 10px 16px;
       }
 
@@ -1334,7 +1334,7 @@ interface CommandItem {
         height: 42px;
         border-radius: 0 24px 24px 0;
         margin-right: 12px;
-        color: var(--color-text-secondary);
+        color: var(--color-sidebar-nav-fg, var(--color-text-secondary));
         text-decoration: none;
         font-size: 14px;
         font-weight: 500;
@@ -1394,7 +1394,7 @@ interface CommandItem {
         width: 20px;
         height: 20px;
         flex-shrink: 0;
-        color: var(--color-text-muted);
+        color: var(--color-sidebar-nav-icon, var(--color-text-muted));
         transition: all 0.12s ease;
       }
 
@@ -1410,7 +1410,7 @@ interface CommandItem {
 
       .sidebar-user {
         padding-top: 0.75rem;
-        border-top: 1px solid var(--color-border);
+        border-top: 1px solid var(--color-sidebar-border-inner, var(--color-sidebar-border, var(--color-border)));
         display: flex;
         align-items: center;
         justify-content: space-between;
@@ -1430,7 +1430,7 @@ interface CommandItem {
         transition: background-color 0.15s ease;
 
         &:hover {
-          background: var(--color-bg-subtle);
+          background: var(--color-nav-hover-bg, var(--color-bg-subtle));
         }
       }
 
@@ -1457,7 +1457,7 @@ interface CommandItem {
       .user-name {
         font-size: 0.8125rem;
         font-weight: 600;
-        color: var(--color-text-main);
+        color: var(--color-sidebar-fg, var(--color-text-main));
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -1465,7 +1465,7 @@ interface CommandItem {
 
       .user-email {
         font-size: 0.6875rem;
-        color: var(--color-text-muted);
+        color: var(--color-sidebar-muted, var(--color-text-muted));
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -1474,7 +1474,7 @@ interface CommandItem {
       .btn-logout {
         background: transparent;
         border: none;
-        color: var(--color-text-muted);
+        color: var(--color-sidebar-muted, var(--color-text-muted));
         cursor: pointer;
         width: 34px;
         height: 34px;
@@ -1523,8 +1523,9 @@ interface CommandItem {
         justify-content: space-between;
         gap: 1rem;
         padding: 0.625rem 1.25rem;
-        background: var(--color-bg-card);
-        border-bottom: 1px solid var(--color-border);
+        background: var(--color-header-bg, var(--color-bg-card));
+        border-bottom: 1.5px solid var(--color-header-border, var(--color-border));
+        color: var(--color-header-fg, var(--color-text-main));
         position: sticky;
         top: 0;
         z-index: 20;
@@ -1542,7 +1543,7 @@ interface CommandItem {
         justify-content: center;
         background: transparent;
         border: none;
-        color: var(--color-text-main);
+        color: var(--color-header-fg, var(--color-text-main));
         width: 38px;
         height: 38px;
         cursor: pointer;
@@ -1566,7 +1567,7 @@ interface CommandItem {
       .mobile-app-name {
         font-size: 1.1rem;
         font-weight: 800;
-        color: var(--color-text-main);
+        color: var(--color-header-fg, var(--color-text-main));
       }
 
       /* Quick Command Palette Button */
@@ -1574,9 +1575,9 @@ interface CommandItem {
         display: inline-flex;
         align-items: center;
         gap: 8px;
-        background-color: var(--color-canvas-subtle);
-        border: 1px solid var(--color-border-default);
-        color: var(--color-text-muted);
+        background-color: var(--color-header-btn-bg, var(--color-canvas-subtle));
+        border: 1px solid var(--color-header-btn-border, var(--color-border-default));
+        color: var(--color-header-btn-fg, var(--color-text-muted));
         border-radius: var(--radius-md);
         padding: 5px 12px;
         font-size: 12px;
@@ -1584,13 +1585,14 @@ interface CommandItem {
         transition: all 0.12s ease;
 
         &:hover {
-          border-color: var(--color-accent-fg);
-          color: var(--color-text-main);
+          border-color: var(--color-header-tool-hover-border, var(--color-accent-fg));
+          color: var(--color-header-fg, var(--color-text-main));
         }
 
         .key-shortcut {
-          background: rgba(175, 184, 193, 0.2);
-          border: 1px solid var(--color-border);
+          background: var(--color-header-key-bg, rgba(175, 184, 193, 0.2));
+          border: 1px solid var(--color-header-key-border, var(--color-border));
+          color: var(--color-header-key-fg, var(--color-text-muted));
           border-radius: 4px;
           padding: 1px 5px;
           font-family: var(--font-family-mono);
@@ -1627,12 +1629,12 @@ interface CommandItem {
       .currency-selector-pill {
         display: inline-flex;
         align-items: center;
-        background: var(--color-canvas-subtle);
-        border: 1px solid var(--color-border-default);
+        background: var(--color-header-btn-bg, var(--color-canvas-subtle));
+        border: 1px solid var(--color-header-btn-border, var(--color-border-default));
         border-radius: var(--radius-md);
         padding: 2px 6px;
         font-size: 12px;
-        color: var(--color-text-main);
+        color: var(--color-header-fg, var(--color-text-main));
 
         .currency-symbol {
           font-family: var(--font-family-mono);
@@ -1646,7 +1648,7 @@ interface CommandItem {
           background: transparent;
           font-size: 12px;
           font-weight: 600;
-          color: var(--color-text-main);
+          color: var(--color-header-fg, var(--color-text-main));
           outline: none;
           cursor: pointer;
         }
@@ -1661,14 +1663,14 @@ interface CommandItem {
         background: transparent;
         border: 1px solid transparent;
         border-radius: var(--radius-md);
-        color: var(--color-text-muted);
+        color: var(--color-header-tool-fg, var(--color-text-muted));
         cursor: pointer;
         transition: all 0.12s ease;
 
         &:hover {
-          background: var(--color-canvas-subtle);
-          border-color: var(--color-border);
-          color: var(--color-text-main);
+          background: var(--color-header-tool-hover-bg, var(--color-canvas-subtle));
+          border-color: var(--color-header-tool-hover-border, var(--color-border));
+          color: var(--color-header-fg, var(--color-text-main));
         }
 
         &.active {
@@ -1679,14 +1681,14 @@ interface CommandItem {
       }
 
       .btn-customizer-trigger {
-        background: var(--color-canvas-subtle);
-        border: 1px solid var(--color-border-default);
+        background: var(--color-header-btn-bg, var(--color-canvas-subtle));
+        border: 1px solid var(--color-header-btn-border, var(--color-border-default));
         border-radius: var(--radius-md);
         padding: 4px 10px;
         cursor: pointer;
         font-size: 12px;
         font-weight: 600;
-        color: var(--color-text-main);
+        color: var(--color-header-fg, var(--color-text-main));
         display: inline-flex;
         align-items: center;
         gap: 6px;
@@ -1697,8 +1699,8 @@ interface CommandItem {
         }
 
         &:hover {
-          background: var(--color-btn-hover-bg);
-          border-color: var(--color-accent-fg);
+          background: var(--color-header-tool-hover-bg, var(--color-btn-hover-bg));
+          border-color: var(--color-header-tool-hover-border, var(--color-accent-fg));
         }
       }
 
@@ -2292,7 +2294,7 @@ interface CommandItem {
         width: 280px;
         height: 100%;
         background: var(--color-sidebar-bg, var(--color-bg-card));
-        border-right: 1px solid var(--color-sidebar-border, var(--color-border));
+        border-right: 1.5px solid var(--color-sidebar-border, var(--color-border));
         display: flex;
         flex-direction: column;
         padding: 1.25rem 1rem;
@@ -2305,7 +2307,7 @@ interface CommandItem {
         align-items: center;
         justify-content: space-between;
         padding-bottom: 1rem;
-        border-bottom: 1px solid var(--color-sidebar-border, var(--color-border));
+        border-bottom: 1px solid var(--color-sidebar-border-inner, var(--color-sidebar-border, var(--color-border)));
         margin-bottom: 1rem;
       }
 
@@ -2318,20 +2320,20 @@ interface CommandItem {
       .drawer-title {
         font-size: 1.1rem;
         font-weight: 800;
-        color: var(--color-text-main);
+        color: var(--color-sidebar-fg, var(--color-text-main));
         display: block;
       }
 
       .drawer-sub {
         font-size: 0.7rem;
-        color: var(--color-text-muted);
+        color: var(--color-sidebar-muted, var(--color-text-muted));
       }
 
       .btn-close-drawer {
         background: transparent;
         border: none;
         font-size: 1.25rem;
-        color: var(--color-text-muted);
+        color: var(--color-sidebar-muted, var(--color-text-muted));
         cursor: pointer;
       }
 
@@ -2349,7 +2351,7 @@ interface CommandItem {
         gap: 0.75rem;
         padding: 0.625rem 0.75rem;
         border-radius: var(--radius-md);
-        color: var(--color-text-secondary);
+        color: var(--color-sidebar-nav-fg, var(--color-text-secondary));
         text-decoration: none;
         font-size: 0.875rem;
         font-weight: 500;
@@ -2357,7 +2359,7 @@ interface CommandItem {
 
         &:hover {
           background: var(--color-nav-hover-bg, var(--color-bg-hover));
-          color: var(--color-text-main);
+          color: var(--color-nav-hover-fg, var(--color-text-main));
         }
 
         &.active {
@@ -2369,7 +2371,7 @@ interface CommandItem {
 
       .drawer-footer {
         padding-top: 1rem;
-        border-top: 1px solid var(--color-border);
+        border-top: 1px solid var(--color-sidebar-border-inner, var(--color-sidebar-border, var(--color-border)));
       }
 
       .btn-drawer-logout,
