@@ -45,6 +45,12 @@ public class EpfoPdfParserServiceTests
         result.TotalContributionsEmployee.Should().Be(12600m);
         result.TotalContributionsEmployer.Should().Be(12600m);
         result.TotalContributionsPension.Should().Be(0m);
+        result.TotalTransferInsEmployee.Should().Be(0m);
+        result.TotalTransferInsEmployer.Should().Be(0m);
+        result.TotalTransferInsPension.Should().Be(0m);
+        result.TotalWithdrawalsEmployee.Should().Be(0m);
+        result.TotalWithdrawalsEmployer.Should().Be(0m);
+        result.TotalWithdrawalsPension.Should().Be(0m);
         result.AnnualInterestEmployee.Should().Be(260m);
         result.AnnualInterestEmployer.Should().Be(260m);
         result.ClosingEmployeeBalance.Should().Be(12860m);

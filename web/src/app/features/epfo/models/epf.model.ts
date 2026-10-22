@@ -111,6 +111,12 @@ export interface EpfoPassbookParsePreview {
   totalContributionsEmployee: number;
   totalContributionsEmployer: number;
   totalContributionsPension: number;
+  totalTransferInsEmployee: number;
+  totalTransferInsEmployer: number;
+  totalTransferInsPension: number;
+  totalWithdrawalsEmployee: number;
+  totalWithdrawalsEmployer: number;
+  totalWithdrawalsPension: number;
   annualInterestEmployee: number;
   annualInterestEmployer: number;
   closingEmployeeBalance: number;

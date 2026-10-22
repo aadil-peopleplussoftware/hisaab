@@ -535,13 +535,27 @@ import { ThemeService } from '../../core/services/theme.service';
                     <div class="preview-metrics-grid">
                       <div class="metric-pill-card">
                         <span class="metric-lbl">Opening Balance</span>
-                        <span class="metric-amt">{{ p.openingEmployeeBalance | inrCurrency }}</span>
-                        <span class="metric-sub">EE Balance</span>
+                        <span class="metric-amt">{{ (p.openingEmployeeBalance + p.openingEmployerBalance) | inrCurrency }}</span>
+                        <span class="metric-sub">EE: {{ p.openingEmployeeBalance | inrCurrency }} | ER: {{ p.openingEmployerBalance | inrCurrency }}</span>
                       </div>
                       <div class="metric-pill-card highlight-pill">
                         <span class="metric-lbl">Total Contributions</span>
                         <span class="metric-amt text-success">{{ (p.totalContributionsEmployee + p.totalContributionsEmployer) | inrCurrency }}</span>
                         <span class="metric-sub">EE: {{ p.totalContributionsEmployee | inrCurrency }} | ER: {{ p.totalContributionsEmployer | inrCurrency }}</span>
+                      </div>
+                      @if ((p.totalTransferInsEmployee + p.totalTransferInsEmployer) > 0) {
+                        <div class="metric-pill-card">
+                          <span class="metric-lbl">Total Transfer-Ins</span>
+                          <span class="metric-amt text-teal">+{{ (p.totalTransferInsEmployee + p.totalTransferInsEmployer) | inrCurrency }}</span>
+                          <span class="metric-sub">EE: {{ p.totalTransferInsEmployee | inrCurrency }} | ER: {{ p.totalTransferInsEmployer | inrCurrency }}</span>
+                        </div>
+                      }
+                      <div class="metric-pill-card" [class.danger-pill]="(p.totalWithdrawalsEmployee + p.totalWithdrawalsEmployer) > 0">
+                        <span class="metric-lbl">Total Withdrawals</span>
+                        <span class="metric-amt" [class.text-danger]="(p.totalWithdrawalsEmployee + p.totalWithdrawalsEmployer) > 0">
+                          {{ (p.totalWithdrawalsEmployee + p.totalWithdrawalsEmployer) > 0 ? ('-' + ((p.totalWithdrawalsEmployee + p.totalWithdrawalsEmployer) | inrCurrency)) : (0 | inrCurrency) }}
+                        </span>
+                        <span class="metric-sub">EE: {{ p.totalWithdrawalsEmployee | inrCurrency }} | ER: {{ p.totalWithdrawalsEmployer | inrCurrency }}</span>
                       </div>
                       <div class="metric-pill-card">
                         <span class="metric-lbl">Annual Interest</span>
@@ -569,6 +583,7 @@ import { ThemeService } from '../../core/services/theme.service';
                               <th class="text-right">Employee (12%)</th>
                               <th class="text-right">Employer (3.67%)</th>
                               <th class="text-right">Pension (8.33%)</th>
+                              <th class="text-right">Withdrawal</th>
                               <th class="text-right">Interest</th>
                               <th class="text-right">Net Inflow</th>
                               <th>Note / Particulars</th>
@@ -581,10 +596,15 @@ import { ThemeService } from '../../core/services/theme.service';
                                 <td class="text-right tabular-nums">{{ item.employeeShare | inrCurrency }}</td>
                                 <td class="text-right tabular-nums">{{ item.employerShare | inrCurrency }}</td>
                                 <td class="text-right tabular-nums text-muted">{{ item.pensionShare | inrCurrency }}</td>
+                                <td class="text-right tabular-nums" [class.text-danger]="item.withdrawal > 0">
+                                  {{ item.withdrawal > 0 ? ('-' + (item.withdrawal | inrCurrency)) : '—' }}
+                                </td>
                                 <td class="text-right tabular-nums text-green">
                                   {{ item.interest > 0 ? ('+' + (item.interest | inrCurrency)) : '—' }}
                                 </td>
-                                <td class="text-right tabular-nums font-semibold text-teal">+{{ item.netInflow | inrCurrency }}</td>
+                                <td class="text-right tabular-nums font-semibold" [class.text-teal]="item.netInflow >= 0" [class.text-danger]="item.netInflow < 0">
+                                  {{ item.netInflow >= 0 ? '+' : '' }}{{ item.netInflow | inrCurrency }}
+                                </td>
                                 <td class="cell-note" [title]="item.note">{{ item.note }}</td>
                               </tr>
                             }
@@ -1299,6 +1319,11 @@ import { ThemeService } from '../../core/services/theme.service';
       &.highlight-pill {
         border-color: rgba(16, 185, 129, 0.4);
         background: rgba(16, 185, 129, 0.03);
+      }
+
+      &.danger-pill {
+        border-color: rgba(239, 68, 68, 0.4);
+        background: rgba(239, 68, 68, 0.04);
       }
     }
 

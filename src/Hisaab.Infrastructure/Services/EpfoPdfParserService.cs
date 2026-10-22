@@ -66,7 +66,7 @@ public class EpfoPdfParserService : IEpfoPdfParserService
 
         // 3. Raw Transaction Rows Parsing
         var rowRegex = new Regex(
-            @"^(?<wageMonth>[A-Za-z]{3}-\d{4})\s+(?<txnDate>\d{2}-\d{2}-\d{4})\s+(?<type>CR|DR)\s+(?<particulars>.*?)\s+(?<epfWages>[\d,]+(?:\.\d{2})?)\s+(?<epsWages>[\d,]+(?:\.\d{2})?)\s+(?<eeShare>[\d,]+(?:\.\d{2})?)\s+(?<erShare>[\d,]+(?:\.\d{2})?)\s+(?<epsShare>[\d,]+(?:\.\d{2})?)\s*$",
+            @"^(?<wageMonth>[A-Za-z]{3}-\d{4})\s+(?<txnDate>\d{2}-\d{2}-\d{4})\s+(?<type>CR|DR)\s+(?<particulars>.*?)\s+(?<epfWages>[\d,-]+(?:\.\d{2})?)\s+(?<epsWages>[\d,-]+(?:\.\d{2})?)\s+(?<eeShare>[\d,-]+(?:\.\d{2})?)\s+(?<erShare>[\d,-]+(?:\.\d{2})?)\s+(?<epsShare>[\d,-]+(?:\.\d{2})?)\s*$",
             RegexOptions.Multiline);
 
         var rawTransactions = new List<ParsedEpfoRawTransactionDto>();
@@ -88,8 +88,9 @@ public class EpfoPdfParserService : IEpfoPdfParserService
         }
 
         // 4. Totals / Summary Parsing
+        // 4a. Total Contributions for the year
         decimal totalContribEe = 0m, totalContribEr = 0m, totalContribEps = 0m;
-        var contribMatch = Regex.Match(fullText, @"Total Contributions for the year\s*\[\s*\d{4}\s*\]\s+([\d,]+(?:\.\d{2})?)\s+([\d,]+(?:\.\d{2})?)\s+([\d,]+(?:\.\d{2})?)");
+        var contribMatch = Regex.Match(fullText, @"Total Contributions\s+for the year(?:\s*\[\s*\d{4}\s*\])?\s+([\d,]+(?:\.\d{2})?)\s+([\d,]+(?:\.\d{2})?)\s+([\d,]+(?:\.\d{2})?)");
         if (contribMatch.Success)
         {
             totalContribEe = ParseDecimal(contribMatch.Groups[1].Value);
@@ -98,9 +99,35 @@ public class EpfoPdfParserService : IEpfoPdfParserService
         }
         else
         {
-            totalContribEe = rawTransactions.Sum(t => t.EmployeeShare);
-            totalContribEr = rawTransactions.Sum(t => t.EmployerShare);
-            totalContribEps = rawTransactions.Sum(t => t.PensionShare);
+            totalContribEe = rawTransactions.Where(t => t.Type != "DR").Sum(t => t.EmployeeShare);
+            totalContribEr = rawTransactions.Where(t => t.Type != "DR").Sum(t => t.EmployerShare);
+            totalContribEps = rawTransactions.Where(t => t.Type != "DR").Sum(t => t.PensionShare);
+        }
+
+        // 4b. Total Transfer-Ins/VDRs for the year
+        decimal totalTransferInsEe = 0m, totalTransferInsEr = 0m, totalTransferInsEps = 0m;
+        var transferMatch = Regex.Match(fullText, @"Total Transfer-Ins/VDRs\s+for the year(?:\s*\[\s*\d{4}\s*\])?\s+([\d,]+(?:\.\d{2})?)\s+([\d,]+(?:\.\d{2})?)\s+([\d,]+(?:\.\d{2})?)");
+        if (transferMatch.Success)
+        {
+            totalTransferInsEe = ParseDecimal(transferMatch.Groups[1].Value);
+            totalTransferInsEr = ParseDecimal(transferMatch.Groups[2].Value);
+            totalTransferInsEps = ParseDecimal(transferMatch.Groups[3].Value);
+        }
+
+        // 4c. Total Withdrawals for the year
+        decimal totalWithdrawalsEe = 0m, totalWithdrawalsEr = 0m, totalWithdrawalsEps = 0m;
+        var withdrawMatch = Regex.Match(fullText, @"Total Withdrawals\s+for the year(?:\s*\[\s*\d{4}\s*\])?\s+([\d,]+(?:\.\d{2})?)\s+([\d,]+(?:\.\d{2})?)\s+([\d,]+(?:\.\d{2})?)");
+        if (withdrawMatch.Success)
+        {
+            totalWithdrawalsEe = ParseDecimal(withdrawMatch.Groups[1].Value);
+            totalWithdrawalsEr = ParseDecimal(withdrawMatch.Groups[2].Value);
+            totalWithdrawalsEps = ParseDecimal(withdrawMatch.Groups[3].Value);
+        }
+        else
+        {
+            totalWithdrawalsEe = rawTransactions.Where(t => t.Type == "DR").Sum(t => t.EmployeeShare);
+            totalWithdrawalsEr = rawTransactions.Where(t => t.Type == "DR").Sum(t => t.EmployerShare);
+            totalWithdrawalsEps = rawTransactions.Where(t => t.Type == "DR").Sum(t => t.PensionShare);
         }
 
         // 5. Annual Interest
@@ -123,13 +150,13 @@ public class EpfoPdfParserService : IEpfoPdfParserService
         }
         else
         {
-            closeEe = obEe + totalContribEe + annualIntEe;
-            closeEr = obEr + totalContribEr + annualIntEr;
-            closeEps = obEps + totalContribEps;
+            closeEe = obEe + totalContribEe + totalTransferInsEe + annualIntEe - totalWithdrawalsEe;
+            closeEr = obEr + totalContribEr + totalTransferInsEr + annualIntEr - totalWithdrawalsEr;
+            closeEps = obEps + totalContribEps + totalTransferInsEps - totalWithdrawalsEps;
         }
 
         // 7. Group into Monthly Normalized Entries for Hisaab
-        var monthlyMap = new Dictionary<string, (DateTime MonthDate, decimal Ee, decimal Er, decimal Eps, List<string> Particulars)>();
+        var monthlyMap = new Dictionary<string, (DateTime MonthDate, decimal Ee, decimal Er, decimal Eps, decimal Withdrawal, List<string> Particulars)>();
 
         foreach (var txn in rawTransactions)
         {
@@ -140,16 +167,32 @@ public class EpfoPdfParserService : IEpfoPdfParserService
 
             var normalizedMonth = new DateTime(parsedDate.Year, parsedDate.Month, 1, 0, 0, 0, DateTimeKind.Utc);
             var key = txn.WageMonth;
+            var isDebit = string.Equals(txn.Type, "DR", StringComparison.OrdinalIgnoreCase);
+
+            decimal txnEe = isDebit ? 0m : txn.EmployeeShare;
+            decimal txnEr = isDebit ? 0m : txn.EmployerShare;
+            decimal txnEps = isDebit ? 0m : txn.PensionShare;
+            decimal txnWithdrawal = isDebit ? (txn.EmployeeShare + txn.EmployerShare) : 0m;
+            var partLabel = isDebit
+                ? $"Withdrawal: {txn.Particulars} (₹{txnWithdrawal:N0})"
+                : txn.Particulars;
 
             if (!monthlyMap.ContainsKey(key))
             {
-                monthlyMap[key] = (normalizedMonth, txn.EmployeeShare, txn.EmployerShare, txn.PensionShare, new List<string> { txn.Particulars });
+                monthlyMap[key] = (normalizedMonth, txnEe, txnEr, txnEps, txnWithdrawal, new List<string> { partLabel });
             }
             else
             {
                 var cur = monthlyMap[key];
-                cur.Particulars.Add(txn.Particulars);
-                monthlyMap[key] = (normalizedMonth, cur.Ee + txn.EmployeeShare, cur.Er + txn.EmployerShare, cur.Eps + txn.PensionShare, cur.Particulars);
+                cur.Particulars.Add(partLabel);
+                monthlyMap[key] = (
+                    normalizedMonth,
+                    cur.Ee + txnEe,
+                    cur.Er + txnEr,
+                    cur.Eps + txnEps,
+                    cur.Withdrawal + txnWithdrawal,
+                    cur.Particulars
+                );
             }
         }
 
@@ -183,10 +226,69 @@ public class EpfoPdfParserService : IEpfoPdfParserService
                 data.Er,
                 data.Eps,
                 0m, // Interest attached separately or to March
-                0m, // Withdrawal
-                data.Ee + data.Er, // Net Inflow
+                data.Withdrawal, // Withdrawal
+                data.Ee + data.Er - data.Withdrawal, // Net Inflow
                 note
             ));
+        }
+
+        // If the passbook summary reported withdrawals but no DR rows existed in the monthly table,
+        // attach the missing withdrawal amount to the latest month or March entry so user's records match EPFO closing balance.
+        var totalReportedWithdrawals = totalWithdrawalsEe + totalWithdrawalsEr;
+        var capturedWithdrawals = monthlyEntries.Sum(e => e.Withdrawal);
+        var unallocatedWithdrawal = totalReportedWithdrawals - capturedWithdrawals;
+
+        if (unallocatedWithdrawal > 0)
+        {
+            int targetYear = DateTime.UtcNow.Year;
+            if (fy.Contains('-'))
+            {
+                var parts = fy.Split('-');
+                if (parts.Length == 2 && int.TryParse(parts[1], out var parsedEndYear))
+                {
+                    targetYear = parsedEndYear;
+                }
+            }
+            else if (monthlyEntries.Any())
+            {
+                targetYear = monthlyEntries.Max(e => e.Month.Year);
+            }
+
+            var marchDate = new DateTime(targetYear, 3, 1, 0, 0, 0, DateTimeKind.Utc);
+            var marchIdx = monthlyEntries.FindIndex(e => e.Month.Year == marchDate.Year && e.Month.Month == 3);
+
+            if (marchIdx >= 0)
+            {
+                var existing = monthlyEntries[marchIdx];
+                monthlyEntries[marchIdx] = existing with
+                {
+                    Withdrawal = existing.Withdrawal + unallocatedWithdrawal,
+                    NetInflow = existing.NetInflow - unallocatedWithdrawal,
+                    Note = $"{existing.Note} | EPFO Total Withdrawals: ₹{unallocatedWithdrawal:N0} (EE: ₹{totalWithdrawalsEe:N0}, ER: ₹{totalWithdrawalsEr:N0})"
+                };
+            }
+            else
+            {
+                var withNote = $"EPFO Total Withdrawals ({fy}) | EE: ₹{totalWithdrawalsEe:N0}, ER: ₹{totalWithdrawalsEr:N0}";
+                if (!string.IsNullOrWhiteSpace(estName) && estName != "—")
+                {
+                    withNote = $"{estName} | {withNote}";
+                }
+
+                monthlyEntries.Add(new ParsedEpfoMonthlyEntryDto(
+                    marchDate,
+                    marchDate.ToString("MMM yyyy", CultureInfo.InvariantCulture),
+                    0m,
+                    0m,
+                    0m,
+                    0m,
+                    unallocatedWithdrawal,
+                    -unallocatedWithdrawal,
+                    withNote
+                ));
+
+                monthlyEntries = monthlyEntries.OrderBy(e => e.Month).ToList();
+            }
         }
 
         // Attach annual interest if present (total interest = EE interest + ER interest)
@@ -259,6 +361,12 @@ public class EpfoPdfParserService : IEpfoPdfParserService
             totalContribEe,
             totalContribEr,
             totalContribEps,
+            totalTransferInsEe,
+            totalTransferInsEr,
+            totalTransferInsEps,
+            totalWithdrawalsEe,
+            totalWithdrawalsEr,
+            totalWithdrawalsEps,
             annualIntEe,
             annualIntEr,
             closeEe,
@@ -275,6 +383,7 @@ public class EpfoPdfParserService : IEpfoPdfParserService
     {
         if (string.IsNullOrWhiteSpace(raw)) return 0m;
         var clean = raw.Replace(",", "").Trim();
+        if (clean == "-" || clean == "—" || clean == "N/A" || clean == "NA") return 0m;
         return decimal.TryParse(clean, NumberStyles.Any, CultureInfo.InvariantCulture, out var val) ? val : 0m;
     }
 }
