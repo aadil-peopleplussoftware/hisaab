@@ -41,6 +41,10 @@ export interface EpfYearlySummary {
   totalPensionBalance: number;
   formattedTotalPensionBalance: string;
   entryCount: number;
+  closingEmployeeBalance?: number;
+  formattedClosingEmployeeBalance?: string;
+  closingEmployerBalance?: number;
+  formattedClosingEmployerBalance?: string;
 }
 
 export interface EpfResponse {
@@ -51,6 +55,10 @@ export interface EpfResponse {
   formattedAllTimeEpfBalance: string;
   allTimePensionBalance: number;
   formattedAllTimePensionBalance: string;
+  allTimeEmployeeBalance?: number;
+  formattedAllTimeEmployeeBalance?: string;
+  allTimeEmployerBalance?: number;
+  formattedAllTimeEmployerBalance?: string;
 }
 
 export interface CreateEpfRequest {

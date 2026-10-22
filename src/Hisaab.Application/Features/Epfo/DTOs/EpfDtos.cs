@@ -42,7 +42,11 @@ public record EpfYearlySummaryDto(
     string FormattedClosingBalance,
     decimal TotalPensionBalance,
     string FormattedTotalPensionBalance,
-    int EntryCount
+    int EntryCount,
+    decimal ClosingEmployeeBalance = 0m,
+    string FormattedClosingEmployeeBalance = "₹0",
+    decimal ClosingEmployerBalance = 0m,
+    string FormattedClosingEmployerBalance = "₹0"
 );
 
 public record EpfResponseDto(
@@ -52,7 +56,11 @@ public record EpfResponseDto(
     decimal AllTimeEpfBalance,
     string FormattedAllTimeEpfBalance,
     decimal AllTimePensionBalance,
-    string FormattedAllTimePensionBalance
+    string FormattedAllTimePensionBalance,
+    decimal AllTimeEmployeeBalance = 0m,
+    string FormattedAllTimeEmployeeBalance = "₹0",
+    decimal AllTimeEmployerBalance = 0m,
+    string FormattedAllTimeEmployerBalance = "₹0"
 );
 
 public record EpfoPassbookParsePreviewDto(

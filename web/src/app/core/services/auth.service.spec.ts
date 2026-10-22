@@ -9,6 +9,7 @@ describe('AuthService', () => {
   let httpMock: HttpTestingController;
 
   beforeEach(() => {
+    TestBed.resetTestingModule();
     TestBed.configureTestingModule({
       providers: [
         AuthService,
@@ -18,9 +19,13 @@ describe('AuthService', () => {
     });
     service = TestBed.inject(AuthService);
     httpMock = TestBed.inject(HttpTestingController);
+
+    // Flush any initialization calls triggered by dependent services
+    httpMock.match(() => true).forEach(req => req.flush([]));
   });
 
   afterEach(() => {
+    httpMock.match(() => true).forEach(req => req.flush([]));
     httpMock.verify();
   });
 

@@ -9,6 +9,7 @@ import {
   LoanDirection,
   LoanInterestType,
   LoanListResponse,
+  LoanPriority,
   LoanStatus,
   LoanTransactionKind
 } from '../models/loan.model';
@@ -82,6 +83,8 @@ describe('LoansService', () => {
         dueDate: '2026-12-31',
         status: LoanStatus.Active,
         statusName: 'Active',
+        priority: LoanPriority.Medium,
+        priorityName: 'Medium',
         note: 'Personal',
         totalDisbursed: 50000,
         totalRepaid: 15000,
