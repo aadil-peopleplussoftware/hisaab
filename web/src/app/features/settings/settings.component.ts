@@ -1214,7 +1214,16 @@ import { RoleRightsService, ModuleRight, RoleSummary, UserRoleAssignment } from 
                       <tr [class.row-all-allowed]="isRowAllAllowed(row)" [class.row-none-allowed]="isRowNoneAllowed(row)">
                         <td class="col-module">
                           <div class="module-title-wrap">
-                            <span class="module-name">{{ row.displayName }}</span>
+                            <div class="module-name-row">
+                              <span class="module-icon-pill">{{ getModuleIcon(row.module) }}</span>
+                              <span class="module-name">{{ row.displayName }}</span>
+                              @if (row.module === 'MarketAi') {
+                                <span class="badge-mini-ai">AI Hub</span>
+                              }
+                              @if (row.module === 'Investments' || row.module === 'MarketAi') {
+                                <span class="badge-mini-market">Stocks</span>
+                              }
+                            </div>
                             <span class="module-hint">{{ row.description }}</span>
                           </div>
                         </td>
@@ -3781,11 +3790,46 @@ import { RoleRightsService, ModuleRight, RoleSummary, UserRoleAssignment } from 
       .module-title-wrap {
         display: flex;
         flex-direction: column;
-        gap: 0.15rem;
+        gap: 0.2rem;
+
+        .module-name-row {
+          display: flex;
+          align-items: center;
+          gap: 0.45rem;
+        }
+
+        .module-icon-pill {
+          font-size: 1rem;
+          line-height: 1;
+        }
 
         .module-name {
           font-weight: 600;
           color: var(--color-text-main);
+        }
+
+        .badge-mini-ai {
+          font-size: 0.62rem;
+          font-weight: 700;
+          color: #8b5cf6;
+          background: rgba(139, 92, 246, 0.12);
+          border: 1px solid rgba(139, 92, 246, 0.25);
+          border-radius: 4px;
+          padding: 1px 5px;
+          text-transform: uppercase;
+          letter-spacing: 0.03em;
+        }
+
+        .badge-mini-market {
+          font-size: 0.62rem;
+          font-weight: 700;
+          color: #059669;
+          background: rgba(5, 150, 105, 0.12);
+          border: 1px solid rgba(5, 150, 105, 0.25);
+          border-radius: 4px;
+          padding: 1px 5px;
+          text-transform: uppercase;
+          letter-spacing: 0.03em;
         }
 
         .module-hint {
@@ -4381,6 +4425,27 @@ export class SettingsComponent implements OnInit {
       }
     });
     this.roleRightsMatrix.set(current);
+  }
+
+  getModuleIcon(module: string): string {
+    switch (module?.toLowerCase()) {
+      case 'dashboard': return '📊';
+      case 'analytics': return '📈';
+      case 'transactions': return '💳';
+      case 'business': return '💼';
+      case 'loans': return '🤝';
+      case 'goals': return '🎯';
+      case 'investments': return '💹';
+      case 'marketai': return '🤖';
+      case 'epfo': return '🏛️';
+      case 'reports': return '📑';
+      case 'datatransfer': return '🔄';
+      case 'recyclebin': return '🗑️';
+      case 'settings': return '⚙️';
+      case 'categories': return '🏷️';
+      case 'users': return '👥';
+      default: return '📁';
+    }
   }
 
   saveRoleRights(): void {

@@ -27,6 +27,8 @@ export const routes: Routes = [
       },
       {
         path: 'dashboard',
+        canActivate: [authGuard, roleRightsGuard],
+        data: { module: 'Dashboard' },
         loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent)
       },
       {
@@ -36,7 +38,7 @@ export const routes: Routes = [
       {
         path: 'analytics',
         canActivate: [authGuard, roleRightsGuard],
-        data: { module: 'Reports' },
+        data: { module: 'Analytics' },
         loadComponent: () => import('./features/analytics/kpi-dashboard.component').then(m => m.KpiDashboardComponent)
       },
       {
@@ -95,7 +97,7 @@ export const routes: Routes = [
       {
         path: 'market-ai',
         canActivate: [authGuard, roleRightsGuard],
-        data: { module: 'Investments' },
+        data: { module: 'MarketAi' },
         loadComponent: () => import('./features/market-ai/market-ai.component').then(m => m.MarketAiComponent)
       },
       {
@@ -112,12 +114,14 @@ export const routes: Routes = [
       },
       {
         path: 'data-transfer',
-        canActivate: [authGuard],
+        canActivate: [authGuard, roleRightsGuard],
+        data: { module: 'DataTransfer' },
         loadComponent: () => import('./features/data-transfer/data-transfer.component').then(m => m.DataTransferComponent)
       },
       {
         path: 'recycle-bin',
-        canActivate: [authGuard],
+        canActivate: [authGuard, roleRightsGuard],
+        data: { module: 'RecycleBin' },
         loadComponent: () => import('./features/recycle-bin/recycle-bin.component').then(m => m.RecycleBinComponent)
       },
       {

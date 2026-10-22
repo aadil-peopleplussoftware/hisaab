@@ -15,15 +15,20 @@ public class RoleRightsService : IRoleRightsService
 
     public static readonly (string Module, string DisplayName, string Description)[] StandardModules = new[]
     {
-        ("Transactions", "Transactions (Ledger)", "Manage daily income, expense entries, and account balances"),
+        ("Dashboard", "Dashboard", "Overview dashboard, quick balance stats, and financial health summary"),
+        ("Analytics", "KPI Analytics", "Visual financial charts, net worth trends, and KPI analytics"),
+        ("Transactions", "Transactions", "Manage daily income, expense entries, and account balances"),
+        ("Business", "Business", "Manage client invoices, tax rates, GST, and counterparty ledgers"),
+        ("Loans", "Loans", "Track lent/borrowed balances, interest, and EMI payment schedules"),
+        ("Goals", "Dreams & Goals", "Track savings targets, life milestones, and recurring contributions"),
+        ("Investments", "Investments (Share Market)", "Monitor stock holdings, equity portfolio, trades, and capital gains"),
+        ("MarketAi", "AI Stocks & Hub (Share Market)", "AI stock market predictions, live quotes, technical indicators, and market hub"),
+        ("Epfo", "EPFO Passbook", "Track provident fund balances, monthly passbook, interest, and withdrawals"),
+        ("Reports", "Reports", "View financial statements, monthly spending summaries, and ledger exports"),
+        ("DataTransfer", "Data Transfer", "Import and export data via Excel, CSV, and EPFO passbooks"),
+        ("RecycleBin", "Recycle Bin", "Deleted records restoration, soft deletes, and permanent cleanup"),
+        ("Settings", "Settings", "Configure account preferences, deletion switches, and visual themes"),
         ("Categories", "Categories & Budgets", "Manage transaction categories, spending tags, and limits"),
-        ("Loans", "Loans & Debt Manager", "Track lent/borrowed balances, interest, and EMI payment schedules"),
-        ("Investments", "Investments & Stocks", "Monitor equity holdings, market portfolio, and capital gains"),
-        ("Epfo", "EPFO & Pension", "Track provident fund balances, monthly passbook, and returns"),
-        ("Business", "Business Accounting", "Manage client invoices, tax rates, GST, and counterparty ledgers"),
-        ("Goals", "Financial Goals", "Track savings targets, life milestones, and recurring contributions"),
-        ("Reports", "Reports & Analytics", "View cashflow charts, monthly spending summaries, and ledger exports"),
-        ("Settings", "System Settings", "Configure account preferences, deletion switches, and visual themes"),
         ("Users", "User & Role Administration", "Manage team accounts, assign user roles, and configure role rights")
     };
 
@@ -318,11 +323,26 @@ public class RoleRightsService : IRoleRightsService
             {
                 await _roleManager.CreateAsync(new ApplicationRole(roleName));
             }
+        }
 
-            var hasRights = await _context.RoleRights.AnyAsync(r => r.RoleName.ToLower() == roleName.ToLower(), cancellationToken);
-            if (!hasRights)
+        // Fetch all roles currently in system and ensure every standard module has a registered right row
+        var allRoles = await _roleManager.Roles.AsNoTracking().ToListAsync(cancellationToken);
+
+        foreach (var role in allRoles)
+        {
+            var roleName = role.Name ?? "";
+            if (string.IsNullOrWhiteSpace(roleName)) continue;
+
+            var existingModules = await _context.RoleRights
+                .Where(r => r.RoleName.ToLower() == roleName.ToLower())
+                .Select(r => r.Module.ToLower())
+                .ToListAsync(cancellationToken);
+
+            var existingSet = new HashSet<string>(existingModules, StringComparer.OrdinalIgnoreCase);
+
+            foreach (var m in StandardModules)
             {
-                foreach (var m in StandardModules)
+                if (!existingSet.Contains(m.Module))
                 {
                     var def = GetDefaultRight(roleName, m.Module);
                     _context.RoleRights.Add(new RoleRight
@@ -368,12 +388,12 @@ public class RoleRightsService : IRoleRightsService
 
         if (r == "accountant")
         {
-            // Financial ledgers, invoices, taxes, loans
-            if (m is "transactions" or "categories" or "business" or "loans" or "reports")
+            // Financial ledgers, invoices, taxes, loans, reports
+            if (m is "dashboard" or "transactions" or "categories" or "business" or "loans" or "reports" or "analytics" or "datatransfer" or "recyclebin")
             {
                 return (true, true, true, false, true);
             }
-            if (m is "investments" or "epfo" or "goals")
+            if (m is "investments" or "marketai" or "epfo" or "goals")
             {
                 return (true, false, false, false, true);
             }

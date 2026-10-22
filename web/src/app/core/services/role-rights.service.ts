@@ -121,11 +121,15 @@ export class RoleRightsService {
 
     if (rights[key]) return rights[key];
 
-    // Alias fallbacks for linked sub-modules
-    if (key === 'analytics') return rights['reports'];
-    if (key === 'market-ai' || key === 'marketai') return rights['investments'];
-    if (key === 'datatransfer' || key === 'data-transfer') return rights['reports'] || rights['settings'];
-    if (key === 'recyclebin' || key === 'recycle-bin') return rights['settings'] || rights['transactions'];
+    // Normalized key checks for hyphenated / alternate variants
+    if (key === 'kpi analytics' || key === 'analytics') return rights['analytics'] || rights['reports'];
+    if (key === 'ai stocks & hub' || key === 'market-ai' || key === 'marketai') return rights['marketai'] || rights['investments'];
+    if (key === 'datatransfer' || key === 'data-transfer') return rights['datatransfer'] || rights['reports'] || rights['settings'];
+    if (key === 'recyclebin' || key === 'recycle-bin') return rights['recyclebin'] || rights['settings'] || rights['transactions'];
+    if (key === 'dreams & goals' || key === 'goals') return rights['goals'];
+    if (key === 'epfo passbook' || key === 'epf' || key === 'epfo') return rights['epfo'];
+    if (key === 'investments' || key === 'sharemarket') return rights['investments'];
+    if (key === 'dashboard') return rights['dashboard'];
 
     return undefined;
   }
@@ -133,8 +137,8 @@ export class RoleRightsService {
   public canView(module: string): boolean {
     const key = module.toLowerCase();
 
-    // Dashboard and profile are fundamental core screens accessible to all authenticated users
-    if (key === 'dashboard' || key === 'profile') return true;
+    // Profile is user's personal account settings
+    if (key === 'profile') return true;
 
     const right = this.resolveRight(module);
     if (right !== undefined) {

@@ -50,12 +50,14 @@ interface CommandItem {
         </div>
 
         <nav class="side-nav">
-          <a routerLink="/dashboard" routerLinkActive="active" class="nav-item" title="Dashboard">
-            <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'dashboard' }" />
-            <span class="nav-label">Dashboard</span>
-          </a>
+          @if (roleRightsService.canView('Dashboard')) {
+            <a routerLink="/dashboard" routerLinkActive="active" class="nav-item" title="Dashboard">
+              <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'dashboard' }" />
+              <span class="nav-label">Dashboard</span>
+            </a>
+          }
 
-          @if (roleRightsService.canView('Reports')) {
+          @if (roleRightsService.canView('Analytics')) {
             <a routerLink="/analytics" routerLinkActive="active" class="nav-item" title="KPI Analytics">
               <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'analytics' }" />
               <span class="nav-label">KPI Analytics</span>
@@ -95,7 +97,9 @@ interface CommandItem {
               <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'investments' }" />
               <span class="nav-label">Investments</span>
             </a>
+          }
 
+          @if (roleRightsService.canView('MarketAi')) {
             <a routerLink="/market-ai" routerLinkActive="active" class="nav-item nav-item-market-ai" title="AI Stock Market Hub">
               <span class="nav-ai-sparkle">✨</span>
               <span class="nav-label">AI Stocks & Hub</span>
@@ -117,14 +121,14 @@ interface CommandItem {
             </a>
           }
 
-          @if (roleRightsService.canView('Reports') || roleRightsService.canView('Settings')) {
+          @if (roleRightsService.canView('DataTransfer')) {
             <a routerLink="/data-transfer" routerLinkActive="active" class="nav-item" title="Data Transfer">
               <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'datatransfer' }" />
               <span class="nav-label">Data Transfer</span>
             </a>
           }
 
-          @if (roleRightsService.canView('Settings') || roleRightsService.canView('Transactions')) {
+          @if (roleRightsService.canView('RecycleBin')) {
             <a routerLink="/recycle-bin" routerLinkActive="active" class="nav-item" title="Recycle Bin">
               <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'recyclebin' }" />
               <span class="nav-label">Recycle Bin</span>
@@ -735,12 +739,14 @@ interface CommandItem {
             </div>
 
             <nav class="drawer-nav">
-              <a routerLink="/dashboard" (click)="closeMobileMenu()" class="drawer-link">
-                <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'dashboard' }" />
-                <span>Dashboard</span>
-              </a>
+              @if (roleRightsService.canView('Dashboard')) {
+                <a routerLink="/dashboard" (click)="closeMobileMenu()" class="drawer-link">
+                  <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'dashboard' }" />
+                  <span>Dashboard</span>
+                </a>
+              }
 
-              @if (roleRightsService.canView('Reports')) {
+              @if (roleRightsService.canView('Analytics')) {
                 <a routerLink="/analytics" (click)="closeMobileMenu()" class="drawer-link">
                   <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'analytics' }" />
                   <span>KPI Analytics</span>
@@ -780,7 +786,9 @@ interface CommandItem {
                   <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'investments' }" />
                   <span>Investments</span>
                 </a>
+              }
 
+              @if (roleRightsService.canView('MarketAi')) {
                 <a routerLink="/market-ai" (click)="closeMobileMenu()" class="drawer-link drawer-market-ai">
                   <span class="drawer-ai-icon">✨</span>
                   <span>AI Stocks & Market Hub</span>
@@ -802,14 +810,14 @@ interface CommandItem {
                 </a>
               }
 
-              @if (roleRightsService.canView('Reports') || roleRightsService.canView('Settings')) {
+              @if (roleRightsService.canView('DataTransfer')) {
                 <a routerLink="/data-transfer" (click)="closeMobileMenu()" class="drawer-link">
                   <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'datatransfer' }" />
                   <span>Data Transfer</span>
                 </a>
               }
 
-              @if (roleRightsService.canView('Settings') || roleRightsService.canView('Transactions')) {
+              @if (roleRightsService.canView('RecycleBin')) {
                 <a routerLink="/recycle-bin" (click)="closeMobileMenu()" class="drawer-link">
                   <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'recyclebin' }" />
                   <span>Recycle Bin</span>
@@ -856,10 +864,12 @@ interface CommandItem {
 
       <!-- Mobile Bottom Navigation Bar (Viewport < 768px) -->
       <nav class="bottom-nav no-print">
-        <a routerLink="/dashboard" routerLinkActive="active" class="bottom-nav-item">
-          <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'dashboard' }" />
-          <span>Dashboard</span>
-        </a>
+        @if (roleRightsService.canView('Dashboard')) {
+          <a routerLink="/dashboard" routerLinkActive="active" class="bottom-nav-item">
+            <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'dashboard' }" />
+            <span>Dashboard</span>
+          </a>
+        }
 
         @if (roleRightsService.canView('Transactions')) {
           <a routerLink="/transactions" routerLinkActive="active" class="bottom-nav-item">
@@ -2772,10 +2782,10 @@ export class ShellComponent implements OnInit {
       clearTimeout(this.gKeyTimeout);
       switch (event.key.toLowerCase()) {
         case 'd':
-          this.router.navigate(['/dashboard']);
+          if (this.roleRightsService.canView('Dashboard')) this.router.navigate(['/dashboard']);
           break;
         case 'a':
-          if (this.roleRightsService.canView('Reports')) this.router.navigate(['/analytics']);
+          if (this.roleRightsService.canView('Analytics')) this.router.navigate(['/analytics']);
           break;
         case 't':
           if (this.roleRightsService.canView('Transactions')) this.router.navigate(['/transactions']);
@@ -2788,6 +2798,9 @@ export class ShellComponent implements OnInit {
           break;
         case 'i':
           if (this.roleRightsService.canView('Investments')) this.router.navigate(['/investments']);
+          break;
+        case 'm':
+          if (this.roleRightsService.canView('MarketAi')) this.router.navigate(['/market-ai']);
           break;
         case 'b':
           if (this.roleRightsService.canView('Business')) this.router.navigate(['/business']);
@@ -2805,17 +2818,19 @@ export class ShellComponent implements OnInit {
   filterCommands(): void {
     const q = this.commandQuery.trim().toLowerCase();
     const visible = this.allCommands.filter(c => {
-      if (c.id === 'goto-analytics' && !this.roleRightsService.canView('Reports')) return false;
+      if (c.id === 'goto-dashboard' && !this.roleRightsService.canView('Dashboard')) return false;
+      if (c.id === 'goto-analytics' && !this.roleRightsService.canView('Analytics')) return false;
       if (c.id === 'goto-transactions' && !this.roleRightsService.canView('Transactions')) return false;
       if (c.id === 'goto-loans' && !this.roleRightsService.canView('Loans')) return false;
       if (c.id === 'goto-epfo' && !this.roleRightsService.canView('Epfo')) return false;
       if (c.id === 'goto-investments' && !this.roleRightsService.canView('Investments')) return false;
+      if (c.id === 'goto-market-ai' && !this.roleRightsService.canView('MarketAi')) return false;
       if (c.id === 'goto-business' && !this.roleRightsService.canView('Business')) return false;
       if (c.id === 'goto-goals' && !this.roleRightsService.canView('Goals')) return false;
       if (c.id === 'goto-reports' && !this.roleRightsService.canView('Reports')) return false;
       if (c.id === 'goto-settings' && !this.roleRightsService.canView('Settings')) return false;
-      if (c.id === 'goto-data-transfer' && !this.roleRightsService.canView('Reports') && !this.roleRightsService.canView('Settings')) return false;
-      if (c.id === 'goto-recycle-bin' && !this.roleRightsService.canView('Settings') && !this.roleRightsService.canView('Transactions')) return false;
+      if (c.id === 'goto-data-transfer' && !this.roleRightsService.canView('DataTransfer')) return false;
+      if (c.id === 'goto-recycle-bin' && !this.roleRightsService.canView('RecycleBin')) return false;
       return true;
     });
 

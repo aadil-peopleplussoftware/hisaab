@@ -56,12 +56,12 @@ import { AuthService } from '../../core/services/auth.service';
         </p>
 
         <div class="actions-row">
-          <a routerLink="/dashboard" class="btn-primary">
+          <a [routerLink]="fallbackRoute" class="btn-primary">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
               <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
               <polyline points="9 22 9 12 15 12 15 22"/>
             </svg>
-            <span>Return to Dashboard</span>
+            <span>{{ roleRightsService.canView('Dashboard') ? 'Return to Dashboard' : 'Go to Available Screen' }}</span>
           </a>
 
           <a routerLink="/profile" class="btn-secondary">
@@ -248,6 +248,19 @@ export class AccessDeniedComponent implements OnInit {
   public authService = inject(AuthService);
 
   public moduleName = signal<string>('');
+
+  get fallbackRoute(): string {
+    if (this.roleRightsService.canView('Dashboard')) return '/dashboard';
+    if (this.roleRightsService.canView('Transactions')) return '/transactions';
+    if (this.roleRightsService.canView('Investments')) return '/investments';
+    if (this.roleRightsService.canView('Loans')) return '/loans';
+    if (this.roleRightsService.canView('Goals')) return '/goals';
+    if (this.roleRightsService.canView('Epfo')) return '/epfo';
+    if (this.roleRightsService.canView('Business')) return '/business';
+    if (this.roleRightsService.canView('Reports')) return '/reports';
+    if (this.roleRightsService.canView('Settings')) return '/settings';
+    return '/profile';
+  }
 
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
