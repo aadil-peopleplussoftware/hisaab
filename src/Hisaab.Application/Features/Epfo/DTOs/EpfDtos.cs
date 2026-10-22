@@ -55,3 +55,55 @@ public record EpfResponseDto(
     string FormattedAllTimePensionBalance
 );
 
+public record EpfoPassbookParsePreviewDto(
+    string EstablishmentId,
+    string EstablishmentName,
+    string MemberId,
+    string MemberName,
+    string DateOfBirth,
+    string Uan,
+    string FinancialYear,
+    decimal OpeningEmployeeBalance,
+    decimal OpeningEmployerBalance,
+    decimal OpeningPensionBalance,
+    decimal TotalContributionsEmployee,
+    decimal TotalContributionsEmployer,
+    decimal TotalContributionsPension,
+    decimal AnnualInterestEmployee,
+    decimal AnnualInterestEmployer,
+    decimal ClosingEmployeeBalance,
+    decimal ClosingEmployerBalance,
+    decimal ClosingPensionBalance,
+    List<ParsedEpfoRawTransactionDto> RawTransactions,
+    List<ParsedEpfoMonthlyEntryDto> MonthlyEntries
+);
+
+public record ParsedEpfoRawTransactionDto(
+    string WageMonth,
+    string TransactionDate,
+    string Type,
+    string Particulars,
+    decimal EpfWages,
+    decimal EpsWages,
+    decimal EmployeeShare,
+    decimal EmployerShare,
+    decimal PensionShare
+);
+
+public record ParsedEpfoMonthlyEntryDto(
+    DateTime Month,
+    string MonthLabel,
+    decimal EmployeeShare,
+    decimal EmployerShare,
+    decimal PensionShare,
+    decimal Interest,
+    decimal Withdrawal,
+    decimal NetInflow,
+    string Note
+);
+
+public record CommitEpfoPassbookImportRequest(
+    List<ParsedEpfoMonthlyEntryDto> Entries,
+    bool ReplaceExistingYear = true
+);
+
