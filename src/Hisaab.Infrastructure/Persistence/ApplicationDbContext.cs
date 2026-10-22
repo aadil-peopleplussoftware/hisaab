@@ -27,6 +27,16 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<ImportBatch> ImportBatches => Set<ImportBatch>();
     public DbSet<ImportError> ImportErrors => Set<ImportError>();
     public DbSet<MappingProfile> MappingProfiles => Set<MappingProfile>();
+    public DbSet<BusinessEntity> Businesses => Set<BusinessEntity>();
+    public DbSet<BusinessTransaction> BusinessTransactions => Set<BusinessTransaction>();
+    public DbSet<UserDeletionSetting> DeletionSettings => Set<UserDeletionSetting>();
+    public DbSet<FinancialGoal> FinancialGoals => Set<FinancialGoal>();
+    public DbSet<GoalContribution> GoalContributions => Set<GoalContribution>();
+    public DbSet<StockHolding> StockHoldings => Set<StockHolding>();
+    public DbSet<MarketAgentUserSetting> MarketAgentUserSettings => Set<MarketAgentUserSetting>();
+    public DbSet<MarketAgentAlertLog> MarketAgentAlertLogs => Set<MarketAgentAlertLog>();
+    public DbSet<Attachment> Attachments => Set<Attachment>();
+    public DbSet<RoleRight> RoleRights => Set<RoleRight>();
 
     public ApplicationDbContext(
         DbContextOptions<ApplicationDbContext> options,
@@ -45,6 +55,44 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
         base.OnModelCreating(builder);
 
         builder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+
+        builder.Entity<StockHolding>(b =>
+        {
+            b.ToTable("stock_holdings");
+            b.HasKey(x => x.Id);
+            b.Property(x => x.Quantity).HasPrecision(18, 4);
+            b.HasIndex(x => new { x.UserId, x.Ticker });
+            b.HasIndex(x => new { x.UserId, x.IsArchived });
+        });
+
+        builder.Entity<MarketAgentUserSetting>(b =>
+        {
+            b.ToTable("market_agent_user_settings");
+            b.HasKey(x => x.Id);
+            b.HasIndex(x => x.UserId);
+        });
+
+        builder.Entity<MarketAgentAlertLog>(b =>
+        {
+            b.ToTable("market_agent_alert_logs");
+            b.HasKey(x => x.Id);
+            b.HasIndex(x => new { x.UserId, x.CreatedAtUtc });
+            b.HasIndex(x => new { x.UserId, x.Ticker });
+        });
+
+        builder.Entity<UserDeletionSetting>(b =>
+        {
+            b.ToTable("user_deletion_settings");
+            b.HasKey(x => x.Id);
+            b.HasIndex(x => x.UserId).IsUnique();
+        });
+
+        builder.Entity<RoleRight>(b =>
+        {
+            b.ToTable("role_rights");
+            b.HasKey(x => x.Id);
+            b.HasIndex(x => new { x.RoleName, x.Module }).IsUnique();
+        });
 
         // Global conventions & filters
         foreach (var entityType in builder.Model.GetEntityTypes())
@@ -80,8 +128,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
                     Expression.Constant(this),
                     nameof(CurrentUserId));
 
-                var hasValueExpr = Expression.Property(currentUserIdExpr, "HasValue");
-                var valueExpr = Expression.Property(currentUserIdExpr, "Value");
+                var hasValueExpr = Expression.Property(currentUserIdExpr, nameof(Nullable<Guid>.HasValue));
+                var valueExpr = Expression.Call(currentUserIdExpr, nameof(Nullable<Guid>.GetValueOrDefault), Type.EmptyTypes);
                 Expression tenantCheck = Expression.AndAlso(hasValueExpr, Expression.Equal(userIdProp, valueExpr));
 
                 if (clrType == typeof(Category))

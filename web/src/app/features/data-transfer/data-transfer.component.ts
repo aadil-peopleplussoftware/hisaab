@@ -10,6 +10,7 @@ import {
   ImportBatchDetail,
   MappingProfile
 } from './models/data-transfer.model';
+import { ThemeService } from '../../core/services/theme.service';
 
 interface ModuleOption {
   id: string;
@@ -37,25 +38,43 @@ interface ModuleOption {
           [class.active]="activeTab() === 'import'"
           (click)="activeTab.set('import')"
           class="tab-btn">
-          📥 Import Wizard
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" class="tab-svg">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="7 10 12 15 17 10" />
+            <line x1="12" y1="15" x2="12" y2="3" />
+          </svg>
+          <span>Import Wizard</span>
         </button>
         <button
           [class.active]="activeTab() === 'export'"
           (click)="activeTab.set('export')"
           class="tab-btn">
-          📤 Export Data
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" class="tab-svg">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+            <polyline points="17 8 12 3 7 8" />
+            <line x1="12" y1="3" x2="12" y2="15" />
+          </svg>
+          <span>Export Data</span>
         </button>
         <button
           [class.active]="activeTab() === 'history'"
           (click)="loadHistory(); activeTab.set('history')"
           class="tab-btn">
-          📜 Import History
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" class="tab-svg">
+            <circle cx="12" cy="12" r="10" />
+            <polyline points="12 6 12 12 16 14" />
+          </svg>
+          <span>Import History</span>
         </button>
         <button
           [class.active]="activeTab() === 'profiles'"
           (click)="loadProfiles(); activeTab.set('profiles')"
           class="tab-btn">
-          ⚙️ Saved Mapping Profiles
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" class="tab-svg">
+            <circle cx="12" cy="12" r="3" />
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z" />
+          </svg>
+          <span>Saved Mapping Profiles</span>
         </button>
       </nav>
 
@@ -106,7 +125,23 @@ interface ModuleOption {
                     class="module-card"
                     [class.selected]="selectedModule() === mod.id"
                     (click)="selectedModule.set(mod.id)">
-                    <div class="mod-icon">{{ mod.icon }}</div>
+                    <div class="mod-icon">
+                      @if (mod.id === 'Transactions') {
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                      } @else if (mod.id === 'LoanAccounts') {
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                      } @else if (mod.id === 'LoanTransactions') {
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                      } @else if (mod.id === 'Epfo') {
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="21" x2="21" y2="21"/><line x1="3" y1="10" x2="21" y2="10"/><polyline points="12 3 2 10 22 10"/><line x1="6" y1="10" x2="6" y2="21"/><line x1="10" y1="10" x2="10" y2="21"/><line x1="14" y1="10" x2="14" y2="21"/><line x1="18" y1="10" x2="18" y2="21"/></svg>
+                      } @else if (mod.id === 'Holdings') {
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+                      } @else if (mod.id === 'InvestmentTransactions') {
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                      } @else {
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+                      }
+                    </div>
                     <div class="mod-info">
                       <h4>{{ mod.name }}</h4>
                       <p>{{ mod.description }}</p>
@@ -121,7 +156,12 @@ interface ModuleOption {
                   class="btn-secondary"
                   (click)="downloadTemplate(selectedModule())"
                   [disabled]="isDownloadingTemplate()">
-                  📥 Download Blank Template (.xlsx)
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" class="mr-1">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                  <span>Download Blank Template (.xlsx)</span>
                 </button>
                 <button
                   type="button"
@@ -137,7 +177,7 @@ interface ModuleOption {
           @if (importStep() === 2) {
             <div class="step-content">
               <h3>Step 2: Upload Excel or CSV File for {{ getModuleName(selectedModule()) }}</h3>
-              <p class="step-desc">Upload .xlsx, .xls, or .csv file (Max 10 MB, up to 50,000 rows).</p>
+              <p class="step-desc">{{ selectedModule() === 'Epfo' ? 'Upload .xlsx, .xls, .csv, or official EPFO Member Passbook .pdf (Max 10 MB).' : 'Upload .xlsx, .xls, or .csv file (Max 10 MB, up to 50,000 rows).' }}</p>
 
               <div
                 class="dropzone"
@@ -149,20 +189,32 @@ interface ModuleOption {
                 <input
                   #fileInput
                   type="file"
-                  accept=".xlsx,.xls,.csv"
+                  [accept]="selectedModule() === 'Epfo' ? '.xlsx,.xls,.csv,.pdf,application/pdf' : '.xlsx,.xls,.csv'"
                   (change)="onFileSelected($event)"
                   style="display: none;" />
 
                 <div class="dropzone-content">
-                  <span class="upload-icon">📁</span>
+                  <span class="upload-icon">
+                    <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.8">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                      <polyline points="17 8 12 3 7 8"/>
+                      <line x1="12" y1="3" x2="12" y2="15"/>
+                    </svg>
+                  </span>
                   <h4>Click or Drag & Drop File Here</h4>
-                  <p>.xlsx, .xls, or .csv up to 10 MB</p>
+                  <p>{{ selectedModule() === 'Epfo' ? '.xlsx, .xls, .csv, or official EPFO Passbook .pdf' : '.xlsx, .xls, or .csv up to 10 MB' }}</p>
                 </div>
               </div>
 
               @if (selectedFile()) {
                 <div class="selected-file-badge">
-                  <span>📄 <strong>{{ selectedFile()?.name }}</strong> ({{ (selectedFile()!.size / 1024).toFixed(1) }} KB)</span>
+                  <span class="file-info-row">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                      <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    <strong>{{ selectedFile()?.name }}</strong> ({{ (selectedFile()!.size / 1024).toFixed(1) }} KB)
+                  </span>
                 </div>
               }
 
@@ -227,7 +279,7 @@ interface ModuleOption {
                             [(ngModel)]="columnMapping[hdr]"
                             class="mapping-select"
                             [class.matched]="columnMapping[hdr] && columnMapping[hdr] !== 'Ignore'">
-                            <option value="Ignore">🚫 (Ignore this column)</option>
+                            <option value="Ignore">✕ (Ignore this column)</option>
                             @for (f of getAvailableFields(selectedModule()); track f.name) {
                               <option [value]="f.name">
                                 {{ f.displayName }} {{ f.isRequired ? '*' : '' }}
@@ -291,7 +343,7 @@ interface ModuleOption {
                   class="btn-primary"
                   [disabled]="isValidating()"
                   (click)="saveAndValidate()">
-                  {{ isValidating() ? 'Validating Preview...' : 'Validate & Preview (50 rows) →' }}
+                  {{ isValidating() ? 'Validating Preview...' : 'Validate & Preview All Rows →' }}
                 </button>
               </div>
             </div>
@@ -307,7 +359,7 @@ interface ModuleOption {
               <div class="metrics-row">
                 <div class="metric-box">
                   <span class="m-val">{{ validationResult()!.totalRowsPreviewed }}</span>
-                  <span class="m-label">Preview Rows</span>
+                  <span class="m-label">Total Data Rows</span>
                 </div>
                 <div class="metric-box success">
                   <span class="m-val">{{ validationResult()!.validCount }}</span>
@@ -342,9 +394,15 @@ interface ModuleOption {
                         <td>{{ row.rowNumber }}</td>
                         <td>
                           @if (row.isValid) {
-                            <span class="badge badge-success">✓ Ready</span>
+                            <span class="badge badge-success">
+                              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                              Ready
+                            </span>
                           } @else {
-                            <span class="badge badge-danger">✗ Error</span>
+                            <span class="badge badge-danger">
+                              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                              Error
+                            </span>
                           }
                           @if (row.isDuplicate) {
                             <span class="badge badge-warning">Duplicate</span>
@@ -355,10 +413,16 @@ interface ModuleOption {
                         }
                         <td class="error-col">
                           @for (err of row.errors; track err) {
-                            <div class="error-msg">⚠️ {{ err }}</div>
+                            <div class="error-msg">
+                              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                              {{ err }}
+                            </div>
                           }
                           @for (w of row.warnings; track w) {
-                            <div class="warning-msg">ℹ️ {{ w }}</div>
+                            <div class="warning-msg">
+                              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+                              {{ w }}
+                            </div>
                           }
                         </td>
                       </tr>
@@ -378,7 +442,10 @@ interface ModuleOption {
                   class="btn-primary"
                   [disabled]="isCommitting() || (allOrNothing && validationResult()!.invalidCount > 0)"
                   (click)="commitImport()">
-                  {{ isCommitting() ? 'Importing Data...' : 'Confirm & Import to Database 🚀' }}
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" class="mr-1">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  <span>{{ isCommitting() ? 'Importing Data...' : ('Confirm & Import ' + validationResult()!.validCount + ' Records to Database') }}</span>
                 </button>
               </div>
             </div>
@@ -389,15 +456,21 @@ interface ModuleOption {
             <div class="step-content result-content">
               <div class="result-header">
                 @if (importResult()!.failedRows === 0) {
-                  <div class="result-icon success">🎉</div>
+                  <div class="result-icon success">
+                    <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                  </div>
                   <h3>Import Completed Successfully!</h3>
                   <p>All valid records have been securely added to your personal finance account.</p>
                 } @else if (importResult()!.successRows > 0) {
-                  <div class="result-icon warning">⚠️</div>
+                  <div class="result-icon warning">
+                    <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#f59e0b" stroke-width="2.2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                  </div>
                   <h3>Import Finished with Warnings</h3>
                   <p>Some rows were imported, but {{ importResult()!.failedRows }} rows had errors.</p>
                 } @else {
-                  <div class="result-icon danger">❌</div>
+                  <div class="result-icon danger">
+                    <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="#ef4444" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                  </div>
                   <h3>Import Failed</h3>
                   <p>{{ importResult()!.errorMessage || 'Validation or database constraints prevented import.' }}</p>
                 }
@@ -428,7 +501,12 @@ interface ModuleOption {
                     type="button"
                     class="btn-danger"
                     (click)="downloadErrors(importResult()!.batchId)">
-                    📥 Download Error Report (.xlsx)
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" class="mr-1">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                      <polyline points="7 10 12 15 17 10"/>
+                      <line x1="12" y1="15" x2="12" y2="3"/>
+                    </svg>
+                    <span>Download Error Report (.xlsx)</span>
                   </button>
                 }
                 <button type="button" class="btn-primary" (click)="resetWizard()">
@@ -453,7 +531,7 @@ interface ModuleOption {
             <div class="form-group">
               <label>Select Module:</label>
               <select [(ngModel)]="exportModule">
-                <option value="ALL">⭐ Full System Backup (All Modules in One Workbook)</option>
+                <option value="ALL">Full System Backup (All Modules in One Workbook)</option>
                 @for (m of moduleOptions; track m.id) {
                   <option [value]="m.id">{{ m.name }}</option>
                 }
@@ -487,7 +565,12 @@ interface ModuleOption {
                 class="btn-primary"
                 [disabled]="isExporting()"
                 (click)="triggerExport()">
-                {{ isExporting() ? 'Generating Export...' : '⬇️ Download Export' }}
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" class="mr-1">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                <span>{{ isExporting() ? 'Generating Export...' : 'Download Export' }}</span>
               </button>
             </div>
           </div>
@@ -502,7 +585,13 @@ interface ModuleOption {
               <h3>Import Batches History</h3>
               <p class="subtitle">View past data imports. Batches can be completely undone/rolled back within 7 days.</p>
             </div>
-            <button type="button" class="btn-secondary btn-sm" (click)="loadHistory()">🔄 Refresh</button>
+            <button type="button" class="btn-secondary btn-sm" (click)="loadHistory()">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" class="mr-1">
+                <polyline points="23 4 23 10 17 10"/>
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+              </svg>
+              <span>Refresh</span>
+            </button>
           </div>
 
           @if (historyList().length === 0) {
@@ -539,7 +628,12 @@ interface ModuleOption {
                       <td class="actions-cell">
                         @if (b.failedRows > 0) {
                           <button class="btn-sm btn-outline-danger" (click)="downloadErrors(b.id)" title="Download Errors">
-                            📥 Errors
+                            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" class="mr-1">
+                              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                              <polyline points="7 10 12 15 17 10"/>
+                              <line x1="12" y1="15" x2="12" y2="3"/>
+                            </svg>
+                            <span>Errors</span>
                           </button>
                         }
                         @if (b.canRollback) {
@@ -548,7 +642,11 @@ interface ModuleOption {
                             (click)="rollbackBatch(b)"
                             [disabled]="isRollingBack() === b.id"
                             title="Undo all imports from this batch">
-                            ↩️ Rollback
+                            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" class="mr-1">
+                              <polyline points="1 4 1 10 7 10"/>
+                              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>
+                            </svg>
+                            <span>Rollback</span>
                           </button>
                         }
                       </td>
@@ -569,7 +667,13 @@ interface ModuleOption {
               <h3>Saved Mapping Profiles</h3>
               <p class="subtitle">Reusable column mappings saved from previous file imports.</p>
             </div>
-            <button type="button" class="btn-secondary btn-sm" (click)="loadProfiles()">🔄 Refresh</button>
+            <button type="button" class="btn-secondary btn-sm" (click)="loadProfiles()">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" class="mr-1">
+                <polyline points="23 4 23 10 17 10"/>
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+              </svg>
+              <span>Refresh</span>
+            </button>
           </div>
 
           @if (savedProfiles().length === 0) {
@@ -589,7 +693,13 @@ interface ModuleOption {
                     }
                   </div>
                   <div class="p-footer">
-                    <button class="btn-danger btn-sm" (click)="deleteProfile(p.id)">🗑️ Delete</button>
+                    <button class="btn-danger btn-sm" (click)="deleteProfile(p.id)">
+                      <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" class="mr-1">
+                        <polyline points="3 6 5 6 21 6"/>
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                      </svg>
+                      <span>Delete</span>
+                    </button>
                   </div>
                 </div>
               }
@@ -620,6 +730,9 @@ interface ModuleOption {
       padding-bottom: 0.35rem;
 
       .tab-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
         padding: 0.5rem 1.15rem;
         border-radius: var(--radius-md);
         border: 1px solid var(--color-border);
@@ -631,6 +744,10 @@ interface ModuleOption {
         transition: all 0.15s ease;
         white-space: nowrap;
         min-height: 40px;
+
+        .tab-svg {
+          flex-shrink: 0;
+        }
 
         &:hover {
           color: var(--color-text-main);
@@ -644,6 +761,12 @@ interface ModuleOption {
           box-shadow: 0 1px 3px rgb(79 70 229 / 0.3);
         }
       }
+    }
+
+    .file-info-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
     }
 
     .card {
@@ -1009,18 +1132,19 @@ interface ModuleOption {
 })
 export class DataTransferComponent implements OnInit {
   private readonly dataTransferService = inject(DataTransferService);
+  public readonly themeService = inject(ThemeService);
 
   readonly activeTab = signal<'import' | 'export' | 'history' | 'profiles'>('import');
   readonly importStep = signal<number>(1);
 
   readonly moduleOptions: ModuleOption[] = [
-    { id: 'Transactions', name: 'Transactions (Income/Expense)', description: 'Income, salary, expenses, categories', icon: '💳' },
-    { id: 'LoanAccounts', name: 'Loan Accounts', description: 'Given and taken personal loans', icon: '🤝' },
-    { id: 'LoanTransactions', name: 'Loan Transactions', description: 'Disbursements, repayments, interest', icon: '📝' },
-    { id: 'Epfo', name: 'EPFO Records', description: 'Monthly PF, pension, interest slips', icon: '🏛️' },
-    { id: 'Holdings', name: 'Holdings & Assets', description: 'Mutual funds, stocks, FDs, gold, PPF', icon: '📈' },
-    { id: 'InvestmentTransactions', name: 'Investment Trades', description: 'Buy, sell, dividend trade history', icon: '📊' },
-    { id: 'Categories', name: 'Categories', description: 'Custom expense and income categories', icon: '🏷️' }
+    { id: 'Transactions', name: 'Transactions (Income/Expense)', description: 'Income, salary, expenses, categories', icon: 'transactions' },
+    { id: 'LoanAccounts', name: 'Loan Accounts', description: 'Given and taken personal loans', icon: 'loans' },
+    { id: 'LoanTransactions', name: 'Loan Transactions', description: 'Disbursements, repayments, interest', icon: 'loan-txns' },
+    { id: 'Epfo', name: 'EPFO Records', description: 'Monthly PF, pension, interest slips', icon: 'epfo' },
+    { id: 'Holdings', name: 'Holdings & Assets', description: 'Mutual funds, stocks, FDs, gold, PPF', icon: 'holdings' },
+    { id: 'InvestmentTransactions', name: 'Investment Trades', description: 'Buy, sell, dividend trade history', icon: 'invest-txns' },
+    { id: 'Categories', name: 'Categories', description: 'Custom expense and income categories', icon: 'categories' }
   ];
 
   readonly selectedModule = signal<string>('Transactions');
@@ -1297,6 +1421,7 @@ export class DataTransferComponent implements OnInit {
 
     this.dataTransferService.commitBatch(res.batchId).subscribe({
       next: (result) => {
+        this.themeService.playSuccessSound();
         this.importResult.set(result);
         this.isCommitting.set(false);
         this.importStep.set(5);
@@ -1339,6 +1464,7 @@ export class DataTransferComponent implements OnInit {
     this.isRollingBack.set(batch.id);
     this.dataTransferService.rollbackBatch(batch.id).subscribe({
       next: () => {
+        this.themeService.playDeleteSound();
         this.isRollingBack.set(null);
         this.loadHistory();
       },
@@ -1363,7 +1489,10 @@ export class DataTransferComponent implements OnInit {
   deleteProfile(id: string): void {
     if (!confirm('Are you sure you want to delete this saved mapping profile?')) return;
     this.dataTransferService.deleteMappingProfile(id).subscribe({
-      next: () => this.loadProfiles()
+      next: () => {
+        this.themeService.playDeleteSound();
+        this.loadProfiles();
+      }
     });
   }
 
@@ -1374,6 +1503,7 @@ export class DataTransferComponent implements OnInit {
     if (this.exportModule === 'ALL') {
       this.dataTransferService.exportAll().subscribe({
         next: (blob) => {
+          this.themeService.playSuccessSound();
           this.saveBlob(blob, `hisaab_full_backup_${new Date().toISOString().slice(0, 10)}.xlsx`);
           this.isExporting.set(false);
         },
@@ -1387,6 +1517,7 @@ export class DataTransferComponent implements OnInit {
         this.exportTo || undefined
       ).subscribe({
         next: (blob) => {
+          this.themeService.playSuccessSound();
           const ext = this.exportFormat === 'csv' ? 'csv' : 'xlsx';
           this.saveBlob(blob, `hisaab_${this.exportModule.toLowerCase()}_${new Date().toISOString().slice(0, 10)}.${ext}`);
           this.isExporting.set(false);

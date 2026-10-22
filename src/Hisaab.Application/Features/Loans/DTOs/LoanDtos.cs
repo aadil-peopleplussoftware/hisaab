@@ -17,6 +17,8 @@ public record LoanAccountDto(
     DateTime? DueDate,
     LoanStatus Status,
     string StatusName,
+    LoanPriority Priority,
+    string PriorityName,
     string? Note,
     decimal TotalDisbursed,
     decimal TotalRepaid,

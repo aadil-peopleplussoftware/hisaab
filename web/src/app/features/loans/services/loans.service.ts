@@ -8,6 +8,7 @@ import {
   LoanAccountDetail,
   LoanDirection,
   LoanListResponse,
+  LoanPriority,
   LoanStatus,
   UpdateLoanRequest
 } from '../models/loan.model';
@@ -22,6 +23,8 @@ export class LoansService {
   getLoans(params?: {
     direction?: LoanDirection | null;
     status?: LoanStatus | null;
+    priority?: LoanPriority | null;
+    sortBy?: string | null;
     search?: string;
   }): Observable<LoanListResponse> {
     let httpParams = new HttpParams();
@@ -31,6 +34,12 @@ export class LoansService {
     }
     if (params?.status != null) {
       httpParams = httpParams.set('status', params.status.toString());
+    }
+    if (params?.priority != null) {
+      httpParams = httpParams.set('priority', params.priority.toString());
+    }
+    if (params?.sortBy) {
+      httpParams = httpParams.set('sortBy', params.sortBy);
     }
     if (params?.search) {
       httpParams = httpParams.set('search', params.search);
@@ -55,6 +64,10 @@ export class LoansService {
     return this.http.patch<LoanAccountDetail>(`${this.baseUrl}/${id}/status`, { status });
   }
 
+  changePriority(id: string, priority: LoanPriority): Observable<LoanAccountDetail> {
+    return this.http.patch<LoanAccountDetail>(`${this.baseUrl}/${id}/priority`, { priority });
+  }
+
   deleteLoan(id: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
   }
@@ -65,6 +78,10 @@ export class LoansService {
 
   deleteTransaction(loanId: string, transactionId: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${loanId}/transactions/${transactionId}`);
+  }
+
+  deleteAllTransactions(loanId: string): Observable<void> {
+    return this.http.delete<void>(`${this.baseUrl}/${loanId}/transactions`);
   }
 
   getInterestPreview(id: string, asOfDate?: string): Observable<InterestCalculation> {

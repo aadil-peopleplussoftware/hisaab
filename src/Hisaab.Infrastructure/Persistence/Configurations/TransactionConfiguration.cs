@@ -19,6 +19,20 @@ public class TransactionConfiguration : IEntityTypeConfiguration<Transaction>
         builder.Property(t => t.Note)
             .HasMaxLength(500);
 
+        builder.Property(t => t.AttachmentUrl)
+            .HasMaxLength(1000);
+
+        builder.Property(t => t.AttachmentFileName)
+            .HasMaxLength(255);
+
+        builder.Property(t => t.AttachmentFileType)
+            .HasMaxLength(100);
+
+        builder.HasOne(t => t.Attachment)
+            .WithMany()
+            .HasForeignKey(t => t.AttachmentId)
+            .OnDelete(DeleteBehavior.SetNull);
+
         builder.HasOne(t => t.Category)
             .WithMany(c => c.Transactions)
             .HasForeignKey(t => t.CategoryId)

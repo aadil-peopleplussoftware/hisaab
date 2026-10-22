@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
+  AttachmentMetadata,
   Category,
   CreateCategoryPayload,
   CreateTransactionPayload,
@@ -59,6 +60,16 @@ export class TransactionsService {
 
   createCategory(payload: CreateCategoryPayload): Observable<Category> {
     return this.http.post<Category>(this.categoriesUrl, payload);
+  }
+
+  uploadAttachment(file: File): Observable<AttachmentMetadata> {
+    const formData = new FormData();
+    formData.append('file', file, file.name);
+    return this.http.post<AttachmentMetadata>('/api/v1/attachments/upload', formData);
+  }
+
+  deleteAttachment(id: string): Observable<void> {
+    return this.http.delete<void>(`/api/v1/attachments/${id}`);
   }
 }
 

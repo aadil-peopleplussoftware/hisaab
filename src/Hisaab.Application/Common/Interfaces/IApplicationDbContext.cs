@@ -17,6 +17,16 @@ public interface IApplicationDbContext
     DbSet<ImportBatch> ImportBatches { get; }
     DbSet<ImportError> ImportErrors { get; }
     DbSet<MappingProfile> MappingProfiles { get; }
+    DbSet<BusinessEntity> Businesses { get; }
+    DbSet<BusinessTransaction> BusinessTransactions { get; }
+    DbSet<UserDeletionSetting> DeletionSettings { get; }
+    DbSet<FinancialGoal> FinancialGoals { get; }
+    DbSet<GoalContribution> GoalContributions { get; }
+    DbSet<StockHolding> StockHoldings { get; }
+    DbSet<MarketAgentUserSetting> MarketAgentUserSettings { get; }
+    DbSet<MarketAgentAlertLog> MarketAgentAlertLogs { get; }
+    DbSet<Attachment> Attachments { get; }
+    DbSet<RoleRight> RoleRights { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

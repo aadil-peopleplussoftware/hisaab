@@ -21,6 +21,13 @@ export enum LoanTransactionKind {
   Penalty = 4
 }
 
+export enum LoanPriority {
+  Low = 1,
+  Medium = 2,
+  High = 3,
+  Urgent = 4
+}
+
 export interface LoanAccount {
   id: string;
   name: string;
@@ -36,6 +43,8 @@ export interface LoanAccount {
   dueDate: string | null;
   status: LoanStatus;
   statusName: string;
+  priority: LoanPriority;
+  priorityName: string;
   note: string | null;
   totalDisbursed: number;
   totalRepaid: number;
@@ -99,6 +108,7 @@ export interface CreateLoanRequest {
   principal: number;
   interestRate: number;
   interestType: LoanInterestType;
+  priority?: LoanPriority;
   startDate: string;
   dueDate?: string | null;
   note?: string | null;
@@ -109,6 +119,7 @@ export interface UpdateLoanRequest {
   counterparty: string;
   interestRate: number;
   interestType: LoanInterestType;
+  priority?: LoanPriority;
   dueDate?: string | null;
   note?: string | null;
 }

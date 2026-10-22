@@ -11,7 +11,12 @@ namespace Hisaab.Application.Features.Dashboard.Queries.GetDashboard;
 
 public record GetDashboardQuery(
     string? Month = null,
-    int TrendMonths = 6
+    int TrendMonths = 6,
+    string? PeriodType = "month",
+    string? Date = null,
+    int? Year = null,
+    DateTime? StartDate = null,
+    DateTime? EndDate = null
 ) : IRequest<Result<DashboardResponseDto>>;
 
 public class GetDashboardQueryHandler : IRequestHandler<GetDashboardQuery, Result<DashboardResponseDto>>
@@ -35,46 +40,100 @@ public class GetDashboardQueryHandler : IRequestHandler<GetDashboardQuery, Resul
         var currentUserId = _currentUserService.UserId;
         var nowUtc = _dateTimeService.UtcNow;
 
-        var targetMonthStr = string.IsNullOrWhiteSpace(request.Month)
-            ? _dateTimeService.NowInKolkata.ToString("yyyy-MM")
-            : request.Month.Trim();
-
+        var period = (request.PeriodType ?? "month").Trim().ToLowerInvariant();
         DateTime selectedStartUtc;
-        if (DateTime.TryParseExact(targetMonthStr, "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedMonth))
+        DateTime selectedEndUtc;
+        string targetPeriodLabel;
+
+        switch (period)
         {
-            selectedStartUtc = new DateTime(parsedMonth.Year, parsedMonth.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-        }
-        else
-        {
-            var now = _dateTimeService.NowInKolkata;
-            selectedStartUtc = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-            targetMonthStr = selectedStartUtc.ToString("yyyy-MM");
+            case "all":
+            case "all-time":
+            case "lifetime":
+                selectedStartUtc = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                selectedEndUtc = DateTime.UtcNow.AddYears(10);
+                targetPeriodLabel = "All Time";
+                break;
+
+            case "year":
+                var targetYear = request.Year ?? _dateTimeService.NowInKolkata.Year;
+                if (!string.IsNullOrWhiteSpace(request.Month) && int.TryParse(request.Month, out var yFromMonth) && yFromMonth > 2000)
+                {
+                    targetYear = yFromMonth;
+                }
+                selectedStartUtc = new DateTime(targetYear, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                selectedEndUtc = selectedStartUtc.AddYears(1);
+                targetPeriodLabel = $"Year {targetYear}";
+                break;
+
+            case "day":
+            case "today":
+                DateTime targetDay;
+                if (!string.IsNullOrWhiteSpace(request.Date) && DateTime.TryParse(request.Date, out var parsedDay))
+                {
+                    targetDay = parsedDay.Date;
+                }
+                else
+                {
+                    targetDay = _dateTimeService.NowInKolkata.Date;
+                }
+                selectedStartUtc = DateTime.SpecifyKind(targetDay, DateTimeKind.Utc);
+                selectedEndUtc = selectedStartUtc.AddDays(1);
+                targetPeriodLabel = targetDay.ToString("dd MMM yyyy", CultureInfo.InvariantCulture);
+                break;
+
+            case "custom":
+                var start = request.StartDate ?? _dateTimeService.NowInKolkata.Date.AddDays(-30);
+                var end = request.EndDate ?? _dateTimeService.NowInKolkata.Date;
+                if (start > end) (start, end) = (end, start);
+                selectedStartUtc = DateTime.SpecifyKind(start.Date, DateTimeKind.Utc);
+                selectedEndUtc = DateTime.SpecifyKind(end.Date.AddDays(1), DateTimeKind.Utc);
+                targetPeriodLabel = $"{start:dd MMM yyyy} - {end:dd MMM yyyy}";
+                break;
+
+            case "month":
+            default:
+                var targetMonthStr = string.IsNullOrWhiteSpace(request.Month)
+                    ? _dateTimeService.NowInKolkata.ToString("yyyy-MM")
+                    : request.Month.Trim();
+
+                if (DateTime.TryParseExact(targetMonthStr, "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedMonth))
+                {
+                    selectedStartUtc = new DateTime(parsedMonth.Year, parsedMonth.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+                }
+                else
+                {
+                    var now = _dateTimeService.NowInKolkata;
+                    selectedStartUtc = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+                    targetMonthStr = selectedStartUtc.ToString("yyyy-MM");
+                }
+                selectedEndUtc = selectedStartUtc.AddMonths(1);
+                targetPeriodLabel = selectedStartUtc.ToString("MMMM yyyy", CultureInfo.InvariantCulture);
+                break;
         }
 
-        var selectedEndUtc = selectedStartUtc.AddMonths(1);
-
-        // 1. Transactions in selected month
-        var selectedMonthTx = await _context.Transactions
+        // 1. Transactions in selected period
+        var selectedPeriodTx = await _context.Transactions
             .AsNoTracking()
             .Include(t => t.Category)
             .Where(t => t.UserId == currentUserId && t.TransactionDate >= selectedStartUtc && t.TransactionDate < selectedEndUtc)
             .ToListAsync(cancellationToken);
 
-        var monthIncome = selectedMonthTx.Where(t => t.Type == TransactionType.Income).Sum(t => t.Amount);
-        var monthExpense = selectedMonthTx.Where(t => t.Type == TransactionType.Expense).Sum(t => t.Amount);
-        var netSavings = monthIncome - monthExpense;
-        var savingsRate = monthIncome > 0 ? Math.Round((netSavings / monthIncome) * 100m, 2) : 0m;
+        var periodIncome = selectedPeriodTx.Where(t => t.Type == TransactionType.Income).Sum(t => t.Amount);
+        var periodExpense = selectedPeriodTx.Where(t => t.Type == TransactionType.Expense).Sum(t => t.Amount);
+        var netSavings = periodIncome - periodExpense;
+        var savingsRate = periodIncome > 0 ? Math.Round((netSavings / periodIncome) * 100m, 2) : 0m;
 
         var monthlyOverview = new MonthlyOverviewDto(
-            targetMonthStr,
-            monthIncome,
-            new Money(monthIncome).ToIndianFormat(),
-            monthExpense,
-            new Money(monthExpense).ToIndianFormat(),
+            targetPeriodLabel,
+            periodIncome,
+            new Money(periodIncome).ToIndianFormat(),
+            periodExpense,
+            new Money(periodExpense).ToIndianFormat(),
             netSavings,
             new Money(netSavings).ToIndianFormat(),
             savingsRate,
-            selectedMonthTx.Count
+            selectedPeriodTx.Count
         );
 
         // 2. All-time Net Worth Calculation
@@ -191,11 +250,15 @@ public class GetDashboardQueryHandler : IRequestHandler<GetDashboardQuery, Resul
 
         // 3. Multi-month Historical Trend (default trailing 6 months)
         var trendCount = Math.Clamp(request.TrendMonths, 3, 24);
-        var trendStartUtc = selectedStartUtc.AddMonths(-(trendCount - 1));
+        var trendRef = (period == "all" || period == "custom" || selectedEndUtc > nowUtc.AddYears(1) || selectedEndUtc < new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc))
+            ? _dateTimeService.NowInKolkata
+            : selectedEndUtc;
+        var trendEndUtc = new DateTime(trendRef.Year, trendRef.Month, 1, 0, 0, 0, DateTimeKind.Utc).AddMonths(1);
+        var trendStartUtc = trendEndUtc.AddMonths(-trendCount);
 
         var trendTx = await _context.Transactions
             .AsNoTracking()
-            .Where(t => t.UserId == currentUserId && t.TransactionDate >= trendStartUtc && t.TransactionDate < selectedEndUtc)
+            .Where(t => t.UserId == currentUserId && t.TransactionDate >= trendStartUtc && t.TransactionDate < trendEndUtc)
             .Select(t => new { t.TransactionDate, t.Type, t.Amount })
             .ToListAsync(cancellationToken);
 
@@ -221,8 +284,8 @@ public class GetDashboardQueryHandler : IRequestHandler<GetDashboardQuery, Resul
             ));
         }
 
-        // 4. Category Breakdowns for Selected Month
-        var expenseCategories = selectedMonthTx
+        // 4. Category Breakdowns for Selected Period
+        var expenseCategories = selectedPeriodTx
             .Where(t => t.Type == TransactionType.Expense)
             .GroupBy(t => new
             {
@@ -234,7 +297,7 @@ public class GetDashboardQueryHandler : IRequestHandler<GetDashboardQuery, Resul
             .Select(g =>
             {
                 var amt = g.Sum(x => x.Amount);
-                var pct = monthExpense > 0 ? Math.Round((amt / monthExpense) * 100m, 1) : 0m;
+                var pct = periodExpense > 0 ? Math.Round((amt / periodExpense) * 100m, 1) : 0m;
                 return new CategoryBreakdownItemDto(
                     g.Key.Id,
                     g.Key.Name,
@@ -249,7 +312,7 @@ public class GetDashboardQueryHandler : IRequestHandler<GetDashboardQuery, Resul
             .Take(6)
             .ToList();
 
-        var incomeCategories = selectedMonthTx
+        var incomeCategories = selectedPeriodTx
             .Where(t => t.Type == TransactionType.Income)
             .GroupBy(t => new
             {
@@ -261,7 +324,7 @@ public class GetDashboardQueryHandler : IRequestHandler<GetDashboardQuery, Resul
             .Select(g =>
             {
                 var amt = g.Sum(x => x.Amount);
-                var pct = monthIncome > 0 ? Math.Round((amt / monthIncome) * 100m, 1) : 0m;
+                var pct = periodIncome > 0 ? Math.Round((amt / periodIncome) * 100m, 1) : 0m;
                 return new CategoryBreakdownItemDto(
                     g.Key.Id,
                     g.Key.Name,
@@ -310,7 +373,7 @@ public class GetDashboardQueryHandler : IRequestHandler<GetDashboardQuery, Resul
         )).ToList();
 
         var response = new DashboardResponseDto(
-            targetMonthStr,
+            targetPeriodLabel,
             monthlyOverview,
             netWorthBreakdown,
             monthlyTrends,

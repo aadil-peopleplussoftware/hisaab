@@ -41,6 +41,10 @@ export interface EpfYearlySummary {
   totalPensionBalance: number;
   formattedTotalPensionBalance: string;
   entryCount: number;
+  closingEmployeeBalance?: number;
+  formattedClosingEmployeeBalance?: string;
+  closingEmployerBalance?: number;
+  formattedClosingEmployerBalance?: string;
 }
 
 export interface EpfResponse {
@@ -51,6 +55,10 @@ export interface EpfResponse {
   formattedAllTimeEpfBalance: string;
   allTimePensionBalance: number;
   formattedAllTimePensionBalance: string;
+  allTimeEmployeeBalance?: number;
+  formattedAllTimeEmployeeBalance?: string;
+  allTimeEmployerBalance?: number;
+  formattedAllTimeEmployerBalance?: string;
 }
 
 export interface CreateEpfRequest {
@@ -71,5 +79,63 @@ export interface UpdateEpfRequest {
   interest?: number;
   withdrawal?: number;
   note?: string | null;
+}
+
+export interface ParsedEpfoRawTransaction {
+  wageMonth: string;
+  transactionDate: string;
+  type: string;
+  particulars: string;
+  epfWages: number;
+  epsWages: number;
+  employeeShare: number;
+  employerShare: number;
+  pensionShare: number;
+}
+
+export interface ParsedEpfoMonthlyEntry {
+  month: string;
+  monthLabel: string;
+  employeeShare: number;
+  employerShare: number;
+  pensionShare: number;
+  interest: number;
+  withdrawal: number;
+  netInflow: number;
+  note: string;
+}
+
+export interface EpfoPassbookParsePreview {
+  establishmentId: string;
+  establishmentName: string;
+  memberId: string;
+  memberName: string;
+  dateOfBirth: string;
+  uan: string;
+  financialYear: string;
+  openingEmployeeBalance: number;
+  openingEmployerBalance: number;
+  openingPensionBalance: number;
+  totalContributionsEmployee: number;
+  totalContributionsEmployer: number;
+  totalContributionsPension: number;
+  totalTransferInsEmployee: number;
+  totalTransferInsEmployer: number;
+  totalTransferInsPension: number;
+  totalWithdrawalsEmployee: number;
+  totalWithdrawalsEmployer: number;
+  totalWithdrawalsPension: number;
+  annualInterestEmployee: number;
+  annualInterestEmployer: number;
+  closingEmployeeBalance: number;
+  closingEmployerBalance: number;
+  closingPensionBalance: number;
+  rawTransactions: ParsedEpfoRawTransaction[];
+  monthlyEntries: ParsedEpfoMonthlyEntry[];
+}
+
+export interface CommitEpfoPassbookImportRequest {
+  entries: ParsedEpfoMonthlyEntry[];
+  replaceExistingYear: boolean;
 }
 

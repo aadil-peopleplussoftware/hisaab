@@ -79,9 +79,18 @@ public class InvestmentsController : ApiControllerBase
 
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteHolding([FromRoute] Guid id, CancellationToken cancellationToken)
     {
+        if (!await CheckDeletePermissionAsync("Investments", cancellationToken))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new {
+                error = "DeletionDisabled",
+                message = "Deletion is disabled for Investments in Settings. Please enable it under Settings > Deletion Controls."
+            });
+        }
+
         await Mediator.Send(new DeleteHoldingCommand(id), cancellationToken);
         return NoContent();
     }
@@ -113,12 +122,21 @@ public class InvestmentsController : ApiControllerBase
 
     [HttpDelete("{id:guid}/transactions/{transactionId:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteTransaction(
         [FromRoute] Guid id,
         [FromRoute] Guid transactionId,
         CancellationToken cancellationToken)
     {
+        if (!await CheckDeletePermissionAsync("Investments", cancellationToken))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new {
+                error = "DeletionDisabled",
+                message = "Deletion is disabled for Investments in Settings. Please enable it under Settings > Deletion Controls."
+            });
+        }
+
         await Mediator.Send(new DeleteInvestmentTransactionCommand(id, transactionId), cancellationToken);
         return NoContent();
     }

@@ -42,7 +42,11 @@ public record EpfYearlySummaryDto(
     string FormattedClosingBalance,
     decimal TotalPensionBalance,
     string FormattedTotalPensionBalance,
-    int EntryCount
+    int EntryCount,
+    decimal ClosingEmployeeBalance = 0m,
+    string FormattedClosingEmployeeBalance = "₹0",
+    decimal ClosingEmployerBalance = 0m,
+    string FormattedClosingEmployerBalance = "₹0"
 );
 
 public record EpfResponseDto(
@@ -52,6 +56,68 @@ public record EpfResponseDto(
     decimal AllTimeEpfBalance,
     string FormattedAllTimeEpfBalance,
     decimal AllTimePensionBalance,
-    string FormattedAllTimePensionBalance
+    string FormattedAllTimePensionBalance,
+    decimal AllTimeEmployeeBalance = 0m,
+    string FormattedAllTimeEmployeeBalance = "₹0",
+    decimal AllTimeEmployerBalance = 0m,
+    string FormattedAllTimeEmployerBalance = "₹0"
+);
+
+public record EpfoPassbookParsePreviewDto(
+    string EstablishmentId,
+    string EstablishmentName,
+    string MemberId,
+    string MemberName,
+    string DateOfBirth,
+    string Uan,
+    string FinancialYear,
+    decimal OpeningEmployeeBalance,
+    decimal OpeningEmployerBalance,
+    decimal OpeningPensionBalance,
+    decimal TotalContributionsEmployee,
+    decimal TotalContributionsEmployer,
+    decimal TotalContributionsPension,
+    decimal TotalTransferInsEmployee,
+    decimal TotalTransferInsEmployer,
+    decimal TotalTransferInsPension,
+    decimal TotalWithdrawalsEmployee,
+    decimal TotalWithdrawalsEmployer,
+    decimal TotalWithdrawalsPension,
+    decimal AnnualInterestEmployee,
+    decimal AnnualInterestEmployer,
+    decimal ClosingEmployeeBalance,
+    decimal ClosingEmployerBalance,
+    decimal ClosingPensionBalance,
+    List<ParsedEpfoRawTransactionDto> RawTransactions,
+    List<ParsedEpfoMonthlyEntryDto> MonthlyEntries
+);
+
+public record ParsedEpfoRawTransactionDto(
+    string WageMonth,
+    string TransactionDate,
+    string Type,
+    string Particulars,
+    decimal EpfWages,
+    decimal EpsWages,
+    decimal EmployeeShare,
+    decimal EmployerShare,
+    decimal PensionShare
+);
+
+public record ParsedEpfoMonthlyEntryDto(
+    DateTime Month,
+    string MonthLabel,
+    decimal EmployeeShare,
+    decimal EmployerShare,
+    decimal PensionShare,
+    decimal Interest,
+    decimal Withdrawal,
+    decimal NetInflow,
+    string Note
+);
+
+public record CommitEpfoPassbookImportRequest(
+    List<ParsedEpfoMonthlyEntryDto> Entries,
+    bool ReplaceExistingYear = true
 );
 

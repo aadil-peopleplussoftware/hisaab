@@ -8,6 +8,7 @@ namespace Hisaab.Application.Features.Auth.Commands.Login;
 public record LoginCommand(
     string Email,
     string Password,
+    bool RememberMe = true,
     string? DeviceInfo = null,
     string? IpAddress = null
 ) : IRequest<Result<AuthResponseDto>>;
@@ -26,6 +27,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, Result<AuthResp
         return await _identityService.LoginAsync(
             request.Email,
             request.Password,
+            request.RememberMe,
             request.DeviceInfo,
             request.IpAddress,
             cancellationToken);

@@ -16,8 +16,9 @@ public interface IIdentityService
     Task<Result<AuthResponseDto>> LoginAsync(
         string email,
         string password,
-        string? deviceInfo,
-        string? ipAddress,
+        bool rememberMe = true,
+        string? deviceInfo = null,
+        string? ipAddress = null,
         CancellationToken cancellationToken = default);
 
     Task<Result<AuthResponseDto>> RefreshTokenAsync(
@@ -55,5 +56,37 @@ public interface IIdentityService
     Task<Result> DeleteAccountAsync(
         Guid userId,
         CancellationToken cancellationToken = default);
+
+    Task<Result<AuthResponseDto>> ExternalLoginAsync(
+        string email,
+        string fullName,
+        string? avatarUrl,
+        string? deviceInfo,
+        string? ipAddress,
+        CancellationToken cancellationToken = default);
+
+    Task<Result<OtpResultDto>> SendOtpAsync(
+        string identifier,
+        CancellationToken cancellationToken = default);
+
+    Task<Result<AuthResponseDto>> VerifyOtpAsync(
+        string identifier,
+        string code,
+        string? deviceInfo,
+        string? ipAddress,
+        CancellationToken cancellationToken = default);
+
+    Task<Result<ForgotPasswordResultDto>> ForgotPasswordAsync(
+        string email,
+        CancellationToken cancellationToken = default);
+
+    Task<Result<string>> ResetPasswordAsync(
+        string email,
+        string token,
+        string newPassword,
+        CancellationToken cancellationToken = default);
 }
+
+public record OtpResultDto(string Identifier, bool SentViaEmail, string? CodeHint, string Message);
+public record ForgotPasswordResultDto(string Email, bool SentViaEmail, string? ResetLink, string Message);
 

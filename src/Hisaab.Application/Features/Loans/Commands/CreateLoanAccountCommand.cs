@@ -15,7 +15,8 @@ public record CreateLoanAccountCommand(
     LoanInterestType InterestType,
     DateTime StartDate,
     DateTime? DueDate,
-    string? Note
+    string? Note,
+    LoanPriority Priority = LoanPriority.Medium
 ) : IRequest<Guid>;
 
 public class CreateLoanAccountCommandValidator : AbstractValidator<CreateLoanAccountCommand>
@@ -83,6 +84,7 @@ public class CreateLoanAccountCommandHandler : IRequestHandler<CreateLoanAccount
             StartDate = DateTime.SpecifyKind(request.StartDate, DateTimeKind.Utc),
             DueDate = request.DueDate.HasValue ? DateTime.SpecifyKind(request.DueDate.Value, DateTimeKind.Utc) : null,
             Status = LoanStatus.Active,
+            Priority = request.Priority,
             Note = request.Note?.Trim()
         };
 

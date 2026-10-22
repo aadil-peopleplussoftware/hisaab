@@ -1,21 +1,24 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { EpfoService } from './services/epfo.service';
 import {
+  CommitEpfoPassbookImportRequest,
   CreateEpfRequest,
   EpfEntry,
+  EpfoPassbookParsePreview,
   EpfResponse,
   EpfYearlySummary,
   UpdateEpfRequest
 } from './models/epf.model';
 import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
-import { StatCardComponent } from '../../shared/components/stat-card/stat-card.component';
+import { DeletionPermissionsService } from '../../core/services/deletion-permissions.service';
+import { ThemeService } from '../../core/services/theme.service';
 
 @Component({
   selector: 'app-epfo',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, InrCurrencyPipe, StatCardComponent],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, InrCurrencyPipe],
   template: `
     <div class="epfo-page">
       <!-- Page Header & Actions -->
@@ -39,47 +42,262 @@ import { StatCardComponent } from '../../shared/components/stat-card/stat-card.c
             </select>
           </div>
 
-          <button type="button" class="btn-outline btn-print" (click)="printStatement()">
-            🖨️ Print
+          <!-- Import Passbook PDF Button -->
+          <button type="button" class="btn-import" (click)="openImportModal()" title="Upload and auto-extract official EPFO Passbook PDF">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            <span>Import Passbook PDF</span>
           </button>
+
+          <!-- Export Dropdown -->
+          <div class="export-dropdown-wrapper">
+            <button type="button" class="btn-outline btn-export" (click)="toggleExportDropdown()">
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7 10 12 15 17 10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+              <span>Export</span>
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="6 9 12 15 18 9"/>
+              </svg>
+            </button>
+
+            @if (showExportDropdown()) {
+              <div class="export-menu" (click)="$event.stopPropagation()">
+                <button type="button" class="export-menu-item" (click)="downloadPdf()">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                  </svg>
+                  <span>Download PDF Statement</span>
+                </button>
+                <button type="button" class="export-menu-item" (click)="downloadExcel()">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="3" y1="9" x2="21" y2="9"/>
+                    <line x1="3" y1="15" x2="21" y2="15"/>
+                    <line x1="9" y1="3" x2="9" y2="21"/>
+                    <line x1="15" y1="3" x2="15" y2="21"/>
+                  </svg>
+                  <span>Download Excel (.xlsx)</span>
+                </button>
+                <div class="menu-divider"></div>
+                <button type="button" class="export-menu-item" (click)="printStatement()">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="6 9 6 2 18 2 18 9"/>
+                    <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                    <rect x="6" y="14" width="12" height="8"/>
+                  </svg>
+                  <span>Print View</span>
+                </button>
+              </div>
+            }
+          </div>
+
           <button type="button" class="btn-primary" (click)="openCreateModal()">
             + Add Entry
           </button>
         </div>
       </div>
 
-      <!-- Financial Summary Cards -->
-      <div class="summary-grid">
-        <app-stat-card
-          title="Total EPF Balance"
-          [amount]="allTimeEpfBalance()"
-          subtitle="Cumulative Withdrawable Balance"
-          variant="income"
-        />
-        <app-stat-card
-          title="Pension Fund (EPS)"
-          [amount]="allTimePensionBalance()"
-          subtitle="All-Time Pension Accumulation"
-          variant="neutral"
-        />
-        <app-stat-card
-          title="Yearly Closing Balance"
-          [amount]="summary()?.closingBalance || 0"
-          [subtitle]="'As of end of ' + selectedYear()"
-          variant="neutral"
-        />
-        <app-stat-card
-          title="Employee Share (Year)"
-          [amount]="summary()?.totalEmployeeShare || 0"
-          subtitle="12% Contribution"
-          variant="neutral"
-        />
-        <app-stat-card
-          title="Employer Share (Year)"
-          [amount]="summary()?.totalEmployerShare || 0"
-          subtitle="3.67% Contribution"
-          variant="neutral"
-        />
+      <!-- EPFO Executive Dashboard Hero Section -->
+      <div class="epfo-dashboard-grid no-print">
+        <!-- 1. Featured EPF Contribution Summary Card (matching official EPFO portal) -->
+        <div class="epf-contribution-card card">
+          <div class="epf-card-header">
+            <div class="title-wrap">
+              <h2 class="epf-card-title">EPF Contribution Summary</h2>
+              <div class="title-underline"></div>
+            </div>
+            <div class="view-toggle-pills">
+              <button
+                type="button"
+                class="pill-toggle-btn"
+                [class.active]="viewMode() === 'cumulative'"
+                (click)="viewMode.set('cumulative')"
+                title="Show all-time cumulative EPFO balance">
+                Total Available
+              </button>
+              <button
+                type="button"
+                class="pill-toggle-btn"
+                [class.active]="viewMode() === 'yearly'"
+                (click)="viewMode.set('yearly')"
+                title="Show closing balance for FY {{ selectedYear() }}">
+                FY {{ selectedYear() }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Total Available Balance Banner Box -->
+          <div class="total-balance-box">
+            <span class="total-balance-label">
+              {{ viewMode() === 'cumulative' ? 'Total Available Balance' : ('Closing Balance (' + selectedYear() + ')') }}
+            </span>
+            <span class="total-balance-badge amount">
+              {{ displayedTotalBalance() | inrCurrency }}
+            </span>
+          </div>
+
+          <!-- Donut Chart -->
+          <div class="donut-chart-container">
+            @if (displayedTotalBalance() > 0) {
+              <svg viewBox="0 0 260 260" width="220" height="220" class="donut-svg">
+                <!-- Background track -->
+                <circle
+                  cx="130"
+                  cy="130"
+                  r="85"
+                  fill="none"
+                  stroke="var(--donut-track, #f1f5f9)"
+                  stroke-width="38"
+                />
+
+                <!-- Rotated group for 12 o'clock start -->
+                <g transform="rotate(-90 130 130)">
+                  <!-- Employee Share Slice (Coral Pink) -->
+                  @if (employeeShareRatio() > 0) {
+                    <circle
+                      cx="130"
+                      cy="130"
+                      r="85"
+                      fill="none"
+                      stroke="#ff5876"
+                      stroke-width="38"
+                      [attr.stroke-dasharray]="employeeDashArray()"
+                      stroke-dashoffset="0"
+                      class="donut-slice"
+                    />
+                  }
+
+                  <!-- Employer Share Slice (Vivid Electric Blue) -->
+                  @if (employerShareRatio() > 0) {
+                    <circle
+                      cx="130"
+                      cy="130"
+                      r="85"
+                      fill="none"
+                      stroke="#0084d1"
+                      stroke-width="38"
+                      [attr.stroke-dasharray]="employerDashArray()"
+                      [attr.stroke-dashoffset]="employerDashOffset()"
+                      class="donut-slice"
+                    />
+                  }
+                </g>
+
+                <!-- Clean Radial Dividers for crisp gap -->
+                @if (employeeShareRatio() > 0.01 && employerShareRatio() > 0.01) {
+                  <!-- 12 o'clock top divider -->
+                  <line
+                    x1="130"
+                    y1="25"
+                    x2="130"
+                    y2="65"
+                    stroke="var(--donut-divider, #ffffff)"
+                    stroke-width="3"
+                  />
+                  <!-- Junction divider -->
+                  @if (dividerCoords(); as d) {
+                    <line
+                      [attr.x1]="d.x1"
+                      [attr.y1]="d.y1"
+                      [attr.x2]="d.x2"
+                      [attr.y2]="d.y2"
+                      stroke="var(--donut-divider, #ffffff)"
+                      stroke-width="3"
+                    />
+                  }
+                }
+              </svg>
+            } @else {
+              <!-- Empty state ring -->
+              <svg viewBox="0 0 260 260" width="220" height="220" class="donut-svg">
+                <circle
+                  cx="130"
+                  cy="130"
+                  r="85"
+                  fill="none"
+                  stroke="var(--donut-track, #e2e8f0)"
+                  stroke-width="38"
+                  stroke-dasharray="10 6"
+                />
+                <text x="130" y="135" text-anchor="middle" font-size="14" fill="var(--color-text-muted, #94a3b8)">
+                  No Data
+                </text>
+              </svg>
+            }
+          </div>
+
+          <!-- Bottom Legend (Exact format from EPFO portal screenshot) -->
+          <div class="donut-legend">
+            <div class="legend-pill" title="Employee Share (12% Deduction)">
+              <span class="legend-swatch swatch-pink"></span>
+              <span class="legend-label">
+                Employee Share : {{ displayedEmployeeShare() | inrCurrency }}
+              </span>
+            </div>
+            <div class="legend-pill" title="Employer Share (3.67% EPF Matching)">
+              <span class="legend-swatch swatch-blue"></span>
+              <span class="legend-label">
+                Employer Share : {{ displayedEmployerShare() | inrCurrency }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Companion Stats Grid (Pension EPS, Interest, Claims, Corpus) -->
+        <div class="epfo-companion-grid">
+          <div class="stat-cell card">
+            <div class="stat-top">
+              <span class="stat-label">PENSION FUND (EPS)</span>
+              <span class="badge-eps">8.33% Match</span>
+            </div>
+            <div class="stat-amount text-primary amount">
+              {{ allTimePensionBalance() | inrCurrency }}
+            </div>
+            <div class="stat-sub">Cumulative EPS corpus (Retirement / Scheme Certificate)</div>
+          </div>
+
+          <div class="stat-cell card">
+            <div class="stat-top">
+              <span class="stat-label">ANNUAL INTEREST</span>
+              <span class="badge-sov">8.25% p.a.</span>
+            </div>
+            <div class="stat-amount text-teal amount">
+              +{{ (summary()?.totalInterest || 0) | inrCurrency }}
+            </div>
+            <div class="stat-sub">Sovereign guaranteed annual interest credit</div>
+          </div>
+
+          <div class="stat-cell card">
+            <div class="stat-top">
+              <span class="stat-label">TOTAL WITHDRAWALS</span>
+              <span class="badge-claims">{{ (summary()?.totalWithdrawals || 0) > 0 ? 'Debited' : 'No Claims' }}</span>
+            </div>
+            <div class="stat-amount text-danger amount">
+              {{ (summary()?.totalWithdrawals || 0) > 0 ? ('-' + ((summary()?.totalWithdrawals || 0) | inrCurrency)) : (0 | inrCurrency) }}
+            </div>
+            <div class="stat-sub">Advances / claims debited in {{ selectedYear() }}</div>
+          </div>
+
+          <div class="stat-cell card">
+            <div class="stat-top">
+              <span class="stat-label">YEAR CLOSING BALANCE</span>
+              <span class="badge-year">{{ selectedYear() }}</span>
+            </div>
+            <div class="stat-amount font-bold amount">
+              {{ (summary()?.closingBalance || 0) | inrCurrency }}
+            </div>
+            <div class="stat-sub">Withdrawable corpus as of 31-Dec-{{ selectedYear() }}</div>
+          </div>
+        </div>
       </div>
 
       <!-- Printable Statement Header (visible only when printing) -->
@@ -113,7 +331,17 @@ import { StatCardComponent } from '../../shared/components/stat-card/stat-card.c
       <!-- Empty State -->
       @if (!loading() && entries().length === 0) {
         <div class="empty-card card">
-          <div class="empty-icon">🏦</div>
+          <div class="empty-icon">
+            <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.8">
+              <line x1="3" y1="21" x2="21" y2="21"/>
+              <line x1="3" y1="10" x2="21" y2="10"/>
+              <polyline points="12 3 2 10 22 10"/>
+              <line x1="6" y1="10" x2="6" y2="21"/>
+              <line x1="10" y1="10" x2="10" y2="21"/>
+              <line x1="14" y1="10" x2="14" y2="21"/>
+              <line x1="18" y1="10" x2="18" y2="21"/>
+            </svg>
+          </div>
           <h3>No EPF entries found for {{ selectedYear() }}</h3>
           <p>Record your monthly EPFO contribution slip or passbook entry.</p>
           <button type="button" class="btn-primary mt-4" (click)="openCreateModal()">
@@ -127,16 +355,21 @@ import { StatCardComponent } from '../../shared/components/stat-card/stat-card.c
         <!-- Mobile Cards (< 768px) -->
         <div class="mobile-entry-list">
           @for (entry of entries(); track entry.id) {
-            <div class="entry-card card">
+            <div class="entry-card card" [class.card-withdrawal]="entry.withdrawal > 0">
               <div class="entry-header">
                 <div>
-                  <h4 class="month-title">{{ entry.monthLabel }}</h4>
+                  <h4 class="month-title" [class.text-danger]="entry.withdrawal > 0">
+                    {{ entry.monthLabel }}
+                    @if (entry.withdrawal > 0) {
+                      <span class="badge-mini-claim">CLAIM</span>
+                    }
+                  </h4>
                   @if (entry.note) {
                     <div class="entry-note">{{ entry.note }}</div>
                   }
                 </div>
-                <div class="badge badge-inflow">
-                  +{{ entry.netInflow | inrCurrency }}
+                <div class="badge" [class.badge-inflow]="entry.netInflow >= 0" [class.badge-outflow]="entry.netInflow < 0">
+                  {{ entry.netInflow >= 0 ? '+' : '' }}{{ entry.netInflow | inrCurrency }}
                 </div>
               </div>
 
@@ -188,48 +421,61 @@ import { StatCardComponent } from '../../shared/components/stat-card/stat-card.c
           <table class="epf-table">
             <thead>
               <tr>
-                <th>Month</th>
-                <th class="text-right">Employee (12%)</th>
-                <th class="text-right">Employer (3.67%)</th>
-                <th class="text-right">Pension (8.33%)</th>
-                <th class="text-right">Interest</th>
-                <th class="text-right">Withdrawal</th>
-                <th class="text-right">Net Inflow</th>
-                <th class="text-right">Running EPF Balance</th>
-                <th class="text-right no-print">Actions</th>
+                <th class="col-month">Month</th>
+                <th class="text-right col-num">Employee (12%)</th>
+                <th class="text-right col-num">Employer (3.67%)</th>
+                <th class="text-right col-num">Pension (8.33%)</th>
+                <th class="text-right col-num">Interest</th>
+                <th class="text-right col-num">Withdrawal</th>
+                <th class="text-right col-num">Net Inflow</th>
+                <th class="text-right col-num">Running EPF Balance</th>
+                <th class="text-right col-actions no-print">Actions</th>
               </tr>
             </thead>
             <tbody>
               @for (entry of entries(); track entry.id) {
-                <tr>
-                  <td>
-                    <div class="month-cell font-bold">{{ entry.monthLabel }}</div>
+                <tr class="table-row" [class.row-withdrawal]="entry.withdrawal > 0">
+                  <td class="col-month">
+                    <div class="month-cell font-bold" [class.text-danger]="entry.withdrawal > 0">
+                      {{ entry.monthLabel }}
+                      @if (entry.withdrawal > 0) {
+                        <span class="badge-mini-claim">CLAIM</span>
+                      }
+                    </div>
                     @if (entry.note) {
-                      <div class="note-subtext">{{ entry.note }}</div>
+                      <div class="note-subtext" [title]="entry.note">{{ entry.note }}</div>
                     }
                   </td>
-                  <td class="text-right tabular-nums">{{ entry.employeeShare | inrCurrency }}</td>
-                  <td class="text-right tabular-nums">{{ entry.employerShare | inrCurrency }}</td>
-                  <td class="text-right tabular-nums text-muted">{{ entry.pensionShare | inrCurrency }}</td>
-                  <td class="text-right tabular-nums text-green">
+                  <td class="text-right tabular-nums col-num">{{ entry.employeeShare | inrCurrency }}</td>
+                  <td class="text-right tabular-nums col-num">{{ entry.employerShare | inrCurrency }}</td>
+                  <td class="text-right tabular-nums col-num text-muted">{{ entry.pensionShare | inrCurrency }}</td>
+                  <td class="text-right tabular-nums col-num text-green">
                     {{ entry.interest > 0 ? ('+' + (entry.interest | inrCurrency)) : '—' }}
                   </td>
-                  <td class="text-right tabular-nums text-danger">
+                  <td class="text-right tabular-nums col-num text-danger font-semibold">
                     {{ entry.withdrawal > 0 ? ('-' + (entry.withdrawal | inrCurrency)) : '—' }}
                   </td>
-                  <td class="text-right tabular-nums font-semibold text-teal">
-                    +{{ entry.netInflow | inrCurrency }}
+                  <td class="text-right tabular-nums col-num font-bold" [class.text-teal]="entry.netInflow >= 0" [class.text-danger]="entry.netInflow < 0">
+                    {{ entry.netInflow >= 0 ? '+' : '' }}{{ entry.netInflow | inrCurrency }}
                   </td>
-                  <td class="text-right tabular-nums font-bold text-main">
+                  <td class="text-right tabular-nums col-num font-bold text-main">
                     {{ entry.runningBalance | inrCurrency }}
                   </td>
-                  <td class="text-right no-print">
-                    <button type="button" class="btn-icon" title="Edit entry" (click)="openEditModal(entry)">
-                      ✏️
-                    </button>
-                    <button type="button" class="btn-icon-danger" title="Delete entry" (click)="confirmDelete(entry)">
-                      🗑️
-                    </button>
+                  <td class="text-right col-actions no-print">
+                    <div class="actions-wrap">
+                      <button type="button" class="btn-icon" title="Edit entry" (click)="openEditModal(entry)">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                          <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                        </svg>
+                      </button>
+                      <button type="button" class="btn-icon-danger" title="Delete entry" (click)="confirmDelete(entry)">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                          <polyline points="3 6 5 6 21 6"/>
+                          <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        </svg>
+                      </button>
+                    </div>
                   </td>
                 </tr>
               }
@@ -354,6 +600,314 @@ import { StatCardComponent } from '../../shared/components/stat-card/stat-card.c
           </div>
         </div>
       }
+
+      <!-- Import EPFO Passbook PDF Modal -->
+      @if (showImportModal()) {
+        <div class="modal-backdrop" (click)="closeImportModal()">
+          <div class="modal-dialog import-modal-dialog" (click)="$event.stopPropagation()">
+            <div class="modal-header">
+              <div class="modal-title-wrap">
+                <div class="badge-epfo-official">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
+                    <path d="M12 2L2 7v2h20V7L12 2zM4 11v7h3v-7H4zm6 0v7h4v-7h-4zm7 0v7h3v-7h-3zM2 20v2h20v-2H2z" />
+                  </svg>
+                  <span>OFFICIAL EPFO PASSBOOK AUTO-PARSER</span>
+                </div>
+                <h3>Import Member Passbook (PDF)</h3>
+                <p class="modal-subtitle">Auto-extracts member info, establishment name, monthly wage contributions, and year-end interest</p>
+              </div>
+              <button type="button" class="btn-close" (click)="closeImportModal()">&times;</button>
+            </div>
+
+            <div class="modal-body import-modal-body">
+              <!-- Error Banner -->
+              @if (parseError()) {
+                <div class="alert-error">
+                  <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                  </svg>
+                  <span>{{ parseError() }}</span>
+                </div>
+              }
+
+              <!-- STEP 1: Upload Dropzone (When no parsed preview yet) -->
+              @if (!parsedPreview()) {
+                <div
+                  class="dropzone-area"
+                  [class.drag-over]="isDraggingOver()"
+                  (dragover)="onDragOver($event)"
+                  (dragleave)="onDragLeave($event)"
+                  (drop)="onFileDropped($event)"
+                  (click)="fileInput.click()"
+                >
+                  <input
+                    #fileInput
+                    type="file"
+                    accept=".pdf,application/pdf"
+                    class="hidden-file-input"
+                    (change)="onFileSelected($event)"
+                  />
+
+                  @if (pdfParsing()) {
+                    <div class="parsing-spinner-wrap">
+                      <div class="spinner"></div>
+                      <h4>Reading EPFO Member Passbook...</h4>
+                      <p>Extracting monthly contribution table, interest records, and establishment details</p>
+                    </div>
+                  } @else {
+                    <div class="dropzone-content">
+                      <div class="dropzone-icon-box">
+                        <svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.8">
+                          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                          <polyline points="14 2 14 8 20 8"/>
+                          <path d="M12 18v-6m-3 3 3-3 3 3"/>
+                        </svg>
+                      </div>
+                      <h4>Drag & Drop your EPFO Passbook PDF here</h4>
+                      <p>or <span class="browse-link">browse file</span> from your computer</p>
+                      <div class="file-hint-pills">
+                        <span class="hint-pill">✓ Official EPFO Passbook PDF</span>
+                        <span class="hint-pill">✓ Financial Year Breakdown</span>
+                        <span class="hint-pill">✓ 100% Secure & On-Device</span>
+                      </div>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <!-- STEP 2: Extraction Preview -->
+                @if (parsedPreview(); as p) {
+                  <div class="preview-container">
+                    <!-- Member & Establishment Card -->
+                    <div class="passbook-meta-card">
+                      <div class="meta-row">
+                        <div class="meta-item">
+                          <span class="meta-label">MEMBER NAME</span>
+                          <span class="meta-value font-bold">{{ p.memberName }}</span>
+                          <span class="meta-sub">UAN: {{ p.uan }} | Member ID: {{ p.memberId }}</span>
+                        </div>
+                        <div class="meta-item">
+                          <span class="meta-label">ESTABLISHMENT / EMPLOYER</span>
+                          <span class="meta-value font-semibold">{{ p.establishmentName }}</span>
+                          <span class="meta-sub">Est ID: {{ p.establishmentId }}</span>
+                        </div>
+                        <div class="meta-item meta-item-fy">
+                          <span class="meta-label">FINANCIAL YEAR</span>
+                          <span class="fy-badge">{{ p.financialYear }}</span>
+                          <span class="meta-sub">DOB: {{ p.dateOfBirth }}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Preview EPF Contribution Summary Widget (Matching official EPFO portal) -->
+                    <div class="epf-contribution-card preview-card">
+                      <div class="epf-card-header">
+                        <div class="title-wrap">
+                          <h4 class="epf-card-title sm">EPF Contribution Summary</h4>
+                          <div class="title-underline"></div>
+                        </div>
+                        <span class="preview-fy-badge">Passbook FY {{ p.financialYear }}</span>
+                      </div>
+
+                      <div class="total-balance-box preview-box">
+                        <span class="total-balance-label">Total Available Balance</span>
+                        <span class="total-balance-badge amount">
+                          {{ getPreviewTotal(p) | inrCurrency }}
+                        </span>
+                      </div>
+
+                      <div class="donut-chart-container preview-donut">
+                        @if (getPreviewTotal(p) > 0) {
+                          <svg viewBox="0 0 260 260" width="180" height="180" class="donut-svg">
+                            <circle cx="130" cy="130" r="85" fill="none" stroke="var(--donut-track, #f1f5f9)" stroke-width="38" />
+                            <g transform="rotate(-90 130 130)">
+                              @if (getPreviewEeRatio(p) > 0) {
+                                <circle
+                                  cx="130"
+                                  cy="130"
+                                  r="85"
+                                  fill="none"
+                                  stroke="#ff5876"
+                                  stroke-width="38"
+                                  [attr.stroke-dasharray]="getPreviewEeDashArray(p)"
+                                  stroke-dashoffset="0"
+                                  class="donut-slice"
+                                />
+                              }
+                              @if (getPreviewErRatio(p) > 0) {
+                                <circle
+                                  cx="130"
+                                  cy="130"
+                                  r="85"
+                                  fill="none"
+                                  stroke="#0084d1"
+                                  stroke-width="38"
+                                  [attr.stroke-dasharray]="getPreviewErDashArray(p)"
+                                  [attr.stroke-dashoffset]="getPreviewErDashOffset(p)"
+                                  class="donut-slice"
+                                />
+                              }
+                            </g>
+                            @if (getPreviewEeRatio(p) > 0.01 && getPreviewErRatio(p) > 0.01) {
+                              <line x1="130" y1="25" x2="130" y2="65" stroke="var(--donut-divider, #ffffff)" stroke-width="3" />
+                              @if (getPreviewDividerCoords(p); as d) {
+                                <line [attr.x1]="d.x1" [attr.y1]="d.y1" [attr.x2]="d.x2" [attr.y2]="d.y2" stroke="var(--donut-divider, #ffffff)" stroke-width="3" />
+                              }
+                            }
+                          </svg>
+                        }
+                      </div>
+
+                      <div class="donut-legend preview-legend">
+                        <div class="legend-pill">
+                          <span class="legend-swatch swatch-pink"></span>
+                          <span class="legend-label">Employee Share : {{ p.closingEmployeeBalance | inrCurrency }}</span>
+                        </div>
+                        <div class="legend-pill">
+                          <span class="legend-swatch swatch-blue"></span>
+                          <span class="legend-label">Employer Share : {{ p.closingEmployerBalance | inrCurrency }}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Summary Financial Metrics -->
+                    <div class="preview-metrics-grid">
+                      <div class="metric-pill-card">
+                        <span class="metric-lbl">Opening Balance</span>
+                        <span class="metric-amt">{{ (p.openingEmployeeBalance + p.openingEmployerBalance) | inrCurrency }}</span>
+                        <span class="metric-sub">EE: {{ p.openingEmployeeBalance | inrCurrency }} | ER: {{ p.openingEmployerBalance | inrCurrency }}</span>
+                      </div>
+                      <div class="metric-pill-card highlight-pill">
+                        <span class="metric-lbl">Total Contributions</span>
+                        <span class="metric-amt text-success">{{ (p.totalContributionsEmployee + p.totalContributionsEmployer) | inrCurrency }}</span>
+                        <span class="metric-sub">EE: {{ p.totalContributionsEmployee | inrCurrency }} | ER: {{ p.totalContributionsEmployer | inrCurrency }}</span>
+                      </div>
+                      @if ((p.totalTransferInsEmployee + p.totalTransferInsEmployer) > 0) {
+                        <div class="metric-pill-card">
+                          <span class="metric-lbl">Total Transfer-Ins</span>
+                          <span class="metric-amt text-teal">+{{ (p.totalTransferInsEmployee + p.totalTransferInsEmployer) | inrCurrency }}</span>
+                          <span class="metric-sub">EE: {{ p.totalTransferInsEmployee | inrCurrency }} | ER: {{ p.totalTransferInsEmployer | inrCurrency }}</span>
+                        </div>
+                      }
+                      <div class="metric-pill-card" [class.danger-pill]="(p.totalWithdrawalsEmployee + p.totalWithdrawalsEmployer) > 0">
+                        <span class="metric-lbl">Total Withdrawals</span>
+                        <span class="metric-amt" [class.text-danger]="(p.totalWithdrawalsEmployee + p.totalWithdrawalsEmployer) > 0">
+                          {{ (p.totalWithdrawalsEmployee + p.totalWithdrawalsEmployer) > 0 ? ('-' + ((p.totalWithdrawalsEmployee + p.totalWithdrawalsEmployer) | inrCurrency)) : (0 | inrCurrency) }}
+                        </span>
+                        <span class="metric-sub">EE: {{ p.totalWithdrawalsEmployee | inrCurrency }} | ER: {{ p.totalWithdrawalsEmployer | inrCurrency }}</span>
+                      </div>
+                      <div class="metric-pill-card">
+                        <span class="metric-lbl">Annual Interest</span>
+                        <span class="metric-amt text-teal">+{{ (p.annualInterestEmployee + p.annualInterestEmployer) | inrCurrency }}</span>
+                        <span class="metric-sub">EE: {{ p.annualInterestEmployee | inrCurrency }} | ER: {{ p.annualInterestEmployer | inrCurrency }}</span>
+                      </div>
+                      <div class="metric-pill-card">
+                        <span class="metric-lbl">Year Closing Balance</span>
+                        <span class="metric-amt font-bold">{{ (p.closingEmployeeBalance + p.closingEmployerBalance) | inrCurrency }}</span>
+                        <span class="metric-sub">Withdrawable EPF Fund</span>
+                      </div>
+                    </div>
+
+                    <!-- Monthly Entries List to be Saved -->
+                    <div class="preview-table-wrap">
+                      <div class="preview-table-header">
+                        <h4>Monthly Records Detected ({{ p.monthlyEntries.length }} entries)</h4>
+                        <span class="badge-ready">✓ Validated & Ready</span>
+                      </div>
+                      <div class="preview-table-scroll">
+                        <table class="preview-table">
+                          <thead>
+                            <tr>
+                              <th>Month</th>
+                              <th class="text-right">Employee (12%)</th>
+                              <th class="text-right">Employer (3.67%)</th>
+                              <th class="text-right">Pension (8.33%)</th>
+                              <th class="text-right">Withdrawal</th>
+                              <th class="text-right">Interest</th>
+                              <th class="text-right">Net Inflow</th>
+                              <th>Note / Particulars</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            @for (item of p.monthlyEntries; track $index) {
+                              <tr [class.row-withdrawal]="item.withdrawal > 0">
+                                <td class="font-bold text-main">
+                                  <div class="month-title-row">
+                                    <span [class.text-danger]="item.withdrawal > 0">{{ item.monthLabel }}</span>
+                                    @if (item.withdrawal > 0) {
+                                      <span class="badge-mini-claim">CLAIM</span>
+                                    }
+                                  </div>
+                                </td>
+                                <td class="text-right tabular-nums">{{ item.employeeShare | inrCurrency }}</td>
+                                <td class="text-right tabular-nums">{{ item.employerShare | inrCurrency }}</td>
+                                <td class="text-right tabular-nums text-muted">{{ item.pensionShare | inrCurrency }}</td>
+                                <td class="text-right tabular-nums font-semibold" [class.text-danger]="item.withdrawal > 0">
+                                  {{ item.withdrawal > 0 ? ('-' + (item.withdrawal | inrCurrency)) : '—' }}
+                                </td>
+                                <td class="text-right tabular-nums text-green">
+                                  {{ item.interest > 0 ? ('+' + (item.interest | inrCurrency)) : '—' }}
+                                </td>
+                                <td class="text-right tabular-nums font-bold" [class.text-teal]="item.netInflow >= 0" [class.text-danger]="item.netInflow < 0">
+                                  {{ item.netInflow >= 0 ? '+' : '' }}{{ item.netInflow | inrCurrency }}
+                                </td>
+                                <td class="cell-note" [title]="item.note">{{ item.note }}</td>
+                              </tr>
+                            }
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    <!-- Replace Existing Checkbox -->
+                    <div class="import-options-card">
+                      <label class="custom-checkbox-wrap">
+                        <input
+                          type="checkbox"
+                          [(ngModel)]="replaceExisting"
+                        />
+                        <span class="checkbox-label">
+                          <strong>Replace existing entries for this financial year</strong>
+                          <small>Prevents duplicate rows if you have already recorded partial months manually</small>
+                        </span>
+                      </label>
+                    </div>
+                  </div>
+                }
+              }
+            </div>
+
+            <div class="modal-footer import-modal-footer">
+              @if (!parsedPreview()) {
+                <button type="button" class="btn-outline" (click)="closeImportModal()">
+                  Cancel
+                </button>
+              } @else {
+                <button type="button" class="btn-outline" (click)="resetImportFile()" [disabled]="pdfImporting()">
+                  Upload Different PDF
+                </button>
+                <button
+                  type="button"
+                  class="btn-primary btn-commit-import"
+                  (click)="commitImport()"
+                  [disabled]="pdfImporting()"
+                >
+                  @if (pdfImporting()) {
+                    <span class="spinner-sm"></span>
+                    <span>Saving to Database...</span>
+                  } @else {
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                    <span>Confirm & Import to Passbook</span>
+                  }
+                </button>
+              }
+            </div>
+          </div>
+        </div>
+      }
     </div>
   `,
   styles: [`
@@ -420,22 +974,329 @@ import { StatCardComponent } from '../../shared/components/stat-card/stat-card.c
       min-height: 44px;
     }
 
-    .summary-grid {
+    /* ======================================================== */
+    /* EPFO EXECUTIVE DASHBOARD HERO & DONUT                    */
+    /* ======================================================== */
+    .epfo-dashboard-grid {
       display: grid;
       grid-template-columns: 1fr;
-      gap: 1rem;
-    }
-
-    @media (min-width: 640px) {
-      .summary-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
+      gap: 1.25rem;
+      margin-bottom: 1.5rem;
     }
 
     @media (min-width: 1024px) {
-      .summary-grid {
-        grid-template-columns: repeat(5, 1fr);
+      .epfo-dashboard-grid {
+        grid-template-columns: minmax(380px, 1.15fr) 1fr;
+        align-items: stretch;
       }
+    }
+
+    /* EPF Contribution Summary Card */
+    .epf-contribution-card {
+      background: var(--color-bg-card, #ffffff);
+      border: 1px solid var(--color-border, #e2e8f0);
+      border-radius: 14px;
+      padding: 1.5rem 1.75rem;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px 0 rgba(0, 0, 0, 0.02);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .epf-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .title-wrap {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .epf-card-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #1e3a8a; /* Deep EPFO navy */
+      letter-spacing: -0.01em;
+      margin: 0;
+      line-height: 1.3;
+    }
+
+    .epf-card-title.sm {
+      font-size: 1.1rem;
+    }
+
+    :host-context([data-theme='dark']) .epf-card-title {
+      color: #93c5fd;
+    }
+
+    .title-underline {
+      width: 52px;
+      height: 3.5px;
+      background: #f59e0b; /* EPFO warm gold/amber */
+      border-radius: 2px;
+      margin-top: 5px;
+    }
+
+    .view-toggle-pills {
+      display: inline-flex;
+      background: var(--color-bg-subtle, #f1f5f9);
+      padding: 3px;
+      border-radius: 8px;
+      border: 1px solid var(--color-border, #e2e8f0);
+      gap: 2px;
+    }
+
+    .pill-toggle-btn {
+      background: transparent;
+      border: none;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 0.775rem;
+      font-weight: 600;
+      color: var(--color-text-muted, #64748b);
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .pill-toggle-btn.active {
+      background: var(--color-bg-card, #ffffff);
+      color: var(--color-text-main, #0f172a);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+    }
+
+    :host-context([data-theme='dark']) .pill-toggle-btn.active {
+      background: var(--color-bg-card, #1e293b);
+      color: #f8fafc;
+    }
+
+    /* Total Available Balance Banner Box */
+    .total-balance-box {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.85rem 1.25rem;
+      background: #fafbfc;
+      border: 1px solid #e2e8f0;
+      border-radius: 9px;
+      margin: 1.25rem 0 1rem 0;
+    }
+
+    .total-balance-box.preview-box {
+      margin: 0.85rem 0 0.5rem 0;
+      padding: 0.65rem 1rem;
+    }
+
+    :host-context([data-theme='dark']) .total-balance-box {
+      background: rgba(255, 255, 255, 0.03);
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .total-balance-label {
+      font-size: 0.925rem;
+      font-weight: 500;
+      color: #64748b;
+    }
+
+    :host-context([data-theme='dark']) .total-balance-label {
+      color: #94a3b8;
+    }
+
+    .total-balance-badge {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #1e293b;
+      background: #f1f5f9;
+      border: 1px solid #e2e8f0;
+      padding: 5px 14px;
+      border-radius: 6px;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.01em;
+      white-space: nowrap;
+    }
+
+    :host-context([data-theme='dark']) .total-balance-badge {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.12);
+      color: #f8fafc;
+    }
+
+    /* Donut Chart Container */
+    .donut-chart-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0.75rem 0;
+      min-height: 230px;
+    }
+
+    .donut-chart-container.preview-donut {
+      min-height: 190px;
+      padding: 0.25rem 0;
+    }
+
+    .donut-svg {
+      display: block;
+      overflow: visible;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.03));
+    }
+
+    .donut-slice {
+      transition: stroke-dasharray 0.5s ease-out, stroke-dashoffset 0.5s ease-out;
+    }
+
+    /* Donut Legend */
+    .donut-legend {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1.75rem;
+      flex-wrap: wrap;
+      margin-top: auto;
+      padding-top: 0.75rem;
+    }
+
+    .donut-legend.preview-legend {
+      gap: 1.25rem;
+      padding-top: 0.35rem;
+    }
+
+    .legend-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.65rem;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #475569;
+    }
+
+    :host-context([data-theme='dark']) .legend-label {
+      color: #cbd5e1;
+    }
+
+    .legend-swatch {
+      width: 26px;
+      height: 10px;
+      border-radius: 2px;
+      display: inline-block;
+      flex-shrink: 0;
+    }
+
+    .swatch-pink {
+      background-color: #ff5876;
+    }
+
+    .swatch-blue {
+      background-color: #0084d1;
+    }
+
+    /* Companion 2x2 Stats Grid */
+    .epfo-companion-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 0.875rem;
+    }
+
+    .stat-cell {
+      background: var(--color-bg-card, #ffffff);
+      border: 1px solid var(--color-border, #e2e8f0);
+      border-radius: 12px;
+      padding: 1.15rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 115px;
+    }
+
+    .stat-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .stat-label {
+      font-size: 0.725rem;
+      font-weight: 700;
+      color: var(--color-text-muted, #64748b);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .stat-amount {
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin: 0.4rem 0 0.2rem 0;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .stat-sub {
+      font-size: 0.75rem;
+      color: var(--color-text-muted, #64748b);
+      line-height: 1.3;
+    }
+
+    .badge-eps {
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+
+    .badge-sov {
+      background: #f0fdf4;
+      color: #15803d;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+
+    .badge-claims {
+      background: #fef2f2;
+      color: #b91c1c;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+
+    .badge-year {
+      background: #f1f5f9;
+      color: #475569;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+    }
+
+    .preview-card {
+      margin-bottom: 1rem;
+      border-radius: 10px;
+      padding: 1.15rem 1.25rem;
+    }
+
+    .preview-fy-badge {
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 0.875rem;
     }
 
     /* Mobile Entries */
@@ -454,6 +1315,10 @@ import { StatCardComponent } from '../../shared/components/stat-card/stat-card.c
     .desktop-table-container {
       display: none;
       overflow-x: auto;
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-xs);
     }
 
     @media (min-width: 768px) {
@@ -494,6 +1359,7 @@ import { StatCardComponent } from '../../shared/components/stat-card/stat-card.c
       border-radius: 9999px;
       font-size: 0.8125rem;
       font-weight: 700;
+      white-space: nowrap;
     }
 
     .badge-inflow {
@@ -525,6 +1391,7 @@ import { StatCardComponent } from '../../shared/components/stat-card/stat-card.c
     .sub-val {
       font-weight: 500;
       color: var(--color-text-main);
+      white-space: nowrap;
     }
 
     .entry-actions {
@@ -552,29 +1419,74 @@ import { StatCardComponent } from '../../shared/components/stat-card/stat-card.c
     /* Desktop Table */
     .epf-table {
       width: 100%;
+      min-width: 1050px;
       border-collapse: collapse;
       text-align: left;
     }
 
     .epf-table th {
-      padding: 0.875rem 1rem;
-      font-size: 0.75rem;
-      font-weight: 600;
+      padding: 0.85rem 1rem;
+      font-size: 0.725rem;
+      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.05em;
       color: var(--color-text-muted);
       border-bottom: 1px solid var(--color-border);
+      background: var(--color-bg-subtle);
+      white-space: nowrap;
     }
 
     .epf-table td {
-      padding: 1rem;
+      padding: 0.85rem 1rem;
       font-size: 0.875rem;
       border-bottom: 1px solid var(--color-border);
+      vertical-align: middle;
+      color: var(--color-text-main);
+    }
+
+    .table-row:hover {
+      background-color: var(--color-bg-subtle);
+    }
+
+    .col-month {
+      min-width: 150px;
+      max-width: 240px;
+    }
+
+    .col-num {
+      white-space: nowrap !important;
+      font-variant-numeric: tabular-nums lining-nums;
+      font-feature-settings: 'tnum' 1, 'lnum' 1;
+    }
+
+    .month-cell {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--color-text-main);
+      white-space: nowrap;
     }
 
     .note-subtext {
       font-size: 0.75rem;
       color: var(--color-text-muted);
+      margin-top: 0.2rem;
+      max-width: 220px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .col-actions {
+      white-space: nowrap !important;
+      width: 84px;
+    }
+
+    .actions-wrap {
+      display: inline-flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 0.35rem;
+      white-space: nowrap;
     }
 
     .text-teal { color: #0d9488; }
@@ -585,18 +1497,82 @@ import { StatCardComponent } from '../../shared/components/stat-card/stat-card.c
 
     .btn-icon {
       background: transparent;
-      border: none;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
       cursor: pointer;
-      font-size: 1rem;
-      padding: 0.25rem 0.4rem;
+      color: var(--color-text-muted);
+      padding: 0.35rem 0.45rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+      min-height: 32px;
+      min-width: 32px;
+    }
+
+    .btn-icon:hover {
+      background: var(--color-bg-subtle);
+      color: var(--color-text-main);
+      border-color: var(--color-border-subtle);
     }
 
     .btn-icon-danger {
       background: transparent;
-      border: none;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
       cursor: pointer;
-      font-size: 1rem;
-      padding: 0.25rem 0.4rem;
+      color: #ef4444;
+      padding: 0.35rem 0.45rem;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.15s ease;
+      min-height: 32px;
+      min-width: 32px;
+    }
+
+    .btn-icon-danger:hover {
+      background: #fee2e2;
+      border-color: #fca5a5;
+    }
+
+    /* Distinct Withdrawal & Claim Rows */
+    .row-withdrawal {
+      background: rgba(239, 68, 68, 0.04);
+      &:hover {
+        background: rgba(239, 68, 68, 0.08) !important;
+      }
+    }
+
+    .card-withdrawal {
+      border-left: 3px solid #ef4444;
+      background: rgba(239, 68, 68, 0.02);
+    }
+
+    .badge-mini-claim {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #dc2626;
+      background: rgba(239, 68, 68, 0.12);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 4px;
+      padding: 1px 5px;
+      margin-left: 0.35rem;
+      letter-spacing: 0.03em;
+      vertical-align: middle;
+      display: inline-block;
+    }
+
+    .badge-outflow {
+      background: rgba(239, 68, 68, 0.12);
+      color: #dc2626;
+      border: 1px solid rgba(239, 68, 68, 0.25);
+    }
+
+    .month-title-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
     }
 
     /* Modals */
@@ -704,6 +1680,371 @@ import { StatCardComponent } from '../../shared/components/stat-card/stat-card.c
       50% { opacity: 0.3; }
     }
 
+    /* Import Passbook Button */
+    .btn-import {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: linear-gradient(135deg, #0d9488 0%, #059669 100%);
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.875rem;
+      border: none;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(13, 148, 136, 0.25);
+      transition: all 0.2s ease;
+      min-height: 44px;
+
+      &:hover {
+        background: linear-gradient(135deg, #0f766e 0%, #047857 100%);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(13, 148, 136, 0.35);
+      }
+    }
+
+    /* Export Dropdown */
+    .export-dropdown-wrapper {
+      position: relative;
+    }
+
+    .btn-export {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      min-height: 44px;
+    }
+
+    .export-menu {
+      position: absolute;
+      top: calc(100% + 4px);
+      right: 0;
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      min-width: 220px;
+      padding: 0.35rem 0;
+      z-index: 50;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .export-menu-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.6rem 1rem;
+      background: transparent;
+      border: none;
+      color: var(--color-text-main);
+      font-size: 0.84rem;
+      font-weight: 500;
+      text-align: left;
+      cursor: pointer;
+      width: 100%;
+      transition: background 0.15s;
+
+      &:hover {
+        background: var(--color-bg-subtle);
+        color: var(--color-primary);
+      }
+    }
+
+    .menu-divider {
+      height: 1px;
+      background: var(--color-border);
+      margin: 0.3rem 0;
+    }
+
+    /* Import Modal Dialog */
+    .import-modal-dialog {
+      max-width: 860px !important;
+      width: 95%;
+    }
+
+    .modal-title-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .badge-epfo-official {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: rgba(13, 148, 136, 0.12);
+      color: #0f766e;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.25rem;
+      width: fit-content;
+    }
+
+    .modal-subtitle {
+      font-size: 0.8125rem;
+      color: var(--color-text-muted);
+      margin: 0;
+    }
+
+    .dropzone-area {
+      border: 2px dashed var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 3rem 1.5rem;
+      text-align: center;
+      background: var(--color-bg-subtle);
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover, &.drag-over {
+        border-color: #0d9488;
+        background: rgba(13, 148, 136, 0.04);
+      }
+    }
+
+    .hidden-file-input { display: none; }
+
+    .dropzone-icon-box {
+      color: #0d9488;
+      margin-bottom: 1rem;
+    }
+
+    .browse-link {
+      color: #0d9488;
+      font-weight: 600;
+      text-decoration: underline;
+    }
+
+    .file-hint-pills {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 1.25rem;
+    }
+
+    .hint-pill {
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+      background: var(--color-bg-card);
+      padding: 0.25rem 0.6rem;
+      border-radius: 20px;
+      border: 1px solid var(--color-border);
+    }
+
+    .parsing-spinner-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.75rem;
+
+      .spinner {
+        width: 36px;
+        height: 36px;
+        border: 3px solid rgba(13, 148, 136, 0.2);
+        border-top-color: #0d9488;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Passbook Meta Card */
+    .passbook-meta-card {
+      background: var(--color-bg-subtle);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 1rem 1.25rem;
+      margin-bottom: 1rem;
+    }
+
+    .meta-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+    }
+
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .meta-label {
+      font-size: 0.6875rem;
+      font-weight: 700;
+      color: var(--color-text-muted);
+      letter-spacing: 0.05em;
+    }
+
+    .meta-value {
+      font-size: 0.95rem;
+      color: var(--color-text-main);
+    }
+
+    .meta-sub {
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+    }
+
+    .fy-badge {
+      display: inline-block;
+      background: #0d9488;
+      color: white;
+      font-size: 0.8125rem;
+      font-weight: 700;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      width: fit-content;
+    }
+
+    .preview-metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 0.75rem;
+      margin-bottom: 1rem;
+    }
+
+    .metric-pill-card {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 0.75rem 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+
+      &.highlight-pill {
+        border-color: rgba(16, 185, 129, 0.4);
+        background: rgba(16, 185, 129, 0.03);
+      }
+
+      &.danger-pill {
+        border-color: rgba(239, 68, 68, 0.4);
+        background: rgba(239, 68, 68, 0.04);
+      }
+    }
+
+    .metric-lbl {
+      font-size: 0.72rem;
+      color: var(--color-text-muted);
+      font-weight: 600;
+    }
+
+    .metric-amt {
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+
+    .preview-table-wrap {
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      margin-bottom: 1rem;
+    }
+
+    .preview-table-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.65rem 1rem;
+      background: var(--color-bg-subtle);
+      border-bottom: 1px solid var(--color-border);
+
+      h4 { margin: 0; font-size: 0.875rem; font-weight: 600; }
+    }
+
+    .badge-ready {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #059669;
+      background: rgba(5, 150, 105, 0.1);
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+    }
+
+    .preview-table-scroll {
+      max-height: 230px;
+      overflow-y: auto;
+    }
+
+    .preview-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+
+      th {
+        position: sticky;
+        top: 0;
+        background: var(--color-bg-card);
+        padding: 0.5rem 0.75rem;
+        border-bottom: 1px solid var(--color-border);
+        font-weight: 600;
+        color: var(--color-text-muted);
+        text-align: left;
+      }
+
+      td {
+        padding: 0.45rem 0.75rem;
+        border-bottom: 1px solid var(--color-border);
+      }
+    }
+
+    .cell-note {
+      max-width: 200px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: var(--color-text-muted);
+      font-size: 0.75rem;
+    }
+
+    .import-options-card {
+      background: var(--color-bg-subtle);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 0.75rem 1rem;
+    }
+
+    .custom-checkbox-wrap {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      cursor: pointer;
+
+      input { margin-top: 0.2rem; }
+    }
+
+    .checkbox-label {
+      display: flex;
+      flex-direction: column;
+      font-size: 0.84rem;
+
+      small { color: var(--color-text-muted); font-size: 0.75rem; }
+    }
+
+    .btn-commit-import {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .spinner-sm {
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
     .print-only { display: none; }
 
     /* Print Stylesheet */
@@ -740,7 +2081,9 @@ import { StatCardComponent } from '../../shared/components/stat-card/stat-card.c
 })
 export class EpfoComponent implements OnInit {
   private readonly epfoService = inject(EpfoService);
+  private readonly deletionPermissionsService = inject(DeletionPermissionsService);
   private readonly fb = inject(FormBuilder);
+  public readonly themeService = inject(ThemeService);
 
   readonly entries = signal<EpfEntry[]>([]);
   readonly summary = signal<EpfYearlySummary | null>(null);
@@ -748,12 +2091,307 @@ export class EpfoComponent implements OnInit {
   readonly selectedYear = signal<number>(new Date().getFullYear());
   readonly allTimeEpfBalance = signal<number>(0);
   readonly allTimePensionBalance = signal<number>(0);
+  readonly allTimeEmployeeBalance = signal<number>(0);
+  readonly allTimeEmployerBalance = signal<number>(0);
+
+  // Active view mode for EPF Contribution Summary ('cumulative' = All-Time Total, 'yearly' = Selected FY)
+  readonly viewMode = signal<'cumulative' | 'yearly'>('cumulative');
+
+  readonly displayedTotalBalance = computed(() => {
+    if (this.viewMode() === 'yearly') {
+      return this.summary()?.closingBalance || 0;
+    }
+    return this.allTimeEpfBalance();
+  });
+
+  readonly displayedEmployeeShare = computed(() => {
+    if (this.viewMode() === 'yearly') {
+      const s = this.summary();
+      return (s?.closingEmployeeBalance && s.closingEmployeeBalance > 0)
+        ? s.closingEmployeeBalance
+        : (s?.totalEmployeeShare || 0);
+    }
+    return this.allTimeEmployeeBalance();
+  });
+
+  readonly displayedEmployerShare = computed(() => {
+    if (this.viewMode() === 'yearly') {
+      const s = this.summary();
+      return (s?.closingEmployerBalance && s.closingEmployerBalance > 0)
+        ? s.closingEmployerBalance
+        : (s?.totalEmployerShare || 0);
+    }
+    return this.allTimeEmployerBalance();
+  });
+
+  readonly employeeShareRatio = computed(() => {
+    const total = this.displayedTotalBalance();
+    const ee = this.displayedEmployeeShare();
+    if (total <= 0 || ee <= 0) return 0;
+    return Math.min(1, Math.max(0, ee / total));
+  });
+
+  readonly employerShareRatio = computed(() => {
+    const total = this.displayedTotalBalance();
+    const er = this.displayedEmployerShare();
+    if (total <= 0 || er <= 0) return 0;
+    return Math.min(1, Math.max(0, er / total));
+  });
+
+  readonly donutCircumference = 534.07;
+
+  readonly employeeDashArray = computed(() => {
+    const ratio = this.employeeShareRatio();
+    const len = ratio * this.donutCircumference;
+    return `${len.toFixed(2)} ${this.donutCircumference}`;
+  });
+
+  readonly employerDashArray = computed(() => {
+    const ratio = this.employerShareRatio();
+    const len = ratio * this.donutCircumference;
+    return `${len.toFixed(2)} ${this.donutCircumference}`;
+  });
+
+  readonly employerDashOffset = computed(() => {
+    const ratio = this.employeeShareRatio();
+    const offset = -(ratio * this.donutCircumference);
+    return offset.toFixed(2);
+  });
+
+  readonly dividerCoords = computed(() => {
+    const ratio = this.employeeShareRatio();
+    if (ratio <= 0.01 || ratio >= 0.99) {
+      return null;
+    }
+    const angleDeg = -90 + (ratio * 360);
+    const angleRad = (angleDeg * Math.PI) / 180;
+    const rIn = 65;
+    const rOut = 105;
+    const cx = 130;
+    const cy = 130;
+    return {
+      x1: (cx + rIn * Math.cos(angleRad)).toFixed(2),
+      y1: (cy + rIn * Math.sin(angleRad)).toFixed(2),
+      x2: (cx + rOut * Math.cos(angleRad)).toFixed(2),
+      y2: (cy + rOut * Math.sin(angleRad)).toFixed(2)
+    };
+  });
+
+  // Helper methods for PDF preview modal
+  getPreviewTotal(p: EpfoPassbookParsePreview): number {
+    return (p.closingEmployeeBalance || 0) + (p.closingEmployerBalance || 0);
+  }
+
+  getPreviewEeRatio(p: EpfoPassbookParsePreview): number {
+    const total = this.getPreviewTotal(p);
+    if (total <= 0) return 0;
+    return Math.min(1, Math.max(0, (p.closingEmployeeBalance || 0) / total));
+  }
+
+  getPreviewErRatio(p: EpfoPassbookParsePreview): number {
+    const total = this.getPreviewTotal(p);
+    if (total <= 0) return 0;
+    return Math.min(1, Math.max(0, (p.closingEmployerBalance || 0) / total));
+  }
+
+  getPreviewEeDashArray(p: EpfoPassbookParsePreview): string {
+    const len = this.getPreviewEeRatio(p) * this.donutCircumference;
+    return `${len.toFixed(2)} ${this.donutCircumference}`;
+  }
+
+  getPreviewErDashArray(p: EpfoPassbookParsePreview): string {
+    const len = this.getPreviewErRatio(p) * this.donutCircumference;
+    return `${len.toFixed(2)} ${this.donutCircumference}`;
+  }
+
+  getPreviewErDashOffset(p: EpfoPassbookParsePreview): string {
+    const offset = -(this.getPreviewEeRatio(p) * this.donutCircumference);
+    return offset.toFixed(2);
+  }
+
+  getPreviewDividerCoords(p: EpfoPassbookParsePreview) {
+    const ratio = this.getPreviewEeRatio(p);
+    if (ratio <= 0.01 || ratio >= 0.99) return null;
+    const angleDeg = -90 + (ratio * 360);
+    const angleRad = (angleDeg * Math.PI) / 180;
+    const rIn = 65;
+    const rOut = 105;
+    const cx = 130;
+    const cy = 130;
+    return {
+      x1: (cx + rIn * Math.cos(angleRad)).toFixed(2),
+      y1: (cy + rIn * Math.sin(angleRad)).toFixed(2),
+      x2: (cx + rOut * Math.cos(angleRad)).toFixed(2),
+      y2: (cy + rOut * Math.sin(angleRad)).toFixed(2)
+    };
+  }
 
   readonly loading = signal<boolean>(true);
   readonly submitting = signal<boolean>(false);
   readonly showModal = signal<boolean>(false);
   readonly editingId = signal<string | null>(null);
   readonly today = new Date();
+
+  // Import Passbook PDF Signals
+  readonly showImportModal = signal<boolean>(false);
+  readonly pdfParsing = signal<boolean>(false);
+  readonly pdfImporting = signal<boolean>(false);
+  readonly parsedPreview = signal<EpfoPassbookParsePreview | null>(null);
+  readonly parseError = signal<string | null>(null);
+  readonly isDraggingOver = signal<boolean>(false);
+  readonly replaceExisting = signal<boolean>(true);
+
+  // Export Signals
+  readonly showExportDropdown = signal<boolean>(false);
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    if (this.showExportDropdown()) {
+      this.showExportDropdown.set(false);
+    }
+  }
+
+  toggleExportDropdown(): void {
+    setTimeout(() => {
+      this.showExportDropdown.update(v => !v);
+    }, 0);
+  }
+
+  downloadPdf(): void {
+    this.showExportDropdown.set(false);
+    this.epfoService.downloadExportPdf(this.selectedYear()).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Hisaab_EPFO_Passbook_${this.selectedYear()}.pdf`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: () => alert('Failed to download PDF statement.')
+    });
+  }
+
+  downloadExcel(): void {
+    this.showExportDropdown.set(false);
+    this.epfoService.downloadExportExcel(this.selectedYear()).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `Hisaab_EPFO_${this.selectedYear()}.xlsx`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: () => alert('Failed to download Excel spreadsheet.')
+    });
+  }
+
+  openImportModal(): void {
+    this.showImportModal.set(true);
+    this.resetImportFile();
+  }
+
+  closeImportModal(): void {
+    this.showImportModal.set(false);
+    this.resetImportFile();
+  }
+
+  resetImportFile(): void {
+    this.parsedPreview.set(null);
+    this.parseError.set(null);
+    this.pdfParsing.set(false);
+    this.pdfImporting.set(false);
+    this.isDraggingOver.set(false);
+    this.replaceExisting.set(true);
+  }
+
+  onDragOver(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDraggingOver.set(true);
+  }
+
+  onDragLeave(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDraggingOver.set(false);
+  }
+
+  onFileDropped(event: DragEvent): void {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDraggingOver.set(false);
+    if (event.dataTransfer?.files && event.dataTransfer.files.length > 0) {
+      this.handleSelectedFile(event.dataTransfer.files[0]);
+    }
+  }
+
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (input.files && input.files.length > 0) {
+      this.handleSelectedFile(input.files[0]);
+      input.value = ''; // reset so same file can be selected again
+    }
+  }
+
+  private handleSelectedFile(file: File): void {
+    if (!file.name.toLowerCase().endsWith('.pdf')) {
+      this.parseError.set('Please select a valid official EPFO PDF file (.pdf).');
+      return;
+    }
+
+    this.parseError.set(null);
+    this.pdfParsing.set(true);
+
+    this.epfoService.uploadPassbookPdf(file).subscribe({
+      next: (preview) => {
+        this.pdfParsing.set(false);
+        this.parsedPreview.set(preview);
+        this.themeService.playSuccessSound();
+      },
+      error: (err) => {
+        this.pdfParsing.set(false);
+        this.parseError.set(err?.error?.message || 'Could not parse the EPFO Passbook PDF. Please ensure it is an official passbook downloaded from unifiedportal-mem.epfindia.gov.in');
+      }
+    });
+  }
+
+  commitImport(): void {
+    const preview = this.parsedPreview();
+    if (!preview || preview.monthlyEntries.length === 0) return;
+
+    this.pdfImporting.set(true);
+    this.epfoService.commitPassbookImport({
+      entries: preview.monthlyEntries,
+      replaceExistingYear: this.replaceExisting()
+    }).subscribe({
+      next: (res) => {
+        this.pdfImporting.set(false);
+        this.themeService.playSuccessSound();
+        this.entries.set(res.entries);
+        this.summary.set(res.summary);
+        this.availableYears.set(res.availableYears);
+        this.allTimeEpfBalance.set(res.allTimeEpfBalance);
+        this.allTimePensionBalance.set(res.allTimePensionBalance);
+        this.allTimeEmployeeBalance.set(res.allTimeEmployeeBalance ?? 0);
+        this.allTimeEmployerBalance.set(res.allTimeEmployerBalance ?? 0);
+
+        // Auto select the imported year
+        const importedYear = preview.monthlyEntries[0]?.month
+          ? new Date(preview.monthlyEntries[0].month).getFullYear()
+          : res.summary.year;
+
+        this.selectedYear.set(importedYear);
+        this.closeImportModal();
+        alert(`Successfully imported ${preview.monthlyEntries.length} EPFO monthly records for ${preview.financialYear}!`);
+      },
+      error: (err) => {
+        this.pdfImporting.set(false);
+        alert(err?.error?.message || 'Failed to save imported EPFO records.');
+      }
+    });
+  }
 
   readonly epfForm = this.fb.group({
     month: ['', [Validators.required]],
@@ -781,6 +2419,8 @@ export class EpfoComponent implements OnInit {
         this.selectedYear.set(res.summary.year);
         this.allTimeEpfBalance.set(res.allTimeEpfBalance);
         this.allTimePensionBalance.set(res.allTimePensionBalance);
+        this.allTimeEmployeeBalance.set(res.allTimeEmployeeBalance ?? 0);
+        this.allTimeEmployerBalance.set(res.allTimeEmployerBalance ?? 0);
         this.loading.set(false);
       },
       error: () => {
@@ -863,11 +2503,14 @@ export class EpfoComponent implements OnInit {
 
     action$.subscribe({
       next: (res) => {
+        this.themeService.playSuccessSound();
         this.entries.set(res.entries);
         this.summary.set(res.summary);
         this.availableYears.set(res.availableYears);
         this.allTimeEpfBalance.set(res.allTimeEpfBalance);
         this.allTimePensionBalance.set(res.allTimePensionBalance);
+        this.allTimeEmployeeBalance.set(res.allTimeEmployeeBalance ?? 0);
+        this.allTimeEmployerBalance.set(res.allTimeEmployerBalance ?? 0);
         this.submitting.set(false);
         this.closeModal();
       },
@@ -879,9 +2522,15 @@ export class EpfoComponent implements OnInit {
   }
 
   confirmDelete(entry: EpfEntry): void {
-    if (confirm(`Are you sure you want to delete the EPF entry for ${entry.monthLabel}?`)) {
+    if (!this.deletionPermissionsService.canDelete('epfo')) {
+      alert('Deletion is disabled for EPFO in Settings. Enable it in Settings > Deletion Controls to delete this entry.');
+      return;
+    }
+
+    if (confirm(`Are you sure you want to delete the EPF entry for ${entry.monthLabel}? It will be moved to the Recycle Bin.`)) {
       this.epfoService.deleteEpfEntry(entry.id).subscribe({
         next: () => {
+          this.themeService.playDeleteSound();
           this.loadData();
         }
       });

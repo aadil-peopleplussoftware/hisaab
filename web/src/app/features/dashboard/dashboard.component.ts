@@ -2,29 +2,41 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { DashboardService } from './services/dashboard.service';
+import { DashboardService, PeriodFilterParams } from './services/dashboard.service';
 import { DashboardResponse, MonthlyTrend } from './models/dashboard.model';
 import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
 import { StatCardComponent } from '../../shared/components/stat-card/stat-card.component';
-import { MonthPickerComponent } from '../../shared/components/month-picker/month-picker.component';
+import { PeriodFilterComponent } from '../../shared/components/period-filter/period-filter.component';
+import { RoleRightsService } from '../../core/services/role-rights.service';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink, InrCurrencyPipe, StatCardComponent, MonthPickerComponent],
+  imports: [CommonModule, FormsModule, RouterLink, InrCurrencyPipe, StatCardComponent, PeriodFilterComponent],
   template: `
     <div class="dashboard-page">
-      <!-- Top Header & Month Navigator -->
-      <div class="dashboard-header">
-        <div class="title-section">
-          <h1 class="page-title">Financial Dashboard</h1>
-          <p class="subtitle">Complete personal balance sheet and monthly cashflow</p>
+      <!-- Dashboard Header (Google Console Typography, Authentic Hisaab Content) -->
+      <header class="console-header no-print">
+        <div class="console-header-left">
+          <h1 class="console-title">Financial Dashboard</h1>
+          <p class="console-subtitle">
+            Complete personal balance sheet, net worth tracking, and monthly cashflow.
+          </p>
         </div>
 
         <div class="header-picker-wrap">
-          <app-month-picker [initialMonth]="selectedMonth()" (monthChange)="onMonthPickerChange($event)" />
+          @if (roleRightsService.canView('Reports')) {
+            <a routerLink="/analytics" class="btn-analytics-shortcut" title="Open Module KPI Analytics Studio">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M3 3v18h18" />
+                <path d="m19 9-5 5-4-4-3 3" />
+              </svg>
+              <span>KPI Analytics Studio →</span>
+            </a>
+          }
+          <app-period-filter [initialFilter]="periodFilter()" (filterChange)="onPeriodFilterChange($event)" />
         </div>
-      </div>
+      </header>
 
       <!-- Loading State -->
       @if (loading()) {
@@ -43,6 +55,7 @@ import { MonthPickerComponent } from '../../shared/components/month-picker/month
       }
 
       @if (!loading() && dashboardData(); as d) {
+
         <!-- HERO CARD: Net Worth Balance Sheet -->
         <div class="net-worth-hero-card">
           <div class="hero-header">
@@ -65,27 +78,107 @@ import { MonthPickerComponent } from '../../shared/components/month-picker/month
 
           <!-- Asset Breakdown Pill Grid -->
           <div class="balance-pills-grid">
-            <div class="balance-pill">
-              <span class="pill-title">Liquid Cash</span>
-              <span class="pill-amount" [class.negative]="d.netWorth.liquidCash < 0">
-                {{ d.netWorth.formattedLiquidCash }}
-              </span>
+            @if (roleRightsService.canView('Transactions')) {
+              <div class="balance-pill">
+                <span class="pill-title">Liquid Cash</span>
+                <span class="pill-amount" [class.negative]="d.netWorth.liquidCash < 0">
+                  {{ d.netWorth.formattedLiquidCash }}
+                </span>
+              </div>
+            }
+            @if (roleRightsService.canView('Investments')) {
+              <div class="balance-pill">
+                <span class="pill-title">Investments</span>
+                <span class="pill-amount">{{ d.netWorth.formattedInvestmentsValue }}</span>
+              </div>
+            }
+            @if (roleRightsService.canView('Epfo')) {
+              <div class="balance-pill">
+                <span class="pill-title">EPF Balance</span>
+                <span class="pill-amount">{{ d.netWorth.formattedEpfBalance }}</span>
+              </div>
+            }
+            @if (roleRightsService.canView('Loans')) {
+              <div class="balance-pill">
+                <span class="pill-title">Loans Receivable</span>
+                <span class="pill-amount text-success">{{ d.netWorth.formattedLoansReceivable }}</span>
+              </div>
+              <div class="balance-pill">
+                <span class="pill-title">Loans Payable</span>
+                <span class="pill-amount text-danger">{{ d.netWorth.formattedLoansPayable }}</span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- FINANCIAL HEALTH & WEALTH INTELLIGENCE SUITE -->
+        <div class="intelligence-card">
+          <div class="intel-header">
+            <div class="intel-title-wrap">
+              <div class="intel-icon-box">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                </svg>
+              </div>
+              <div>
+                <h3>Financial Health & Wealth Intelligence</h3>
+                <p class="intel-subtitle">Real-time solvency analysis, runway buffer, and milestone trajectory</p>
+              </div>
             </div>
-            <div class="balance-pill">
-              <span class="pill-title">Investments</span>
-              <span class="pill-amount">{{ d.netWorth.formattedInvestmentsValue }}</span>
+            <div class="health-score-badge" [class]="getHealthScore(d).colorClass">
+              <span class="health-num">{{ getHealthScore(d).score }}/100</span>
+              <span class="health-tag">{{ getHealthScore(d).label }}</span>
             </div>
-            <div class="balance-pill">
-              <span class="pill-title">EPF Balance</span>
-              <span class="pill-amount">{{ d.netWorth.formattedEpfBalance }}</span>
+          </div>
+
+          <div class="intel-grid">
+            <!-- Metric 1: Emergency Runway -->
+            <div class="intel-metric-box">
+              <div class="metric-top">
+                <span class="metric-title">Emergency Fund Runway</span>
+                <span class="status-chip" [class.chip-safe]="getEmergencyRunway(d) >= 6" [class.chip-mid]="getEmergencyRunway(d) >= 3 && getEmergencyRunway(d) < 6" [class.chip-low]="getEmergencyRunway(d) < 3">
+                  {{ getEmergencyRunway(d) >= 6 ? 'SAFE BUFFER' : (getEmergencyRunway(d) >= 3 ? 'MODERATE' : 'LOW BUFFER') }}
+                </span>
+              </div>
+              <div class="metric-val-row">
+                <span class="metric-big-num">{{ getEmergencyRunway(d) }}</span>
+                <span class="metric-unit">Months</span>
+              </div>
+              <p class="metric-explainer">
+                Liquid cash reserves can sustain living expenses for <strong>{{ getEmergencyRunway(d) }} months</strong> without income.
+              </p>
             </div>
-            <div class="balance-pill">
-              <span class="pill-title">Loans Receivable</span>
-              <span class="pill-amount text-success">{{ d.netWorth.formattedLoansReceivable }}</span>
+
+            <!-- Metric 2: Solvency & Debt-to-Asset -->
+            <div class="intel-metric-box">
+              <div class="metric-top">
+                <span class="metric-title">Debt-to-Asset Leverage</span>
+                <span class="status-chip" [class.chip-safe]="getDebtToAssetRatio(d) < 20" [class.chip-mid]="getDebtToAssetRatio(d) >= 20 && getDebtToAssetRatio(d) <= 40" [class.chip-low]="getDebtToAssetRatio(d) > 40">
+                  {{ getDebtToAssetRatio(d) < 20 ? 'LOW LEVERAGE' : (getDebtToAssetRatio(d) <= 40 ? 'CONTROLLED' : 'HIGH DEBT') }}
+                </span>
+              </div>
+              <div class="metric-val-row">
+                <span class="metric-big-num">{{ getDebtToAssetRatio(d) }}%</span>
+                <span class="metric-unit">of Total Assets</span>
+              </div>
+              <p class="metric-explainer">
+                Total liabilities ({{ d.netWorth.formattedTotalLiabilities }}) represent <strong>{{ getDebtToAssetRatio(d) }}%</strong> of balance sheet assets.
+              </p>
             </div>
-            <div class="balance-pill">
-              <span class="pill-title">Loans Payable</span>
-              <span class="pill-amount text-danger">{{ d.netWorth.formattedLoansPayable }}</span>
+
+            <!-- Metric 3: Wealth Milestone Tracker -->
+            <div class="intel-metric-box milestone-box">
+              <div class="metric-top">
+                <span class="metric-title">Target Milestone ({{ getMilestoneData(d.netWorth.totalNetWorth).label }})</span>
+                <span class="milestone-pct">{{ getMilestoneData(d.netWorth.totalNetWorth).progress }}%</span>
+              </div>
+              <div class="milestone-track">
+                <div class="milestone-fill" [style.width.%]="getMilestoneData(d.netWorth.totalNetWorth).progress"></div>
+              </div>
+              <div class="milestone-footer">
+                <span>Current: <strong>{{ d.netWorth.formattedTotalNetWorth }}</strong></span>
+                <span>Remaining: <strong>{{ getMilestoneData(d.netWorth.totalNetWorth).remaining | inrCurrency }}</strong></span>
+              </div>
             </div>
           </div>
         </div>
@@ -93,19 +186,19 @@ import { MonthPickerComponent } from '../../shared/components/month-picker/month
         <!-- Monthly KPI Cards Grid -->
         <div class="kpi-grid">
           <app-stat-card
-            title="Monthly Income"
+            title="Total Income"
             [amount]="d.monthlyOverview.totalIncome"
-            subtitle="Earned in {{ formatMonthDisplay(selectedMonth()) }}"
+            subtitle="Recorded in {{ d.selectedMonth }}"
             variant="income"
           />
           <app-stat-card
-            title="Monthly Expenses"
+            title="Total Expenses"
             [amount]="d.monthlyOverview.totalExpense"
             subtitle="{{ d.monthlyOverview.transactionCount }} transactions recorded"
             variant="expense"
           />
           <app-stat-card
-            title="Monthly Net Savings"
+            title="Net Savings"
             [amount]="d.monthlyOverview.netSavings"
             subtitle="{{ d.monthlyOverview.savingsRatePercentage }}% savings rate"
             [variant]="d.monthlyOverview.netSavings >= 0 ? 'income' : 'expense'"
@@ -115,10 +208,18 @@ import { MonthPickerComponent } from '../../shared/components/month-picker/month
               <h4>Quick Actions</h4>
             </div>
             <div class="action-buttons-group">
-              <a routerLink="/transactions" class="btn-action">+ Transaction</a>
-              <a routerLink="/loans" class="btn-action">+ Loan</a>
-              <a routerLink="/investments" class="btn-action">+ Investment</a>
-              <a routerLink="/epfo" class="btn-action">+ EPFO</a>
+              @if (roleRightsService.canCreate('Transactions')) {
+                <a routerLink="/transactions" class="btn-action">+ Transaction</a>
+              }
+              @if (roleRightsService.canCreate('Loans')) {
+                <a routerLink="/loans" class="btn-action">+ Loan</a>
+              }
+              @if (roleRightsService.canCreate('Investments')) {
+                <a routerLink="/investments" class="btn-action">+ Investment</a>
+              }
+              @if (roleRightsService.canCreate('Epfo')) {
+                <a routerLink="/epfo" class="btn-action">+ EPFO</a>
+              }
             </div>
           </div>
         </div>
@@ -204,101 +305,109 @@ import { MonthPickerComponent } from '../../shared/components/month-picker/month
           </div>
 
           <!-- Upcoming Loan Dues Card -->
-          <div class="dues-card">
-            <div class="card-header">
-              <h3>Active Loans & Upcoming Dues</h3>
-              <a routerLink="/loans" class="link-view-all">View All</a>
-            </div>
-
-            @if (d.upcomingLoanDues.length === 0) {
-              <div class="empty-mini">
-                <p>No active loan dues or outstanding balances.</p>
-                <a routerLink="/loans" class="link-btn">Create Loan</a>
+          @if (roleRightsService.canView('Loans')) {
+            <div class="dues-card">
+              <div class="card-header">
+                <h3>Active Loans & Upcoming Dues</h3>
+                <a routerLink="/loans" class="link-view-all">View All</a>
               </div>
-            } @else {
-              <div class="dues-list">
-                @for (loan of d.upcomingLoanDues; track loan.id) {
-                  <div class="due-item">
-                    <div class="due-main">
-                      <div class="due-title-row">
-                        <span class="due-name">{{ loan.name }}</span>
-                        <span
-                          class="due-dir-badge"
-                          [class.given]="loan.direction === 1"
-                          [class.taken]="loan.direction === 2"
-                        >
-                          {{ loan.direction === 1 ? 'Receivable (Given)' : 'Payable (Taken)' }}
-                        </span>
-                      </div>
-                      <div class="due-sub">
-                        <span>Counterparty: <strong>{{ loan.counterparty }}</strong></span>
-                        @if (loan.dueDate) {
-                          <span class="due-date-text">
-                            Due: {{ loan.dueDate | date:'mediumDate' }}
-                            @if (loan.isOverdue) {
-                              <span class="badge-overdue">OVERDUE</span>
-                            } @else if (loan.daysUntilDue !== null && loan.daysUntilDue <= 7) {
-                              <span class="badge-due-soon">Due in {{ loan.daysUntilDue }}d</span>
-                            }
-                          </span>
-                        }
-                      </div>
-                    </div>
-                    <div class="due-amount-box">
-                      <span class="due-amount">{{ loan.formattedOutstandingBalance }}</span>
-                      <a [routerLink]="['/loans', loan.id]" class="btn-due-view">Ledger →</a>
-                    </div>
-                  </div>
-                }
-              </div>
-            }
-          </div>
-        </div>
 
-        <!-- Recent Transactions Card -->
-        <div class="recent-card">
-          <div class="card-header">
-            <h3>Recent Transactions</h3>
-            <a routerLink="/transactions" class="link-view-all">All Transactions</a>
-          </div>
-
-          @if (d.recentTransactions.length === 0) {
-            <div class="empty-mini">
-              <p>No transactions found. Start recording income and expenses to track your financial health.</p>
-              <a routerLink="/transactions" class="link-btn">+ Add Transaction</a>
-            </div>
-          } @else {
-            <div class="recent-table-wrapper">
-              <table class="recent-table">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Category</th>
-                    <th>Note</th>
-                    <th class="text-right">Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (tx of d.recentTransactions; track tx.id) {
-                    <tr>
-                      <td class="date-cell">{{ tx.transactionDate | date:'mediumDate' }}</td>
-                      <td>
-                        <span class="cat-pill">
-                          <span class="cat-dot" [style.background-color]="tx.categoryColor"></span>
-                          {{ tx.categoryName }}
-                        </span>
-                      </td>
-                      <td class="note-cell">{{ tx.note || '—' }}</td>
-                      <td class="text-right amount-cell" [class.income]="tx.type === 1" [class.expense]="tx.type === 2">
-                        {{ tx.type === 1 ? '+' : '-' }}{{ tx.formattedAmount }}
-                      </td>
-                    </tr>
+              @if (d.upcomingLoanDues.length === 0) {
+                <div class="empty-mini">
+                  <p>No active loan dues or outstanding balances.</p>
+                  @if (roleRightsService.canCreate('Loans')) {
+                    <a routerLink="/loans" class="link-btn">Create Loan</a>
                   }
-                </tbody>
-              </table>
+                </div>
+              } @else {
+                <div class="dues-list">
+                  @for (loan of d.upcomingLoanDues; track loan.id) {
+                    <div class="due-item">
+                      <div class="due-main">
+                        <div class="due-title-row">
+                          <span class="due-name">{{ loan.name }}</span>
+                          <span
+                            class="due-dir-badge"
+                            [class.given]="loan.direction === 1"
+                            [class.taken]="loan.direction === 2"
+                          >
+                            {{ loan.direction === 1 ? 'Receivable (Given)' : 'Payable (Taken)' }}
+                          </span>
+                        </div>
+                        <div class="due-sub">
+                          <span>Counterparty: <strong>{{ loan.counterparty }}</strong></span>
+                          @if (loan.dueDate) {
+                            <span class="due-date-text">
+                              Due: {{ loan.dueDate | date:'mediumDate' }}
+                              @if (loan.isOverdue) {
+                                <span class="badge-overdue">OVERDUE</span>
+                              } @else if (loan.daysUntilDue !== null && loan.daysUntilDue <= 7) {
+                                <span class="badge-due-soon">Due in {{ loan.daysUntilDue }}d</span>
+                              }
+                            </span>
+                          }
+                        </div>
+                      </div>
+                      <div class="due-amount-box">
+                        <span class="due-amount">{{ loan.formattedOutstandingBalance }}</span>
+                        <a [routerLink]="['/loans', loan.id]" class="btn-due-view">Ledger →</a>
+                      </div>
+                    </div>
+                  }
+                </div>
+              }
             </div>
           }
         </div>
+
+        <!-- Recent Transactions Card -->
+        @if (roleRightsService.canView('Transactions')) {
+          <div class="recent-card">
+            <div class="card-header">
+              <h3>Recent Transactions</h3>
+              <a routerLink="/transactions" class="link-view-all">All Transactions</a>
+            </div>
+
+            @if (d.recentTransactions.length === 0) {
+              <div class="empty-mini">
+                <p>No transactions found. Start recording income and expenses to track your financial health.</p>
+                @if (roleRightsService.canCreate('Transactions')) {
+                  <a routerLink="/transactions" class="link-btn">+ Add Transaction</a>
+                }
+              </div>
+            } @else {
+              <div class="recent-table-wrapper">
+                <table class="recent-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Category</th>
+                      <th>Note</th>
+                      <th class="text-right">Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (tx of d.recentTransactions; track tx.id) {
+                      <tr>
+                        <td class="date-cell">{{ tx.transactionDate | date:'mediumDate' }}</td>
+                        <td>
+                          <span class="cat-pill">
+                            <span class="cat-dot" [style.background-color]="tx.categoryColor"></span>
+                            {{ tx.categoryName }}
+                          </span>
+                        </td>
+                        <td class="note-cell">{{ tx.note || '—' }}</td>
+                        <td class="text-right amount-cell" [class.income]="tx.type === 1" [class.expense]="tx.type === 2">
+                          {{ tx.type === 1 ? '+' : '-' }}{{ tx.formattedAmount }}
+                        </td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          </div>
+        }
       }
     </div>
   `,
@@ -308,6 +417,63 @@ import { MonthPickerComponent } from '../../shared/components/month-picker/month
       flex-direction: column;
       gap: 1.5rem;
       padding-bottom: 3rem;
+      font-family: 'Google Sans', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    /* Google Play Console Home Header (Screenshot 4) */
+    /* Console / Dashboard Header */
+    .console-header {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+
+      @media (min-width: 768px) {
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: space-between;
+      }
+    }
+
+    .console-title {
+      font-size: 1.625rem; /* 26px */
+      font-weight: 400;
+      color: var(--color-text-main);
+      margin: 0 0 0.2rem 0;
+      letter-spacing: -0.01em;
+    }
+
+    .console-subtitle {
+      font-size: 0.84rem;
+      color: var(--color-text-muted);
+      margin: 0;
+    }
+
+    .header-picker-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-analytics-shortcut {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      height: 38px;
+      padding: 0 1rem;
+      border-radius: var(--radius-pill, 9999px);
+      background: var(--color-bg-card, #ffffff);
+      color: var(--color-accent-fg, #0b57d0);
+      border: 1px solid var(--color-border, #747775);
+      font-size: 0.84rem;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.15s ease;
+
+      &:hover {
+        background: var(--color-bg-hover, #f0f4f9);
+        border-color: var(--color-accent-fg, #0b57d0);
+      }
     }
 
     .dashboard-header {
@@ -528,6 +694,216 @@ import { MonthPickerComponent } from '../../shared/components/month-picker/month
       }
       .text-danger {
         color: #fca5a5;
+      }
+    }
+
+    /* Financial Health & Intelligence Cockpit */
+    .intelligence-card {
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1.5rem;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .intel-header {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      justify-content: space-between;
+      margin-bottom: 1.25rem;
+
+      @media (min-width: 640px) {
+        flex-direction: row;
+        align-items: center;
+      }
+    }
+
+    .intel-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+
+      h3 {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--color-text-main);
+      }
+
+      .intel-subtitle {
+        margin: 0.15rem 0 0;
+        font-size: 0.8rem;
+        color: var(--color-text-muted);
+      }
+    }
+
+    .intel-icon-box {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-md);
+      background: var(--color-bg-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--color-primary);
+    }
+
+    .health-score-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      font-size: 0.8125rem;
+      font-weight: 700;
+
+      &.health-prime {
+        background: rgba(16, 185, 129, 0.12);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+      }
+
+      &.health-good {
+        background: rgba(59, 130, 246, 0.12);
+        color: #3b82f6;
+        border: 1px solid rgba(59, 130, 246, 0.3);
+      }
+
+      &.health-warning {
+        background: rgba(245, 158, 11, 0.12);
+        color: #f59e0b;
+        border: 1px solid rgba(245, 158, 11, 0.3);
+      }
+
+      .health-num {
+        font-family: var(--font-mono, monospace);
+        font-weight: 800;
+      }
+    }
+
+    .intel-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+
+      @media (min-width: 768px) {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+
+    .intel-metric-box {
+      background: var(--color-canvas-subtle, var(--color-bg-subtle));
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .metric-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .metric-title {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--color-text-muted);
+    }
+
+    .status-chip {
+      font-size: 0.6875rem;
+      font-weight: 800;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      letter-spacing: 0.03em;
+
+      &.chip-safe {
+        background: rgba(16, 185, 129, 0.15);
+        color: #10b981;
+      }
+      &.chip-mid {
+        background: rgba(245, 158, 11, 0.15);
+        color: #f59e0b;
+      }
+      &.chip-low {
+        background: rgba(239, 68, 68, 0.15);
+        color: #ef4444;
+      }
+    }
+
+    .metric-val-row {
+      display: flex;
+      align-items: baseline;
+      gap: 0.4rem;
+    }
+
+    .metric-big-num {
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: var(--color-text-main);
+      font-family: var(--font-mono, monospace);
+      letter-spacing: -0.02em;
+    }
+
+    .metric-unit {
+      font-size: 0.8125rem;
+      color: var(--color-text-muted);
+      font-weight: 600;
+    }
+
+    .metric-explainer {
+      margin: 0;
+      font-size: 0.775rem;
+      color: var(--color-text-muted);
+      line-height: 1.4;
+
+      strong {
+        color: var(--color-text-main);
+      }
+    }
+
+    .milestone-box {
+      justify-content: space-between;
+    }
+
+    .milestone-pct {
+      font-size: 0.75rem;
+      font-weight: 800;
+      font-family: var(--font-mono, monospace);
+      color: var(--color-primary);
+    }
+
+    .milestone-track {
+      height: 8px;
+      background: var(--color-border);
+      border-radius: 9999px;
+      overflow: hidden;
+      margin: 0.25rem 0;
+    }
+
+    .milestone-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--color-primary), #10b981);
+      border-radius: 9999px;
+      transition: width 0.4s ease;
+    }
+
+    .milestone-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.75rem;
+      color: var(--color-text-muted);
+
+      strong {
+        color: var(--color-text-main);
       }
     }
 
@@ -1064,8 +1440,13 @@ import { MonthPickerComponent } from '../../shared/components/month-picker/month
 })
 export class DashboardComponent implements OnInit {
   private readonly dashboardService = inject(DashboardService);
+  public readonly roleRightsService = inject(RoleRightsService);
 
   readonly selectedMonth = signal<string>(this.getCurrentMonthString());
+  readonly periodFilter = signal<PeriodFilterParams>({
+    periodType: 'month',
+    month: this.getCurrentMonthString()
+  });
   readonly dashboardData = signal<DashboardResponse | null>(null);
   readonly loading = signal<boolean>(false);
   readonly error = signal<string | null>(null);
@@ -1078,7 +1459,7 @@ export class DashboardComponent implements OnInit {
     this.loading.set(true);
     this.error.set(null);
 
-    this.dashboardService.getDashboard(this.selectedMonth(), 6).subscribe({
+    this.dashboardService.getDashboard(this.periodFilter(), 6).subscribe({
       next: (data) => {
         this.dashboardData.set(data);
         this.loading.set(false);
@@ -1090,18 +1471,29 @@ export class DashboardComponent implements OnInit {
     });
   }
 
+  onPeriodFilterChange(filter: PeriodFilterParams): void {
+    this.periodFilter.set(filter);
+    if (filter.month) {
+      this.selectedMonth.set(filter.month);
+    }
+    this.loadDashboard();
+  }
+
   changeMonth(delta: number): void {
     const [year, month] = this.selectedMonth().split('-').map(Number);
     const date = new Date(year, month - 1 + delta, 1);
     const yStr = date.getFullYear().toString();
     const mStr = (date.getMonth() + 1).toString().padStart(2, '0');
-    this.selectedMonth.set(`${yStr}-${mStr}`);
+    const newMonth = `${yStr}-${mStr}`;
+    this.selectedMonth.set(newMonth);
+    this.periodFilter.set({ periodType: 'month', month: newMonth });
     this.loadDashboard();
   }
 
   onMonthPickerChange(newMonth: string): void {
     if (newMonth && newMonth !== this.selectedMonth()) {
       this.selectedMonth.set(newMonth);
+      this.periodFilter.set({ periodType: 'month', month: newMonth });
       this.loadDashboard();
     }
   }
@@ -1110,6 +1502,7 @@ export class DashboardComponent implements OnInit {
     const cur = this.getCurrentMonthString();
     if (this.selectedMonth() !== cur) {
       this.selectedMonth.set(cur);
+      this.periodFilter.set({ periodType: 'month', month: cur });
       this.loadDashboard();
     }
   }
@@ -1131,6 +1524,64 @@ export class DashboardComponent implements OnInit {
     if (maxVal <= 0 || amount <= 0) return 4;
     const pct = Math.round((amount / maxVal) * 100);
     return Math.max(pct, 4); // minimum 4% height for visibility
+  }
+
+  getEmergencyRunway(d: DashboardResponse): number {
+    const monthlyExpense = d.monthlyOverview.totalExpense;
+    if (monthlyExpense <= 0) return 12;
+    const liquidCash = d.netWorth.liquidCash;
+    return liquidCash <= 0 ? 0 : Math.round((liquidCash / monthlyExpense) * 10) / 10;
+  }
+
+  getDebtToAssetRatio(d: DashboardResponse): number {
+    const assets = d.netWorth.totalAssets;
+    if (assets <= 0) return 0;
+    return Math.round((d.netWorth.totalLiabilities / assets) * 1000) / 10;
+  }
+
+  getMilestoneData(netWorth: number): { target: number; label: string; progress: number; remaining: number } {
+    let target = 1000000;
+    let label = '₹10 Lakh';
+    if (netWorth >= 10000000) {
+      target = 20000000;
+      label = '₹2 Crore';
+    } else if (netWorth >= 5000000) {
+      target = 10000000;
+      label = '₹1 Crore';
+    } else if (netWorth >= 2500000) {
+      target = 5000000;
+      label = '₹50 Lakh';
+    } else if (netWorth >= 1000000) {
+      target = 2500000;
+      label = '₹25 Lakh';
+    }
+    const current = Math.max(0, netWorth);
+    const progress = Math.min(100, Math.round((current / target) * 1000) / 10);
+    const remaining = Math.max(0, target - current);
+    return { target, label, progress, remaining };
+  }
+
+  getHealthScore(d: DashboardResponse): { score: number; label: string; colorClass: string } {
+    const savingsRate = Math.min(100, Math.max(0, d.monthlyOverview.savingsRatePercentage));
+    const savingsPts = (savingsRate / 50) * 40;
+
+    const runway = this.getEmergencyRunway(d);
+    const runwayPts = Math.min(35, (runway / 6) * 35);
+
+    const debtRatio = this.getDebtToAssetRatio(d);
+    const debtPts = Math.max(0, 25 - (debtRatio / 40) * 25);
+
+    const total = Math.round(Math.min(100, Math.max(10, savingsPts + runwayPts + debtPts)));
+    let label = 'Healthy Wealth Pace';
+    let colorClass = 'health-good';
+    if (total >= 80) {
+      label = 'Prime Health';
+      colorClass = 'health-prime';
+    } else if (total < 50) {
+      label = 'Attention Needed';
+      colorClass = 'health-warning';
+    }
+    return { score: total, label, colorClass };
   }
 
   private getCurrentMonthString(): string {

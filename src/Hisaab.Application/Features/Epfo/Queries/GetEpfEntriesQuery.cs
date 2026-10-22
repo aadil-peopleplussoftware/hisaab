@@ -35,11 +35,17 @@ public class GetEpfEntriesQueryHandler : IRequestHandler<GetEpfEntriesQuery, Epf
         var allEntries = await _context.EpfEntries
             .Where(e => e.UserId == currentUserId)
             .OrderBy(e => e.Month)
+            .ThenByDescending(e => e.EmployeeShare)
+            .ThenBy(e => e.CreatedAtUtc)
             .ToListAsync(cancellationToken);
 
         // Compute running balances chronologically
         decimal runningEpf = 0m;
         decimal runningPension = 0m;
+        decimal runningEe = 0m;
+        decimal runningEr = 0m;
+        decimal yearEndEe = 0m;
+        decimal yearEndEr = 0m;
         var computedEntries = new List<EpfEntryDto>();
 
         foreach (var entry in allEntries)
@@ -48,7 +54,54 @@ public class GetEpfEntriesQueryHandler : IRequestHandler<GetEpfEntriesQuery, Epf
             runningEpf += netInflow;
             runningPension += entry.PensionShare;
 
-            var monthLabel = entry.Month.ToString("MMM yyyy", CultureInfo.InvariantCulture);
+            runningEe += entry.EmployeeShare;
+            runningEr += entry.EmployerShare;
+
+            if (entry.Interest > 0)
+            {
+                var totalShare = runningEe + runningEr;
+                if (totalShare > 0)
+                {
+                    var eeRatio = runningEe / totalShare;
+                    var eeInt = Math.Round(entry.Interest * eeRatio, 2);
+                    var erInt = entry.Interest - eeInt;
+                    runningEe += eeInt;
+                    runningEr += erInt;
+                }
+                else
+                {
+                    var halfInt = Math.Round(entry.Interest / 2m, 2);
+                    runningEe += halfInt;
+                    runningEr += (entry.Interest - halfInt);
+                }
+            }
+
+            if (entry.Withdrawal > 0)
+            {
+                if (runningEe >= entry.Withdrawal)
+                {
+                    runningEe -= entry.Withdrawal;
+                }
+                else
+                {
+                    var rem = entry.Withdrawal - runningEe;
+                    runningEe = 0m;
+                    runningEr = Math.Max(0m, runningEr - rem);
+                }
+            }
+
+            if (entry.Month.Year <= targetYear)
+            {
+                yearEndEe = runningEe;
+                yearEndEr = runningEr;
+            }
+
+            var baseMonth = entry.Month.ToString("MMM yyyy", CultureInfo.InvariantCulture);
+            var monthLabel = entry.Withdrawal > 0 && entry.EmployeeShare == 0 && entry.EmployerShare == 0
+                ? $"{baseMonth} (Claim)"
+                : (entry.Interest > 0 && entry.EmployeeShare == 0 && entry.EmployerShare == 0
+                    ? $"{baseMonth} (Interest)"
+                    : baseMonth);
 
             computedEntries.Add(new EpfEntryDto(
                 entry.Id,
@@ -101,6 +154,42 @@ public class GetEpfEntriesQueryHandler : IRequestHandler<GetEpfEntriesQuery, Epf
 
         var closingBalance = openingBalance + totalEmployee + totalEmployer + totalInterest - totalWithdrawals;
 
+        // Reconcile all-time EE + ER with runningEpf
+        if (runningEpf > 0)
+        {
+            if (runningEe < 0) runningEe = 0m;
+            if (runningEr < 0) runningEr = 0m;
+            runningEr = runningEpf - runningEe;
+            if (runningEr < 0)
+            {
+                runningEr = 0m;
+                runningEe = runningEpf;
+            }
+        }
+        else
+        {
+            runningEe = 0m;
+            runningEr = 0m;
+        }
+
+        // Reconcile year-end EE + ER with closingBalance
+        if (closingBalance > 0)
+        {
+            if (yearEndEe < 0) yearEndEe = 0m;
+            if (yearEndEr < 0) yearEndEr = 0m;
+            yearEndEr = closingBalance - yearEndEe;
+            if (yearEndEr < 0)
+            {
+                yearEndEr = 0m;
+                yearEndEe = closingBalance;
+            }
+        }
+        else
+        {
+            yearEndEe = 0m;
+            yearEndEr = 0m;
+        }
+
         var totalPensionBalance = computedEntries
             .Where(e => e.Month.Year <= targetYear)
             .OrderByDescending(e => e.Month)
@@ -125,7 +214,11 @@ public class GetEpfEntriesQueryHandler : IRequestHandler<GetEpfEntriesQuery, Epf
             new Money(closingBalance).ToIndianFormat(),
             totalPensionBalance,
             new Money(totalPensionBalance).ToIndianFormat(),
-            yearEntries.Count
+            yearEntries.Count,
+            yearEndEe,
+            new Money(yearEndEe).ToIndianFormat(),
+            yearEndEr,
+            new Money(yearEndEr).ToIndianFormat()
         );
 
         // Sort descending (latest month first) for the UI ledger display
@@ -138,7 +231,11 @@ public class GetEpfEntriesQueryHandler : IRequestHandler<GetEpfEntriesQuery, Epf
             runningEpf,
             new Money(runningEpf).ToIndianFormat(),
             runningPension,
-            new Money(runningPension).ToIndianFormat()
+            new Money(runningPension).ToIndianFormat(),
+            runningEe,
+            new Money(runningEe).ToIndianFormat(),
+            runningEr,
+            new Money(runningEr).ToIndianFormat()
         );
     }
 }

@@ -12,6 +12,7 @@ import {
 } from './models/investment.model';
 import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
 import { StatCardComponent } from '../../shared/components/stat-card/stat-card.component';
+import { ThemeService } from '../../core/services/theme.service';
 
 @Component({
   selector: 'app-investments',
@@ -27,6 +28,9 @@ import { StatCardComponent } from '../../shared/components/stat-card/stat-card.c
         </div>
 
         <div class="header-actions">
+          <button type="button" class="btn-market-ai-shortcut" (click)="goToMarketAi()">
+            ✨ AI Stock Market Hub & Screener →
+          </button>
           <button type="button" class="btn-primary" (click)="openCreateModal()">
             + Add Asset / Holding
           </button>
@@ -164,7 +168,12 @@ import { StatCardComponent } from '../../shared/components/stat-card/stat-card.c
       <!-- Empty State -->
       @if (!loading() && holdings().length === 0) {
         <div class="empty-card card">
-          <div class="empty-icon">📈</div>
+          <div class="empty-icon">
+            <svg viewBox="0 0 24 24" width="48" height="48" fill="none" stroke="currentColor" stroke-width="1.8">
+              <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
+              <polyline points="16 7 22 7 22 13"/>
+            </svg>
+          </div>
           <h3>No investment holdings found</h3>
           <p>Add your Mutual Funds, Stocks, Gold, FD, or PPF to track your net worth and returns.</p>
           <button type="button" class="btn-primary mt-4" (click)="openCreateModal()">
@@ -214,9 +223,12 @@ import { StatCardComponent } from '../../shared/components/stat-card/stat-card.c
                 }
               </div>
 
-              <div class="card-footer">
+              <div class="card-footer" (click)="$event.stopPropagation()">
                 <span class="text-xs text-muted">{{ h.transactionCount }} transactions</span>
-                <span class="view-link">View Details &rarr;</span>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span class="view-link" (click)="viewHolding(h.id)">View Details &rarr;</span>
+                  <button type="button" class="btn-sm btn-danger-icon" (click)="deleteHolding(h)" title="Delete Holding">🗑️</button>
+                </div>
               </div>
             </div>
           }
@@ -261,9 +273,14 @@ import { StatCardComponent } from '../../shared/components/stat-card/stat-card.c
                   </td>
                   <td class="text-right tabular-nums text-muted">{{ h.totalUnits > 0 ? h.totalUnits : '—' }}</td>
                   <td class="text-right" (click)="$event.stopPropagation()">
-                    <button type="button" class="btn-sm btn-outline" (click)="viewHolding(h.id)">
-                      View
-                    </button>
+                    <div style="display: inline-flex; gap: 6px; align-items: center;">
+                      <button type="button" class="btn-sm btn-outline" (click)="viewHolding(h.id)">
+                        View
+                      </button>
+                      <button type="button" class="btn-sm btn-danger-icon" (click)="deleteHolding(h)" title="Delete Holding">
+                        🗑️
+                      </button>
+                    </div>
                   </td>
                 </tr>
               }
@@ -427,6 +444,33 @@ import { StatCardComponent } from '../../shared/components/stat-card/stat-card.c
       margin: 0.25rem 0 0;
       font-size: 0.875rem;
       color: var(--color-text-muted);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-market-ai-shortcut {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.625rem 1.1rem;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, rgba(11, 87, 208, 0.12), rgba(99, 102, 241, 0.15));
+      color: #0b57d0;
+      border: 1px solid rgba(11, 87, 208, 0.35);
+      font-size: 0.875rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+
+      &:hover {
+        background: #0b57d0;
+        color: #ffffff;
+      }
     }
 
     .summary-grid {
@@ -831,6 +875,7 @@ export class InvestmentsComponent implements OnInit {
   private readonly investmentsService = inject(InvestmentsService);
   private readonly fb = inject(FormBuilder);
   private readonly router = inject(Router);
+  public readonly themeService = inject(ThemeService);
 
   readonly holdings = signal<Holding[]>([]);
   readonly summary = signal<PortfolioSummary | null>(null);
@@ -851,6 +896,24 @@ export class InvestmentsComponent implements OnInit {
     transactionDate: [new Date().toISOString().substring(0, 10)],
     note: ['']
   });
+
+  goToMarketAi(): void {
+    this.themeService.playClickSound();
+    this.router.navigate(['/market-ai']);
+  }
+
+  deleteHolding(h: Holding): void {
+    if (!confirm(`Are you sure you want to delete ${h.name}? This will move the holding and its transactions to the Recycle Bin.`)) return;
+    this.investmentsService.deleteHolding(h.id).subscribe({
+      next: () => {
+        this.themeService.playDeleteSound();
+        this.loadInvestments();
+      },
+      error: (err) => {
+        alert(err.error?.message || 'Failed to delete holding.');
+      }
+    });
+  }
 
   ngOnInit(): void {
     this.loadInvestments();
@@ -924,6 +987,7 @@ export class InvestmentsComponent implements OnInit {
 
     this.investmentsService.createHolding(payload).subscribe({
       next: (res) => {
+        this.themeService.playSuccessSound();
         this.submitting.set(false);
         this.closeCreateModal();
         this.router.navigate(['/investments', res.holding.id]);

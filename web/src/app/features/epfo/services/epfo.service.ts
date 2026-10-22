@@ -2,8 +2,10 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import {
+  CommitEpfoPassbookImportRequest,
   CreateEpfRequest,
   EpfResponse,
+  EpfoPassbookParsePreview,
   UpdateEpfRequest
 } from '../models/epf.model';
 
@@ -32,6 +34,32 @@ export class EpfoService {
 
   deleteEpfEntry(id: string): Observable<void> {
     return this.http.delete<void>(`${this.baseUrl}/${id}`);
+  }
+
+  uploadPassbookPdf(file: File): Observable<EpfoPassbookParsePreview> {
+    const formData = new FormData();
+    formData.append('file', file, file.name);
+    return this.http.post<EpfoPassbookParsePreview>(`${this.baseUrl}/upload-passbook-pdf`, formData);
+  }
+
+  commitPassbookImport(payload: CommitEpfoPassbookImportRequest): Observable<EpfResponse> {
+    return this.http.post<EpfResponse>(`${this.baseUrl}/import-passbook-commit`, payload);
+  }
+
+  downloadExportPdf(year: number): Observable<Blob> {
+    const params = new HttpParams().set('year', year.toString());
+    return this.http.get(`${this.baseUrl}/export/pdf`, {
+      params,
+      responseType: 'blob'
+    });
+  }
+
+  downloadExportExcel(year: number): Observable<Blob> {
+    const params = new HttpParams().set('year', year.toString());
+    return this.http.get(`${this.baseUrl}/export/excel`, {
+      params,
+      responseType: 'blob'
+    });
   }
 }
 

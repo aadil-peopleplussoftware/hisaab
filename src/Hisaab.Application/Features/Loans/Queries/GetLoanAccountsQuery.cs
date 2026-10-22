@@ -11,7 +11,9 @@ namespace Hisaab.Application.Features.Loans.Queries;
 public record GetLoanAccountsQuery(
     LoanDirection? Direction = null,
     LoanStatus? Status = null,
-    string? Search = null
+    string? Search = null,
+    LoanPriority? Priority = null,
+    string? SortBy = null
 ) : IRequest<LoanListResponseDto>;
 
 public class GetLoanAccountsQueryHandler : IRequestHandler<GetLoanAccountsQuery, LoanListResponseDto>
@@ -87,6 +89,8 @@ public class GetLoanAccountsQueryHandler : IRequestHandler<GetLoanAccountsQuery,
                 acc.DueDate,
                 acc.Status,
                 acc.Status.ToString(),
+                acc.Priority,
+                acc.Priority.ToString(),
                 acc.Note,
                 disburse,
                 repayment,
@@ -138,6 +142,11 @@ public class GetLoanAccountsQueryHandler : IRequestHandler<GetLoanAccountsQuery,
             filteredList = filteredList.Where(a => a.Status == request.Status.Value);
         }
 
+        if (request.Priority.HasValue)
+        {
+            filteredList = filteredList.Where(a => a.Priority == request.Priority.Value);
+        }
+
         if (!string.IsNullOrWhiteSpace(request.Search))
         {
             var search = request.Search.Trim().ToLowerInvariant();
@@ -146,6 +155,26 @@ public class GetLoanAccountsQueryHandler : IRequestHandler<GetLoanAccountsQuery,
                 a.Counterparty.ToLowerInvariant().Contains(search) ||
                 (a.Note != null && a.Note.ToLowerInvariant().Contains(search)));
         }
+
+        // Smart Prioritization Sorting
+        var sortMode = (request.SortBy ?? "priority").Trim().ToLowerInvariant();
+        filteredList = sortMode switch
+        {
+            "priority" => filteredList.OrderByDescending(a => (int)a.Priority)
+                                      .ThenBy(a => a.DueDate.HasValue ? a.DueDate.Value : DateTime.MaxValue)
+                                      .ThenByDescending(a => a.OutstandingBalance),
+            "avalanche" or "interest" => filteredList.OrderByDescending(a => a.InterestRate)
+                                                    .ThenByDescending(a => (int)a.Priority)
+                                                    .ThenByDescending(a => a.OutstandingBalance),
+            "snowball" or "balance_asc" => filteredList.OrderBy(a => a.OutstandingBalance)
+                                                      .ThenByDescending(a => (int)a.Priority),
+            "balance_desc" => filteredList.OrderByDescending(a => a.OutstandingBalance)
+                                          .ThenByDescending(a => (int)a.Priority),
+            "duedate" => filteredList.OrderBy(a => a.DueDate.HasValue ? a.DueDate.Value : DateTime.MaxValue)
+                                     .ThenByDescending(a => (int)a.Priority),
+            "name" => filteredList.OrderBy(a => a.Name),
+            _ => filteredList.OrderByDescending(a => (int)a.Priority).ThenByDescending(a => a.CreatedAtUtc)
+        };
 
         return new LoanListResponseDto(filteredList.ToList(), summary);
     }

@@ -41,7 +41,11 @@ public class TransactionsController : ApiControllerBase
             request.CategoryId,
             request.TransactionDate,
             request.Note,
-            request.AttachmentId);
+            request.AttachmentId,
+            request.AttachmentUrl,
+            request.AttachmentFileName,
+            request.AttachmentFileType,
+            request.AttachmentFileSize);
 
         var result = await Mediator.Send(command, cancellationToken);
         if (!result.Succeeded)
@@ -68,7 +72,11 @@ public class TransactionsController : ApiControllerBase
             request.CategoryId,
             request.TransactionDate,
             request.Note,
-            request.AttachmentId);
+            request.AttachmentId,
+            request.AttachmentUrl,
+            request.AttachmentFileName,
+            request.AttachmentFileType,
+            request.AttachmentFileSize);
 
         var result = await Mediator.Send(command, cancellationToken);
         if (!result.Succeeded)
@@ -81,11 +89,20 @@ public class TransactionsController : ApiControllerBase
 
     [HttpDelete("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status403Forbidden)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteTransaction(
         [FromRoute] Guid id,
         CancellationToken cancellationToken)
     {
+        if (!await CheckDeletePermissionAsync("Transactions", cancellationToken))
+        {
+            return StatusCode(StatusCodes.Status403Forbidden, new {
+                error = "DeletionDisabled",
+                message = "Deletion is disabled for Transactions in Settings. Please enable it under Settings > Deletion Controls."
+            });
+        }
+
         await Mediator.Send(new DeleteTransactionCommand(id), cancellationToken);
         return NoContent();
     }
@@ -97,7 +114,11 @@ public record CreateTransactionRequest(
     Guid CategoryId,
     DateTime TransactionDate,
     string? Note = null,
-    Guid? AttachmentId = null
+    Guid? AttachmentId = null,
+    string? AttachmentUrl = null,
+    string? AttachmentFileName = null,
+    string? AttachmentFileType = null,
+    long? AttachmentFileSize = null
 );
 
 public record UpdateTransactionRequest(
@@ -106,6 +127,10 @@ public record UpdateTransactionRequest(
     Guid CategoryId,
     DateTime TransactionDate,
     string? Note = null,
-    Guid? AttachmentId = null
+    Guid? AttachmentId = null,
+    string? AttachmentUrl = null,
+    string? AttachmentFileName = null,
+    string? AttachmentFileType = null,
+    long? AttachmentFileSize = null
 );
 

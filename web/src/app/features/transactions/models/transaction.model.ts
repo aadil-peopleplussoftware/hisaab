@@ -9,6 +9,15 @@ export interface Category {
   isSystem: boolean;
 }
 
+export interface AttachmentMetadata {
+  id: string;
+  fileName: string;
+  originalFileName: string;
+  contentType: string;
+  fileSizeBytes: number;
+  fileUrl: string;
+}
+
 export interface Transaction {
   id: string;
   type: TransactionType;
@@ -21,6 +30,10 @@ export interface Transaction {
   transactionDate: string;
   note?: string;
   attachmentId?: string;
+  attachmentUrl?: string;
+  attachmentFileName?: string;
+  attachmentFileType?: string;
+  attachmentFileSize?: number;
 }
 
 export interface MonthlySummary {
@@ -53,6 +66,10 @@ export interface CreateTransactionPayload {
   transactionDate: string;
   note?: string;
   attachmentId?: string;
+  attachmentUrl?: string;
+  attachmentFileName?: string;
+  attachmentFileType?: string;
+  attachmentFileSize?: number;
 }
 
 export interface UpdateTransactionPayload {
@@ -62,6 +79,10 @@ export interface UpdateTransactionPayload {
   transactionDate: string;
   note?: string;
   attachmentId?: string;
+  attachmentUrl?: string;
+  attachmentFileName?: string;
+  attachmentFileType?: string;
+  attachmentFileSize?: number;
 }
 
 export interface CreateCategoryPayload {

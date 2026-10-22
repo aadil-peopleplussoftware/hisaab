@@ -15,7 +15,11 @@ public record TransactionDto(
     string CategoryColor,
     DateTime TransactionDate,
     string? Note,
-    Guid? AttachmentId
+    Guid? AttachmentId,
+    string? AttachmentUrl = null,
+    string? AttachmentFileName = null,
+    string? AttachmentFileType = null,
+    long? AttachmentFileSize = null
 );
 
 public record MonthlySummaryDto(

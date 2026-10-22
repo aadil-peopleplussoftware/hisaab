@@ -19,12 +19,17 @@ public class DataTransferService : IDataTransferService
 {
     private readonly IApplicationDbContext _context;
     private readonly IAuditService _auditService;
+    private readonly IEpfoPdfParserService _epfoPdfParserService;
     private readonly string _uploadDirectory;
 
-    public DataTransferService(IApplicationDbContext context, IAuditService auditService)
+    public DataTransferService(
+        IApplicationDbContext context,
+        IAuditService auditService,
+        IEpfoPdfParserService? epfoPdfParserService = null)
     {
         _context = context;
         _auditService = auditService;
+        _epfoPdfParserService = epfoPdfParserService ?? new EpfoPdfParserService();
         _uploadDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "uploads", "imports");
         Directory.CreateDirectory(_uploadDirectory);
 
@@ -246,7 +251,14 @@ public class DataTransferService : IDataTransferService
         var ext = Path.GetExtension(fileName).ToLowerInvariant();
         if (ext != ".xlsx" && ext != ".xls" && ext != ".csv")
         {
-            throw new ArgumentException("Unsupported file format. Please upload an Excel (.xlsx, .xls) or CSV file.");
+            if (ext == ".pdf" && string.Equals(meta.Module, "Epfo", StringComparison.OrdinalIgnoreCase))
+            {
+                // PDF passbook is supported for EPFO
+            }
+            else
+            {
+                throw new ArgumentException("Unsupported file format. Please upload an Excel (.xlsx, .xls) or CSV file (or official PDF for EPFO passbooks).");
+            }
         }
 
         var batchId = Guid.NewGuid();
@@ -378,7 +390,10 @@ public class DataTransferService : IDataTransferService
         var mapping = LoadMappingConfig(batch.StorageKey);
 
         var ext = Path.GetExtension(batch.StorageKey).ToLowerInvariant();
-        var rows = ReadAllRows(batch.StorageKey, ext, maxRows: 50);
+        var rows = ReadAllRows(batch.StorageKey, ext);
+
+        batch.TotalRows = rows.Count;
+        await _context.SaveChangesAsync(cancellationToken);
 
         var previewRows = new List<PreviewValidationRowDto>();
         int validCount = 0;
@@ -922,12 +937,69 @@ public class DataTransferService : IDataTransferService
                 throw new InvalidOperationException("Invalid Excel file format signature.");
             }
         }
+
+        // For .pdf, verify PDF header (%PDF)
+        if (ext == ".pdf")
+        {
+            if (read >= 4 && (buffer[0] != 0x25 || buffer[1] != 0x50 || buffer[2] != 0x44 || buffer[3] != 0x46))
+            {
+                throw new InvalidOperationException("Invalid PDF file format signature.");
+            }
+        }
     }
 
-    private static (List<string> sheets, string selectedSheet, List<string> headers, List<Dictionary<string, string>> sampleRows, int totalRows)
+    internal static bool IsNonDataRow(Dictionary<string, string> dict)
+    {
+        // 1. All cells empty or whitespace
+        if (dict.Values.All(string.IsNullOrWhiteSpace)) return true;
+
+        // 2. Check if combined row text matches instruction headers, notes, or template descriptions
+        var combined = string.Join(" ", dict.Values).Trim();
+        if (combined.Contains("Import Instructions", StringComparison.OrdinalIgnoreCase) ||
+            combined.Contains("Import or export your", StringComparison.OrdinalIgnoreCase) ||
+            combined.Contains("Accepted Values / Format", StringComparison.OrdinalIgnoreCase) ||
+            (combined.Contains("Field Name", StringComparison.OrdinalIgnoreCase) && combined.Contains("Data Type", StringComparison.OrdinalIgnoreCase)) ||
+            (combined.Contains("Required?", StringComparison.OrdinalIgnoreCase) && combined.Contains("Description", StringComparison.OrdinalIgnoreCase)) ||
+            combined.Contains("Yes (Required)", StringComparison.OrdinalIgnoreCase) ||
+            combined.Contains("Optional unique reference", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private (List<string> sheets, string selectedSheet, List<string> headers, List<Dictionary<string, string>> sampleRows, int totalRows)
         InspectFileContent(string filePath, string ext)
     {
-        if (ext == ".csv")
+        if (ext == ".pdf")
+        {
+            using var pdfStream = File.OpenRead(filePath);
+            var preview = _epfoPdfParserService.ParsePassbookPdfAsync(pdfStream).GetAwaiter().GetResult();
+            var headers = new List<string> { "Month", "Employee Share", "Employer Share", "Pension Share", "Interest", "Withdrawal", "Note" };
+            var sampleRows = new List<Dictionary<string, string>>();
+
+            foreach (var item in preview.MonthlyEntries)
+            {
+                var dict = new Dictionary<string, string>
+                {
+                    ["Month"] = item.Month.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    ["Employee Share"] = item.EmployeeShare.ToString(CultureInfo.InvariantCulture),
+                    ["Employer Share"] = item.EmployerShare.ToString(CultureInfo.InvariantCulture),
+                    ["Pension Share"] = item.PensionShare.ToString(CultureInfo.InvariantCulture),
+                    ["Interest"] = item.Interest.ToString(CultureInfo.InvariantCulture),
+                    ["Withdrawal"] = item.Withdrawal.ToString(CultureInfo.InvariantCulture),
+                    ["Note"] = item.Note
+                };
+                if (sampleRows.Count < 5)
+                {
+                    sampleRows.Add(dict);
+                }
+            }
+
+            return (new List<string> { "EPFO Passbook" }, "EPFO Passbook", headers, sampleRows, preview.MonthlyEntries.Count);
+        }
+        else if (ext == ".csv")
         {
             using var reader = new StreamReader(filePath, Encoding.UTF8);
             using var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture) { HasHeaderRecord = true });
@@ -941,14 +1013,17 @@ public class DataTransferService : IDataTransferService
 
             while (csv.Read())
             {
+                var dict = new Dictionary<string, string>();
+                foreach (var h in headers)
+                {
+                    dict[h] = csv.GetField(h) ?? "";
+                }
+
+                if (IsNonDataRow(dict)) continue;
+
                 count++;
                 if (sampleRows.Count < 5)
                 {
-                    var dict = new Dictionary<string, string>();
-                    foreach (var h in headers)
-                    {
-                        dict[h] = csv.GetField(h) ?? "";
-                    }
                     sampleRows.Add(dict);
                 }
             }
@@ -974,17 +1049,32 @@ public class DataTransferService : IDataTransferService
             var headers = activeSheet.Columns.Cast<DataColumn>().Select(c => c.ColumnName.Trim()).ToList();
 
             var sampleRows = new List<Dictionary<string, string>>();
-            int count = activeSheet.Rows.Count;
+            int count = 0;
 
-            for (int i = 0; i < Math.Min(5, count); i++)
+            for (int i = 0; i < activeSheet.Rows.Count; i++)
             {
                 var dict = new Dictionary<string, string>();
                 var row = activeSheet.Rows[i];
                 foreach (var h in headers)
                 {
-                    dict[h] = row[h]?.ToString() ?? "";
+                    var cellVal = row[h];
+                    if (cellVal is DateTime dt)
+                    {
+                        dict[h] = dt.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+                    }
+                    else
+                    {
+                        dict[h] = cellVal?.ToString() ?? "";
+                    }
                 }
-                sampleRows.Add(dict);
+
+                if (IsNonDataRow(dict)) continue;
+
+                count++;
+                if (sampleRows.Count < 5)
+                {
+                    sampleRows.Add(dict);
+                }
             }
 
             return (sheetNames, activeSheet.TableName, headers, sampleRows, count);
@@ -1020,11 +1110,31 @@ public class DataTransferService : IDataTransferService
         return map;
     }
 
-    private static List<Dictionary<string, string>> ReadAllRows(string filePath, string ext, int maxRows = 50000)
+    private List<Dictionary<string, string>> ReadAllRows(string filePath, string ext, int maxRows = 50000)
     {
         var rows = new List<Dictionary<string, string>>();
 
-        if (ext == ".csv")
+        if (ext == ".pdf")
+        {
+            using var pdfStream = File.OpenRead(filePath);
+            var preview = _epfoPdfParserService.ParsePassbookPdfAsync(pdfStream).GetAwaiter().GetResult();
+            foreach (var item in preview.MonthlyEntries)
+            {
+                var dict = new Dictionary<string, string>
+                {
+                    ["Month"] = item.Month.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    ["Employee Share"] = item.EmployeeShare.ToString(CultureInfo.InvariantCulture),
+                    ["Employer Share"] = item.EmployerShare.ToString(CultureInfo.InvariantCulture),
+                    ["Pension Share"] = item.PensionShare.ToString(CultureInfo.InvariantCulture),
+                    ["Interest"] = item.Interest.ToString(CultureInfo.InvariantCulture),
+                    ["Withdrawal"] = item.Withdrawal.ToString(CultureInfo.InvariantCulture),
+                    ["Note"] = item.Note
+                };
+                rows.Add(dict);
+            }
+            return rows;
+        }
+        else if (ext == ".csv")
         {
             using var reader = new StreamReader(filePath, Encoding.UTF8);
             using var csv = new CsvReader(reader, new CsvConfiguration(CultureInfo.InvariantCulture) { HasHeaderRecord = true });
@@ -1040,6 +1150,9 @@ public class DataTransferService : IDataTransferService
                 {
                     dict[h] = csv.GetField(h) ?? "";
                 }
+
+                if (IsNonDataRow(dict)) continue;
+
                 rows.Add(dict);
             }
         }
@@ -1055,14 +1168,25 @@ public class DataTransferService : IDataTransferService
             var dt = ds.Tables[0];
             var headers = dt.Columns.Cast<DataColumn>().Select(c => c.ColumnName.Trim()).ToList();
 
-            for (int i = 0; i < Math.Min(dt.Rows.Count, maxRows); i++)
+            for (int i = 0; i < dt.Rows.Count && rows.Count < maxRows; i++)
             {
                 var dict = new Dictionary<string, string>();
                 var row = dt.Rows[i];
                 foreach (var h in headers)
                 {
-                    dict[h] = row[h]?.ToString() ?? "";
+                    var cellVal = row[h];
+                    if (cellVal is DateTime dtVal)
+                    {
+                        dict[h] = dtVal.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+                    }
+                    else
+                    {
+                        dict[h] = cellVal?.ToString() ?? "";
+                    }
                 }
+
+                if (IsNonDataRow(dict)) continue;
+
                 rows.Add(dict);
             }
         }
@@ -1206,7 +1330,7 @@ public class DataTransferService : IDataTransferService
         return false;
     }
 
-    private static bool TryParseDate(string input, string? preferredFormat, out DateTime result)
+    internal static bool TryParseDate(string input, string? preferredFormat, out DateTime result)
     {
         result = DateTime.MinValue;
         if (string.IsNullOrWhiteSpace(input)) return false;
@@ -1228,13 +1352,21 @@ public class DataTransferService : IDataTransferService
         if (!string.IsNullOrWhiteSpace(preferredFormat))
         {
             formats.Add(preferredFormat);
+            formats.Add(preferredFormat + " HH:mm:ss");
+            formats.Add(preferredFormat + " hh:mm:ss tt");
+            formats.Add(preferredFormat + " h:mm:ss tt");
+            formats.Add(preferredFormat + " H:mm:ss");
         }
 
         formats.AddRange(new[]
         {
-            "dd-MM-yyyy", "dd/MM/yyyy", "yyyy-MM-dd", "MM/dd/yyyy",
-            "d-M-yyyy", "d/M/yyyy", "yyyy/MM/dd", "dd.MM.yyyy",
-            "yyyy-MM", "MM-yyyy", "yyyy/MM", "MM/yyyy"
+            "dd-MM-yyyy", "dd/MM/yyyy", "d-M-yyyy", "d/M/yyyy", "dd.MM.yyyy",
+            "dd-MM-yyyy HH:mm:ss", "dd/MM/yyyy HH:mm:ss", "dd-MM-yyyy hh:mm:ss tt", "dd/MM/yyyy hh:mm:ss tt", "dd-MM-yyyy h:mm:ss tt", "dd/MM/yyyy h:mm:ss tt",
+            "dd-MM-yyyy H:mm:ss", "dd/MM/yyyy H:mm:ss",
+            "yyyy-MM-dd", "yyyy/MM/dd", "yyyy-MM-dd HH:mm:ss", "yyyy/MM/dd HH:mm:ss",
+            "yyyy-MM-ddTHH:mm:ss", "yyyy-MM-ddTHH:mm:ssZ", "yyyy-MM-ddTHH:mm:ss.fffZ",
+            "yyyy-MM", "MM-yyyy", "yyyy/MM", "MM/yyyy",
+            "MM/dd/yyyy", "MM-dd-yyyy", "MM/dd/yyyy HH:mm:ss", "MM/dd/yyyy hh:mm:ss tt", "M/d/yyyy"
         });
 
         foreach (var fmt in formats)
@@ -1245,6 +1377,17 @@ public class DataTransferService : IDataTransferService
                 return true;
             }
         }
+
+        try
+        {
+            var inCulture = CultureInfo.GetCultureInfo("en-IN");
+            if (DateTime.TryParse(clean, inCulture, DateTimeStyles.None, out var inParsed))
+            {
+                result = DateTime.SpecifyKind(inParsed, DateTimeKind.Utc);
+                return true;
+            }
+        }
+        catch { }
 
         if (DateTime.TryParse(clean, CultureInfo.InvariantCulture, DateTimeStyles.None, out var generalParsed))
         {
@@ -1302,6 +1445,54 @@ public class DataTransferService : IDataTransferService
         return false;
     }
 
+    internal static (string icon, string color) GetCategoryStyling(string name, TransactionType type)
+    {
+        var lower = name.ToLowerInvariant();
+
+        if (type == TransactionType.Income)
+        {
+            if (lower.Contains("salary") || lower.Contains("stipend") || lower.Contains("wage") || lower.Contains("payroll"))
+                return ("briefcase", "#16a34a");
+            if (lower.Contains("freelance") || lower.Contains("business") || lower.Contains("client") || lower.Contains("consult"))
+                return ("laptop", "#059669");
+            if (lower.Contains("dividend") || lower.Contains("interest") || lower.Contains("profit") || lower.Contains("return") || lower.Contains("invest"))
+                return ("trending-up", "#0d9488");
+            if (lower.Contains("rent") || lower.Contains("lease"))
+                return ("home", "#10b981");
+            if (lower.Contains("gift") || lower.Contains("bonus") || lower.Contains("reward") || lower.Contains("cashback"))
+                return ("gift", "#14b8a6");
+
+            return ("plus-circle", "#16a34a");
+        }
+        else
+        {
+            if (lower.Contains("grocer") || lower.Contains("food") || lower.Contains("vegetable") || lower.Contains("fruit") || lower.Contains("ration"))
+                return ("shopping-cart", "#ea580c");
+            if (lower.Contains("restaurant") || lower.Contains("cafe") || lower.Contains("swiggy") || lower.Contains("zomato") || lower.Contains("dine") || lower.Contains("eating"))
+                return ("coffee", "#f97316");
+            if (lower.Contains("rent") || lower.Contains("housing") || lower.Contains("flat") || lower.Contains("pg") || lower.Contains("maintenance"))
+                return ("home", "#dc2626");
+            if (lower.Contains("bill") || lower.Contains("electr") || lower.Contains("water") || lower.Contains("gas") || lower.Contains("utility") || lower.Contains("wifi") || lower.Contains("broadband") || lower.Contains("recharge") || lower.Contains("mobile"))
+                return ("zap", "#d97706");
+            if (lower.Contains("travel") || lower.Contains("fuel") || lower.Contains("petrol") || lower.Contains("diesel") || lower.Contains("cab") || lower.Contains("uber") || lower.Contains("ola") || lower.Contains("auto") || lower.Contains("transport") || lower.Contains("metro") || lower.Contains("train") || lower.Contains("flight"))
+                return ("truck", "#ca8a04");
+            if (lower.Contains("health") || lower.Contains("med") || lower.Contains("doctor") || lower.Contains("pharma") || lower.Contains("hospital") || lower.Contains("clinic"))
+                return ("activity", "#65a30d");
+            if (lower.Contains("shop") || lower.Contains("cloth") || lower.Contains("amazon") || lower.Contains("flipkart") || lower.Contains("myntra") || lower.Contains("mall"))
+                return ("shopping-bag", "#7c3aed");
+            if (lower.Contains("movie") || lower.Contains("film") || lower.Contains("netflix") || lower.Contains("prime") || lower.Contains("fun") || lower.Contains("game") || lower.Contains("entertainment"))
+                return ("film", "#2563eb");
+            if (lower.Contains("loan") || lower.Contains("emi") || lower.Contains("debt") || lower.Contains("credit card"))
+                return ("credit-card", "#c026d3");
+            if (lower.Contains("invest") || lower.Contains("sip") || lower.Contains("mutual") || lower.Contains("stock") || lower.Contains("saving"))
+                return ("piggy-bank", "#059669");
+            if (lower.Contains("edu") || lower.Contains("school") || lower.Contains("college") || lower.Contains("fee") || lower.Contains("course") || lower.Contains("book"))
+                return ("book-open", "#0284c7");
+
+            return ("tag", "#dc2626");
+        }
+    }
+
     private object? CreateEntityFromMapped(
         string module,
         Dictionary<string, object?> mapped,
@@ -1316,24 +1507,37 @@ public class DataTransferService : IDataTransferService
         switch (normalized)
         {
             case "Transactions":
-                var typeStr = mapped.GetValueOrDefault("Type")?.ToString() ?? "Expense";
-                var txType = typeStr.Equals("Income", StringComparison.OrdinalIgnoreCase) || typeStr == "1" ? TransactionType.Income : TransactionType.Expense;
+                var typeStr = mapped.GetValueOrDefault("Type")?.ToString()?.Trim() ?? "Expense";
+                var isIncome = typeStr.Equals("Income", StringComparison.OrdinalIgnoreCase) ||
+                               typeStr.Equals("Credit", StringComparison.OrdinalIgnoreCase) ||
+                               typeStr.Equals("Cr", StringComparison.OrdinalIgnoreCase) ||
+                               typeStr.Equals("Jama", StringComparison.OrdinalIgnoreCase) ||
+                               typeStr == "1";
+                var txType = isIncome ? TransactionType.Income : TransactionType.Expense;
                 var amount = mapped.GetValueOrDefault("Amount") is decimal a ? a : 0m;
                 var txDate = mapped.GetValueOrDefault("Date") is DateTime d ? d : DateTime.UtcNow;
-                var catName = mapped.GetValueOrDefault("Category")?.ToString()?.Trim() ?? "Other";
+                var rawCat = mapped.GetValueOrDefault("Category")?.ToString()?.Trim();
+                var catName = string.IsNullOrWhiteSpace(rawCat) ? (txType == TransactionType.Income ? "Other Income" : "Other Expense") : rawCat;
                 var note = mapped.GetValueOrDefault("Note")?.ToString();
 
-                var category = categories.FirstOrDefault(c => string.Equals(c.Name, catName, StringComparison.OrdinalIgnoreCase));
+                // Match category strictly by Name AND Type (Income transactions match Income categories, Expense transactions match Expense categories)
+                var category = categories.FirstOrDefault(c => 
+                    string.Equals(c.Name, catName, StringComparison.OrdinalIgnoreCase) && 
+                    c.Type == txType);
+
                 if (category == null)
                 {
+                    var (catIcon, catColor) = GetCategoryStyling(catName, txType);
                     category = new Category
                     {
+                        Id = Guid.NewGuid(),
                         UserId = userId,
                         Name = catName,
                         Type = txType,
-                        Icon = "tag",
-                        Color = "#6366f1",
-                        IsSystem = false
+                        Icon = catIcon,
+                        Color = catColor,
+                        IsSystem = false,
+                        ImportBatchId = batchId
                     };
                     _context.Categories.Add(category);
                     categories.Add(category);
@@ -1499,10 +1703,16 @@ public class DataTransferService : IDataTransferService
 
             case "Categories":
                 var catTitle = mapped.GetValueOrDefault("Name")?.ToString()?.Trim() ?? "Category";
-                var cTypeStr = mapped.GetValueOrDefault("Type")?.ToString() ?? "Expense";
-                var cType = cTypeStr.Equals("Income", StringComparison.OrdinalIgnoreCase) ? TransactionType.Income : TransactionType.Expense;
-                var color = mapped.GetValueOrDefault("Color")?.ToString() ?? "#4f46e5";
-                var icon = mapped.GetValueOrDefault("Icon")?.ToString() ?? "tag";
+                var cTypeStr = mapped.GetValueOrDefault("Type")?.ToString()?.Trim() ?? "Expense";
+                var isCatIncome = cTypeStr.Equals("Income", StringComparison.OrdinalIgnoreCase) ||
+                                  cTypeStr.Equals("Credit", StringComparison.OrdinalIgnoreCase) ||
+                                  cTypeStr.Equals("Cr", StringComparison.OrdinalIgnoreCase) ||
+                                  cTypeStr.Equals("Jama", StringComparison.OrdinalIgnoreCase) ||
+                                  cTypeStr == "1";
+                var cType = isCatIncome ? TransactionType.Income : TransactionType.Expense;
+                var (defaultIcon, defaultColor) = GetCategoryStyling(catTitle, cType);
+                var color = mapped.GetValueOrDefault("Color")?.ToString();
+                var icon = mapped.GetValueOrDefault("Icon")?.ToString();
 
                 return new Category
                 {
@@ -1510,8 +1720,8 @@ public class DataTransferService : IDataTransferService
                     ImportBatchId = batchId,
                     Name = catTitle,
                     Type = cType,
-                    Color = color,
-                    Icon = icon,
+                    Color = !string.IsNullOrWhiteSpace(color) ? color : defaultColor,
+                    Icon = !string.IsNullOrWhiteSpace(icon) ? icon : defaultIcon,
                     IsSystem = false
                 };
         }

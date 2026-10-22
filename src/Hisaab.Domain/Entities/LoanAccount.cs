@@ -14,6 +14,7 @@ public class LoanAccount : UserOwnedEntity
     public DateTime StartDate { get; set; } // Stored in UTC
     public DateTime? DueDate { get; set; } // Stored in UTC
     public LoanStatus Status { get; set; } = LoanStatus.Active;
+    public LoanPriority Priority { get; set; } = LoanPriority.Medium;
     public string? Note { get; set; }
 
     public ICollection<LoanTransaction> Transactions { get; set; } = new List<LoanTransaction>();
