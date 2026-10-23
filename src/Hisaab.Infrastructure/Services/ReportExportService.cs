@@ -1,6 +1,7 @@
 using System.Globalization;
 using ClosedXML.Excel;
 using Hisaab.Application.Common.Interfaces;
+using Hisaab.Domain.Entities;
 using Hisaab.Domain.Enums;
 using Hisaab.Domain.ValueObjects;
 using Microsoft.EntityFrameworkCore;
@@ -330,14 +331,34 @@ public class ReportExportService : IReportExportService
     public async Task<FileExportResult> ExportEpfoPdfAsync(int year, CancellationToken cancellationToken)
     {
         var currentUserId = _currentUserService.UserId;
-        var startUtc = new DateTime(year, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-        var endUtc = new DateTime(year + 1, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var isOverall = year <= 0;
+        List<EpfEntry> entries;
+        string subHeader;
+        string fileName;
 
-        var entries = await _context.EpfEntries
-            .AsNoTracking()
-            .Where(e => e.UserId == currentUserId && e.Month >= startUtc && e.Month < endUtc)
-            .OrderBy(e => e.Month)
-            .ToListAsync(cancellationToken);
+        if (isOverall)
+        {
+            entries = await _context.EpfEntries
+                .AsNoTracking()
+                .Where(e => e.UserId == currentUserId)
+                .OrderBy(e => e.Month)
+                .ToListAsync(cancellationToken);
+            subHeader = "Overall Passbook Statement (All Years)";
+            fileName = "Hisaab_EPFO_Passbook_Overall.pdf";
+        }
+        else
+        {
+            var startUtc = new DateTime(year, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            var endUtc = new DateTime(year + 1, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+            entries = await _context.EpfEntries
+                .AsNoTracking()
+                .Where(e => e.UserId == currentUserId && e.Month >= startUtc && e.Month < endUtc)
+                .OrderBy(e => e.Month)
+                .ToListAsync(cancellationToken);
+            subHeader = $"Calendar Year {year}";
+            fileName = $"Hisaab_EPFO_Passbook_{year}.pdf";
+        }
 
         var totalEmp = entries.Sum(e => e.EmployeeShare);
         var totalEmpr = entries.Sum(e => e.EmployerShare);
@@ -354,7 +375,7 @@ public class ReportExportService : IReportExportService
                 page.Margin(36);
                 page.DefaultTextStyle(x => x.FontSize(10).FontColor(Colors.Grey.Darken3));
 
-                page.Header().Element(c => ComposeReportHeader(c, "EPFO Annual Member Passbook Statement", $"Calendar Year {year}"));
+                page.Header().Element(c => ComposeReportHeader(c, "EPFO Member Passbook Statement", subHeader));
 
                 page.Content().PaddingVertical(15).Column(col =>
                 {
@@ -378,7 +399,7 @@ public class ReportExportService : IReportExportService
                         });
                         r.RelativeItem().Column(c =>
                         {
-                            c.Item().Text("Net Year Additions").FontSize(9);
+                            c.Item().Text("Net Additions").FontSize(9);
                             c.Item().Text(new Money(netYearContribution).ToIndianFormat()).Bold().FontSize(11).FontColor(Colors.Teal.Darken2);
                         });
                     });
@@ -421,25 +442,42 @@ public class ReportExportService : IReportExportService
             });
         }).GeneratePdf();
 
-        return new FileExportResult(pdfBytes, "application/pdf", $"Hisaab_EPFO_Passbook_{year}.pdf");
+        return new FileExportResult(pdfBytes, "application/pdf", fileName);
     }
 
     public async Task<FileExportResult> ExportEpfoExcelAsync(int year, CancellationToken cancellationToken)
     {
         var currentUserId = _currentUserService.UserId;
-        var startUtc = new DateTime(year, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-        var endUtc = new DateTime(year + 1, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var isOverall = year <= 0;
+        List<EpfEntry> entries;
+        string sheetName = isOverall ? "EPF_Overall" : $"EPF_{year}";
+        string title = isOverall ? "Hisaab - EPFO Statement (Overall)" : $"Hisaab - EPFO Statement ({year})";
+        string fileName = isOverall ? "Hisaab_EPFO_Statement_Overall.xlsx" : $"Hisaab_EPFO_Statement_{year}.xlsx";
 
-        var entries = await _context.EpfEntries
-            .AsNoTracking()
-            .Where(e => e.UserId == currentUserId && e.Month >= startUtc && e.Month < endUtc)
-            .OrderBy(e => e.Month)
-            .ToListAsync(cancellationToken);
+        if (isOverall)
+        {
+            entries = await _context.EpfEntries
+                .AsNoTracking()
+                .Where(e => e.UserId == currentUserId)
+                .OrderBy(e => e.Month)
+                .ToListAsync(cancellationToken);
+        }
+        else
+        {
+            var startUtc = new DateTime(year, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            var endUtc = new DateTime(year + 1, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
+            entries = await _context.EpfEntries
+                .AsNoTracking()
+                .Where(e => e.UserId == currentUserId && e.Month >= startUtc && e.Month < endUtc)
+                .OrderBy(e => e.Month)
+                .ToListAsync(cancellationToken);
+        }
 
         using var workbook = new XLWorkbook();
-        var ws = workbook.Worksheets.Add($"EPF_{year}");
+        var ws = workbook.Worksheets.Add(sheetName);
 
-        ws.Cell(1, 1).Value = $"Hisaab - EPFO Statement ({year})";
+        ws.Cell(1, 1).Value = title;
         ws.Cell(1, 1).Style.Font.Bold = true;
         ws.Cell(1, 1).Style.Font.FontSize = 14;
 
@@ -474,7 +512,7 @@ public class ReportExportService : IReportExportService
 
         using var ms = new MemoryStream();
         workbook.SaveAs(ms);
-        return new FileExportResult(ms.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Hisaab_EPFO_Statement_{year}.xlsx");
+        return new FileExportResult(ms.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
     }
 
     public async Task<FileExportResult> ExportInvestmentsPdfAsync(CancellationToken cancellationToken)

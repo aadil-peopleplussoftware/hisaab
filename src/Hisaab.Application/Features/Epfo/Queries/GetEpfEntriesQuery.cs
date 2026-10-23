@@ -29,7 +29,8 @@ public class GetEpfEntriesQueryHandler : IRequestHandler<GetEpfEntriesQuery, Epf
     {
         var currentUserId = _currentUserService.UserId;
         var now = _dateTimeService.UtcNow;
-        var targetYear = request.Year ?? now.Year;
+        var isOverall = request.Year.HasValue && request.Year.Value == 0;
+        var targetYear = isOverall ? 0 : (request.Year ?? now.Year);
 
         // Fetch all user entries chronologically to compute running balances (defense-in-depth)
         var allEntries = await _context.EpfEntries
@@ -90,7 +91,7 @@ public class GetEpfEntriesQueryHandler : IRequestHandler<GetEpfEntriesQuery, Epf
                 }
             }
 
-            if (entry.Month.Year <= targetYear)
+            if (!isOverall && entry.Month.Year <= targetYear)
             {
                 yearEndEe = runningEe;
                 yearEndEr = runningEr;
@@ -128,6 +129,12 @@ public class GetEpfEntriesQueryHandler : IRequestHandler<GetEpfEntriesQuery, Epf
             ));
         }
 
+        if (isOverall)
+        {
+            yearEndEe = runningEe;
+            yearEndEr = runningEr;
+        }
+
         // Available years list
         var years = allEntries.Select(e => e.Month.Year).Distinct().OrderByDescending(y => y).ToList();
         if (!years.Contains(now.Year))
@@ -137,14 +144,18 @@ public class GetEpfEntriesQueryHandler : IRequestHandler<GetEpfEntriesQuery, Epf
         }
 
         // Calculate opening balance before the target year
-        var openingBalance = computedEntries
-            .Where(e => e.Month.Year < targetYear)
-            .OrderByDescending(e => e.Month)
-            .Select(e => e.RunningBalance)
-            .FirstOrDefault();
+        var openingBalance = isOverall
+            ? 0m
+            : computedEntries
+                .Where(e => e.Month.Year < targetYear)
+                .OrderByDescending(e => e.Month)
+                .Select(e => e.RunningBalance)
+                .FirstOrDefault();
 
-        // Entries for selected year
-        var yearEntries = computedEntries.Where(e => e.Month.Year == targetYear).ToList();
+        // Entries for selected year (or all entries if overall view)
+        var yearEntries = isOverall
+            ? computedEntries.ToList()
+            : computedEntries.Where(e => e.Month.Year == targetYear).ToList();
 
         var totalEmployee = yearEntries.Sum(e => e.EmployeeShare);
         var totalEmployer = yearEntries.Sum(e => e.EmployerShare);
@@ -152,7 +163,9 @@ public class GetEpfEntriesQueryHandler : IRequestHandler<GetEpfEntriesQuery, Epf
         var totalInterest = yearEntries.Sum(e => e.Interest);
         var totalWithdrawals = yearEntries.Sum(e => e.Withdrawal);
 
-        var closingBalance = openingBalance + totalEmployee + totalEmployer + totalInterest - totalWithdrawals;
+        var closingBalance = isOverall
+            ? runningEpf
+            : (openingBalance + totalEmployee + totalEmployer + totalInterest - totalWithdrawals);
 
         // Reconcile all-time EE + ER with runningEpf
         if (runningEpf > 0)
@@ -190,11 +203,13 @@ public class GetEpfEntriesQueryHandler : IRequestHandler<GetEpfEntriesQuery, Epf
             yearEndEr = 0m;
         }
 
-        var totalPensionBalance = computedEntries
-            .Where(e => e.Month.Year <= targetYear)
-            .OrderByDescending(e => e.Month)
-            .Select(e => e.RunningPensionBalance)
-            .FirstOrDefault();
+        var totalPensionBalance = isOverall
+            ? runningPension
+            : computedEntries
+                .Where(e => e.Month.Year <= targetYear)
+                .OrderByDescending(e => e.Month)
+                .Select(e => e.RunningPensionBalance)
+                .FirstOrDefault();
 
         var summary = new EpfYearlySummaryDto(
             targetYear,

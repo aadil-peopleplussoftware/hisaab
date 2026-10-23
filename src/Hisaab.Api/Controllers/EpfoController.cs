@@ -138,13 +138,20 @@ public class EpfoController : ApiControllerBase
         var userId = _currentUserService.UserId;
         if (!userId.HasValue) return Unauthorized();
 
-        var entries = await _context.EpfEntries
-            .Where(e => e.UserId == userId.Value && e.Month.Year == targetYear)
-            .OrderBy(e => e.Month)
-            .ToListAsync(cancellationToken);
+        var isOverall = targetYear <= 0;
+        var entries = isOverall
+            ? await _context.EpfEntries
+                .Where(e => e.UserId == userId.Value)
+                .OrderBy(e => e.Month)
+                .ToListAsync(cancellationToken)
+            : await _context.EpfEntries
+                .Where(e => e.UserId == userId.Value && e.Month.Year == targetYear)
+                .OrderBy(e => e.Month)
+                .ToListAsync(cancellationToken);
 
         using var workbook = new XLWorkbook();
-        var worksheet = workbook.Worksheets.Add($"EPFO {targetYear}");
+        var sheetName = isOverall ? "EPFO Overall" : $"EPFO {targetYear}";
+        var worksheet = workbook.Worksheets.Add(sheetName);
 
         worksheet.Cell(1, 1).Value = "Month";
         worksheet.Cell(1, 2).Value = "Employee Share (12%)";
@@ -178,7 +185,8 @@ public class EpfoController : ApiControllerBase
 
         using var memoryStream = new MemoryStream();
         workbook.SaveAs(memoryStream);
-        return File(memoryStream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Hisaab_EPFO_{targetYear}.xlsx");
+        var exportFileName = isOverall ? "Hisaab_EPFO_Overall.xlsx" : $"Hisaab_EPFO_{targetYear}.xlsx";
+        return File(memoryStream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", exportFileName);
     }
 
     [HttpPost]

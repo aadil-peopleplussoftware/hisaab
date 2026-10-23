@@ -30,16 +30,27 @@ import { ThemeService } from '../../core/services/theme.service';
 
         <div class="header-actions">
           <div class="year-selector-wrap">
-            <label for="yearSelect" class="year-label">Year:</label>
-            <select
-              id="yearSelect"
-              class="select-year"
-              [value]="selectedYear()"
-              (change)="onYearChange($event)">
-              @for (yr of availableYears(); track yr) {
-                <option [value]="yr">{{ yr }}</option>
-              }
-            </select>
+            <label for="yearSelect" class="year-label">Filter:</label>
+            <div class="filter-pills-bar">
+              <button
+                type="button"
+                class="filter-pill-btn"
+                [class.active]="selectedYear() === 0"
+                (click)="selectYear(0)"
+                title="View all data across all financial years">
+                Overall
+              </button>
+              <select
+                id="yearSelect"
+                class="select-year"
+                [value]="selectedYear()"
+                (change)="onYearChange($event)">
+                <option [value]="0">All Years (Overall)</option>
+                @for (yr of availableYears(); track yr) {
+                  <option [value]="yr">FY {{ yr }}</option>
+                }
+              </select>
+            </div>
           </div>
 
           <!-- Import Passbook PDF Button -->
@@ -129,8 +140,8 @@ import { ThemeService } from '../../core/services/theme.service';
                 class="pill-toggle-btn"
                 [class.active]="viewMode() === 'yearly'"
                 (click)="viewMode.set('yearly')"
-                title="Show closing balance for FY {{ selectedYear() }}">
-                FY {{ selectedYear() }}
+                [title]="selectedYear() === 0 ? 'Show Overall Closing Balance' : ('Show closing balance for FY ' + selectedYear())">
+                {{ selectedYear() === 0 ? 'Overall' : ('FY ' + selectedYear()) }}
               </button>
             </div>
           </div>
@@ -138,7 +149,7 @@ import { ThemeService } from '../../core/services/theme.service';
           <!-- Total Available Balance Banner Box -->
           <div class="total-balance-box">
             <span class="total-balance-label">
-              {{ viewMode() === 'cumulative' ? 'Total Available Balance' : ('Closing Balance (' + selectedYear() + ')') }}
+              {{ viewMode() === 'cumulative' ? 'Total Available Balance' : (selectedYear() === 0 ? 'Overall Closing Balance' : ('Closing Balance (' + selectedYear() + ')')) }}
             </span>
             <span class="total-balance-badge amount">
               {{ displayedTotalBalance() | inrCurrency }}
@@ -267,13 +278,13 @@ import { ThemeService } from '../../core/services/theme.service';
 
           <div class="stat-cell card">
             <div class="stat-top">
-              <span class="stat-label">ANNUAL INTEREST</span>
+              <span class="stat-label">{{ selectedYear() === 0 ? 'TOTAL INTEREST CREDITED' : 'ANNUAL INTEREST' }}</span>
               <span class="badge-sov">8.25% p.a.</span>
             </div>
             <div class="stat-amount text-teal amount">
               +{{ (summary()?.totalInterest || 0) | inrCurrency }}
             </div>
-            <div class="stat-sub">Sovereign guaranteed annual interest credit</div>
+            <div class="stat-sub">{{ selectedYear() === 0 ? 'Cumulative interest credited across all years' : 'Sovereign guaranteed annual interest credit' }}</div>
           </div>
 
           <div class="stat-cell card">
@@ -284,18 +295,18 @@ import { ThemeService } from '../../core/services/theme.service';
             <div class="stat-amount text-danger amount">
               {{ (summary()?.totalWithdrawals || 0) > 0 ? ('-' + ((summary()?.totalWithdrawals || 0) | inrCurrency)) : (0 | inrCurrency) }}
             </div>
-            <div class="stat-sub">Advances / claims debited in {{ selectedYear() }}</div>
+            <div class="stat-sub">{{ selectedYear() === 0 ? 'Total advances / claims debited across all years' : ('Advances / claims debited in ' + selectedYear()) }}</div>
           </div>
 
           <div class="stat-cell card">
             <div class="stat-top">
-              <span class="stat-label">YEAR CLOSING BALANCE</span>
-              <span class="badge-year">{{ selectedYear() }}</span>
+              <span class="stat-label">{{ selectedYear() === 0 ? 'TOTAL EPF BALANCE' : 'YEAR CLOSING BALANCE' }}</span>
+              <span class="badge-year">{{ selectedYear() === 0 ? 'OVERALL' : selectedYear() }}</span>
             </div>
             <div class="stat-amount font-bold amount">
               {{ (summary()?.closingBalance || 0) | inrCurrency }}
             </div>
-            <div class="stat-sub">Withdrawable corpus as of 31-Dec-{{ selectedYear() }}</div>
+            <div class="stat-sub">{{ selectedYear() === 0 ? 'Total withdrawable EPF corpus across all years' : ('Withdrawable corpus as of 31-Dec-' + selectedYear()) }}</div>
           </div>
         </div>
       </div>
@@ -304,14 +315,14 @@ import { ThemeService } from '../../core/services/theme.service';
       <div class="print-statement-header print-only">
         <div class="print-brand">
           <h1>HISAAB — EPFO PROVIDENT FUND STATEMENT</h1>
-          <p>Financial Statement for Calendar Year {{ selectedYear() }} | Generated on {{ today | date:'medium' }}</p>
+          <p>Financial Statement {{ selectedYear() === 0 ? '(Overall - All Records)' : ('for Calendar Year ' + selectedYear()) }} | Generated on {{ today | date:'medium' }}</p>
         </div>
         @if (summary(); as s) {
           <div class="print-meta-grid">
             <div><strong>Total EPF Balance:</strong> {{ allTimeEpfBalance() | inrCurrency }}</div>
             <div><strong>Total Pension Fund:</strong> {{ allTimePensionBalance() | inrCurrency }}</div>
-            <div><strong>Opening Balance ({{ selectedYear() }}):</strong> {{ s.openingBalance | inrCurrency }}</div>
-            <div><strong>Closing Balance ({{ selectedYear() }}):</strong> {{ s.closingBalance | inrCurrency }}</div>
+            <div><strong>Opening Balance:</strong> {{ selectedYear() === 0 ? (0 | inrCurrency) : (s.openingBalance | inrCurrency) }}</div>
+            <div><strong>Closing Balance:</strong> {{ s.closingBalance | inrCurrency }}</div>
             <div><strong>Employee Contributions:</strong> {{ s.totalEmployeeShare | inrCurrency }}</div>
             <div><strong>Employer Contributions:</strong> {{ s.totalEmployerShare | inrCurrency }}</div>
             <div><strong>Interest Credited:</strong> {{ s.totalInterest | inrCurrency }}</div>
@@ -342,7 +353,7 @@ import { ThemeService } from '../../core/services/theme.service';
               <line x1="18" y1="10" x2="18" y2="21"/>
             </svg>
           </div>
-          <h3>No EPF entries found for {{ selectedYear() }}</h3>
+          <h3>No EPF entries found {{ selectedYear() === 0 ? 'in your account' : ('for ' + selectedYear()) }}</h3>
           <p>Record your monthly EPFO contribution slip or passbook entry.</p>
           <button type="button" class="btn-primary mt-4" (click)="openCreateModal()">
             + Add First EPF Entry
@@ -957,6 +968,45 @@ import { ThemeService } from '../../core/services/theme.service';
       gap: 0.5rem;
     }
 
+    .filter-pills-bar {
+      display: inline-flex;
+      align-items: center;
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-md);
+      padding: 3px;
+      gap: 4px;
+    }
+
+    .filter-pill-btn {
+      padding: 0.35rem 0.85rem;
+      border: 1px solid transparent;
+      border-radius: calc(var(--radius-md) - 2px);
+      background: transparent;
+      color: var(--color-text-muted);
+      font-weight: 600;
+      font-size: 0.8125rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      min-height: 36px;
+    }
+
+    .filter-pill-btn:hover {
+      color: var(--color-text-main);
+      background: var(--color-bg-page);
+    }
+
+    .filter-pill-btn.active {
+      background: var(--color-primary);
+      color: #ffffff;
+      border-color: var(--color-primary);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+    }
+
     .year-label {
       font-size: 0.875rem;
       font-weight: 600;
@@ -964,14 +1014,15 @@ import { ThemeService } from '../../core/services/theme.service';
     }
 
     .select-year {
-      padding: 0.5rem 1rem;
-      border: 1px solid var(--color-border);
-      border-radius: var(--radius-md);
-      background: var(--color-bg-card);
+      padding: 0.35rem 0.75rem;
+      border: none;
+      border-radius: calc(var(--radius-md) - 2px);
+      background: transparent;
       color: var(--color-text-main);
       font-weight: 600;
-      font-size: 0.875rem;
-      min-height: 44px;
+      font-size: 0.8125rem;
+      min-height: 36px;
+      cursor: pointer;
     }
 
     /* ======================================================== */
@@ -2264,7 +2315,8 @@ export class EpfoComponent implements OnInit {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `Hisaab_EPFO_Passbook_${this.selectedYear()}.pdf`;
+        const yrLabel = this.selectedYear() === 0 ? 'Overall' : this.selectedYear();
+        a.download = `Hisaab_EPFO_Passbook_${yrLabel}.pdf`;
         a.click();
         window.URL.revokeObjectURL(url);
       },
@@ -2279,7 +2331,8 @@ export class EpfoComponent implements OnInit {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `Hisaab_EPFO_${this.selectedYear()}.xlsx`;
+        const yrLabel = this.selectedYear() === 0 ? 'Overall' : this.selectedYear();
+        a.download = `Hisaab_EPFO_${yrLabel}.xlsx`;
         a.click();
         window.URL.revokeObjectURL(url);
       },
@@ -2409,7 +2462,7 @@ export class EpfoComponent implements OnInit {
 
   loadData(year?: number): void {
     this.loading.set(true);
-    const yr = year ?? this.selectedYear();
+    const yr = year !== undefined ? year : this.selectedYear();
 
     this.epfoService.getEpfEntries(yr).subscribe({
       next: (res) => {
@@ -2429,10 +2482,14 @@ export class EpfoComponent implements OnInit {
     });
   }
 
-  onYearChange(event: Event): void {
-    const yr = Number((event.target as HTMLSelectElement).value);
+  selectYear(yr: number): void {
     this.selectedYear.set(yr);
     this.loadData(yr);
+  }
+
+  onYearChange(event: Event): void {
+    const yr = Number((event.target as HTMLSelectElement).value);
+    this.selectYear(yr);
   }
 
   printStatement(): void {
