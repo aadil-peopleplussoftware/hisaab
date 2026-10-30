@@ -22,6 +22,7 @@ public class RoleRightsService : IRoleRightsService
         ("Loans", "Loans", "Track lent/borrowed balances, interest, and EMI payment schedules"),
         ("Goals", "Dreams & Goals", "Track savings targets, life milestones, and recurring contributions"),
         ("Investments", "Investments (Share Market)", "Monitor stock holdings, equity portfolio, trades, and capital gains"),
+        ("TradeDesk", "Trade & IPO Desk", "Track short-term & swing stock trades, planned holding days, realized profit/loss, and IPO allotments"),
         ("MarketAi", "AI Stocks & Hub (Share Market)", "AI stock market predictions, live quotes, technical indicators, and market hub"),
         ("Epfo", "EPFO Passbook", "Track provident fund balances, monthly passbook, interest, and withdrawals"),
         ("Reports", "Reports", "View financial statements, monthly spending summaries, and ledger exports"),

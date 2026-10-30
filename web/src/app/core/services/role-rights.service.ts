@@ -129,6 +129,7 @@ export class RoleRightsService {
     if (key === 'dreams & goals' || key === 'goals') return rights['goals'];
     if (key === 'epfo passbook' || key === 'epf' || key === 'epfo') return rights['epfo'];
     if (key === 'investments' || key === 'sharemarket') return rights['investments'];
+    if (key === 'tradedesk' || key === 'trade-desk' || key === 'trade & ipo desk') return rights['tradedesk'] || rights['investments'];
     if (key === 'dashboard') return rights['dashboard'];
 
     return undefined;

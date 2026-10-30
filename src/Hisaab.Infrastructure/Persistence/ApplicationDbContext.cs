@@ -37,6 +37,8 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<MarketAgentAlertLog> MarketAgentAlertLogs => Set<MarketAgentAlertLog>();
     public DbSet<Attachment> Attachments => Set<Attachment>();
     public DbSet<RoleRight> RoleRights => Set<RoleRight>();
+    public DbSet<TradeOrder> TradeOrders => Set<TradeOrder>();
+    public DbSet<IpoApplication> IpoApplications => Set<IpoApplication>();
 
     public ApplicationDbContext(
         DbContextOptions<ApplicationDbContext> options,
@@ -92,6 +94,23 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
             b.ToTable("role_rights");
             b.HasKey(x => x.Id);
             b.HasIndex(x => new { x.RoleName, x.Module }).IsUnique();
+        });
+
+        builder.Entity<TradeOrder>(b =>
+        {
+            b.ToTable("trade_orders");
+            b.HasKey(x => x.Id);
+            b.Property(x => x.Quantity).HasPrecision(18, 4);
+            b.HasIndex(x => new { x.UserId, x.Status });
+            b.HasIndex(x => new { x.UserId, x.BuyDate });
+        });
+
+        builder.Entity<IpoApplication>(b =>
+        {
+            b.ToTable("ipo_applications");
+            b.HasKey(x => x.Id);
+            b.HasIndex(x => new { x.UserId, x.Status });
+            b.HasIndex(x => new { x.UserId, x.ApplicationDate });
         });
 
         // Global conventions & filters

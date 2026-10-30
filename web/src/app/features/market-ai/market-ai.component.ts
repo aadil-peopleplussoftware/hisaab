@@ -26,320 +26,419 @@ import { ThemeService } from '../../core/services/theme.service';
   imports: [CommonModule, FormsModule, DecimalPipe],
   template: `
     <div class="market-ai-container">
-      <!-- Top Header & Live Market Status -->
-      <header class="market-ai-header">
-        <div class="header-left">
-          <div class="header-badge-row">
-            <span class="ai-hub-tag">
-              <span class="tag-sparkle">✨</span>
-              <span>AI MARKET INTELLIGENCE</span>
-            </span>
-            <div class="market-pulse-pill" [class.open]="isMarketActive()" [class.closed]="!isMarketActive()">
-              <span class="pulse-dot"></span>
-              <span>{{ isMarketActive() ? 'LIVE NSE FEED: ACTIVE' : 'MARKET CLOSED (REAL-TIME ENGINE LIVE)' }}</span>
+      <!-- Zerodha Kite Pro Header -->
+      <header class="zk-header">
+        <div class="zk-header-left">
+          <div class="zk-title-row">
+            <h1 class="zk-page-title">AI Stock Market Hub</h1>
+            <div class="zk-pulse-pill" [class.open]="isMarketActive()" [class.closed]="!isMarketActive()">
+              <span class="zk-pulse-dot"></span>
+              <span>{{ isMarketActive() ? 'NSE Live' : 'Market Closed' }}</span>
             </div>
+            <span class="zk-engine-tag">AI Predictive v2.4</span>
           </div>
-          <h1 class="page-title">AI Stock Market Hub & Predictive Portfolio</h1>
-          <p class="page-subtitle">Real-time live prices, per-share profit target triggers, AI buy/sell recommendations, and predictive upside/downside analytics.</p>
+          <p class="zk-page-subtitle">Real-time prices, target profit triggers, AI recommendations & predictive analytics</p>
         </div>
 
-        <div class="header-actions">
-          <!-- Auto-refresh switch -->
-          <div class="auto-refresh-box" (click)="toggleAutoRefresh()" title="Toggle 15s auto-refresh">
-            <span class="refresh-indicator" [class.spinning]="isRefreshing()">🔄</span>
-            <span class="refresh-label">Auto 15s: <strong>{{ isAutoRefreshOn() ? 'ON' : 'OFF' }}</strong></span>
+        <div class="zk-header-actions">
+          <div class="zk-auto-box" (click)="toggleAutoRefresh()" title="Toggle 15s auto-refresh">
+            <span class="zk-spin-icon" [class.spinning]="isRefreshing()">🔄</span>
+            <span>Auto 15s: <strong>{{ isAutoRefreshOn() ? 'ON' : 'OFF' }}</strong></span>
           </div>
 
-          <button type="button" class="btn-refresh" (click)="refreshData()" [disabled]="isRefreshing()">
+          <button type="button" class="zk-btn-outline" (click)="refreshData()" [disabled]="isRefreshing()">
             <span [class.spin]="isRefreshing()">⚡</span>
-            <span>Refresh Live Data</span>
+            <span>Refresh</span>
           </button>
 
-          <button type="button" class="btn-add-stock" (click)="openAddStockModal()">
-            <span>+ Add Share / Stock</span>
+          <button type="button" class="zk-btn-primary" (click)="openAddStockModal()">
+            <span>+ Add Stock</span>
           </button>
         </div>
       </header>
 
-      <!-- Target Hit Urgent Alert Ribbon -->
+      <!-- Target Hit Urgent Alert Ribbon (Minimalist) -->
       @if (targetHitHoldings().length > 0) {
-        <div class="target-alert-banner">
-          <div class="alert-pulse-icon">🎯</div>
-          <div class="alert-content">
-            <div class="alert-title-row">
-              <strong>PROFIT TARGET REACHED ON {{ targetHitHoldings().length }} SHARE(S)!</strong>
-              <span class="alert-badge">ACTION RECOMMENDED</span>
+        <div class="zk-alert-banner">
+          <div class="zk-alert-left">
+            <span class="zk-alert-icon">🎯</span>
+            <div>
+              <strong>Target Profit Reached on {{ targetHitHoldings().length }} Share(s)!</strong>
+              <span class="zk-alert-sub">
+                @for (h of targetHitHoldings(); track h.holding.id) {
+                  <span><strong>{{ h.holding.ticker }}</strong>: Hit ₹{{ h.analysis.currentProfitPerShare | number:'1.0-0' }}/sh (Tgt: ₹{{ h.holding.targetProfitPerShare | number:'1.0-0' }}). Recommendation: <em>{{ h.analysis.actionBadgeText }}</em>. </span>
+                }
+              </span>
             </div>
-            <p class="alert-desc">
-              @for (h of targetHitHoldings(); track h.holding.id) {
-                <span><strong>{{ h.holding.ticker }}</strong>: Hit ₹{{ h.analysis.currentProfitPerShare | number:'1.0-0' }}/share profit (Target: ₹{{ h.holding.targetProfitPerShare | number:'1.0-0' }}). AI Decision: <em>{{ h.analysis.actionBadgeText }}</em>. </span>
-              }
-            </p>
           </div>
-          <button type="button" class="btn-alert-action" (click)="setActiveTab('portfolio')">
-            Review AI Exit Plan →
+          <button type="button" class="zk-btn-alert" (click)="setActiveTab('portfolio')">
+            Review Exit Plan →
           </button>
         </div>
       }
 
-      <!-- Top KPI Analytics Metric Cards -->
-      <div class="kpi-grid">
-        <div class="kpi-card">
-          <div class="kpi-top">
-            <span class="kpi-label">TOTAL INVESTED CAPITAL</span>
-            <span class="kpi-icon">💼</span>
-          </div>
-          <div class="kpi-value">₹{{ (overview()?.totalPortfolioInvested || 0) | number:'1.2-2' }}</div>
-          <div class="kpi-sub">Across {{ overview()?.totalStocksCount || 0 }} Active Holdings</div>
+      <!-- Zerodha Kite Portfolio Summary Strip -->
+      <div class="zk-summary-strip">
+        <div class="zk-summary-item">
+          <span class="zk-sum-label">TOTAL INVESTMENT</span>
+          <span class="zk-sum-val">₹{{ (overview()?.totalPortfolioInvested || 0) | number:'1.2-2' }}</span>
+          <span class="zk-sum-sub">{{ overview()?.totalStocksCount || 0 }} Active Holdings</span>
         </div>
 
-        <div class="kpi-card">
-          <div class="kpi-top">
-            <span class="kpi-label">CURRENT PORTFOLIO VALUE</span>
-            <span class="kpi-icon">📈</span>
-          </div>
-          <div class="kpi-value">₹{{ (overview()?.totalPortfolioCurrentValue || 0) | number:'1.2-2' }}</div>
-          <div class="kpi-sub" [class.profit]="(overview()?.totalPortfolioProfitLoss || 0) >= 0" [class.loss]="(overview()?.totalPortfolioProfitLoss || 0) < 0">
+        <div class="zk-summary-divider"></div>
+
+        <div class="zk-summary-item">
+          <span class="zk-sum-label">CURRENT VALUE</span>
+          <span class="zk-sum-val">₹{{ (overview()?.totalPortfolioCurrentValue || 0) | number:'1.2-2' }}</span>
+          <span class="zk-sum-sub">Live Valuation</span>
+        </div>
+
+        <div class="zk-summary-divider"></div>
+
+        <div class="zk-summary-item">
+          <span class="zk-sum-label">OVERALL P&L</span>
+          <div class="zk-sum-val" [class.zk-profit]="(overview()?.totalPortfolioProfitLoss || 0) >= 0" [class.zk-loss]="(overview()?.totalPortfolioProfitLoss || 0) < 0">
             {{ (overview()?.totalPortfolioProfitLoss || 0) >= 0 ? '+' : '' }}₹{{ (overview()?.totalPortfolioProfitLoss || 0) | number:'1.2-2' }}
-            ({{ (overview()?.totalPortfolioGainPercentage || 0) | number:'1.2-2' }}%)
+            <span class="zk-sum-badge" [class.zk-profit]="(overview()?.totalPortfolioProfitLoss || 0) >= 0" [class.zk-loss]="(overview()?.totalPortfolioProfitLoss || 0) < 0">
+              {{ (overview()?.totalPortfolioGainPercentage || 0) | number:'1.2-2' }}%
+            </span>
           </div>
+          <span class="zk-sum-sub">Net Returns</span>
         </div>
 
-        <div class="kpi-card alert-kpi" [class.highlight]="(overview()?.targetHitCount || 0) > 0">
-          <div class="kpi-top">
-            <span class="kpi-label">TARGETS REACHED</span>
-            <span class="kpi-icon">💰</span>
-          </div>
-          <div class="kpi-value">{{ overview()?.targetHitCount || 0 }} Stocks</div>
-          <div class="kpi-sub highlight-text">
+        <div class="zk-summary-divider"></div>
+
+        <div class="zk-summary-item">
+          <span class="zk-sum-label">TARGETS REACHED</span>
+          <span class="zk-sum-val" [class.zk-profit]="(overview()?.targetHitCount || 0) > 0">
+            {{ overview()?.targetHitCount || 0 }} Stocks
+          </span>
+          <span class="zk-sum-sub">
             @if ((overview()?.targetHitCount || 0) > 0) {
-              {{ overview()?.profitBookingRecommendedCount }} Ready for Profit Booking
+              {{ overview()?.profitBookingRecommendedCount }} Ready to Book
             } @else {
-              {{ overview()?.targetApproachingCount || 0 }} Stocks Approaching Target (>=85%)
+              {{ overview()?.targetApproachingCount || 0 }} Approaching Target
             }
-          </div>
+          </span>
         </div>
 
-        <div class="kpi-card screener-kpi">
-          <div class="kpi-top">
-            <span class="kpi-label">AI BUY OPPORTUNITIES</span>
-            <span class="kpi-icon">🚀</span>
-          </div>
-          <div class="kpi-value">{{ overview()?.topBuyOpportunities?.length || 0 }} Setups</div>
-          <div class="kpi-sub screener-link" (click)="setActiveTab('screener')">
-            View High-Probability Breakout Picks →
-          </div>
+        <div class="zk-summary-divider"></div>
+
+        <div class="zk-summary-item clickable" (click)="setActiveTab('screener')">
+          <span class="zk-sum-label">AI BREAKOUT PICKS</span>
+          <span class="zk-sum-val zk-accent">{{ overview()?.topBuyOpportunities?.length || 0 }} Setups</span>
+          <span class="zk-sum-sub zk-link">Explore Screener →</span>
         </div>
       </div>
 
-      <!-- Navigation Tabs -->
-      <nav class="market-ai-nav" role="tablist">
-        <button
-          type="button"
-          class="nav-tab-btn"
-          [class.active]="activeTab() === 'portfolio'"
-          (click)="setActiveTab('portfolio')">
-          <span class="tab-icon">📊</span>
-          <span>My AI Live Portfolio</span>
-          <span class="tab-pill">{{ overview()?.totalStocksCount || 0 }}</span>
-        </button>
+      <!-- Zerodha Kite Navigation Tabs & View Switcher -->
+      <div class="zk-tabs-container">
+        <nav class="zk-nav-tabs" role="tablist">
+          <button
+            type="button"
+            class="zk-tab-btn"
+            [class.active]="activeTab() === 'portfolio'"
+            (click)="setActiveTab('portfolio')">
+            <span>Holdings</span>
+            <span class="zk-tab-badge">{{ overview()?.totalStocksCount || 0 }}</span>
+          </button>
 
-        <button
-          type="button"
-          class="nav-tab-btn"
-          [class.active]="activeTab() === 'screener'"
-          (click)="setActiveTab('screener')">
-          <span class="tab-icon">🎯</span>
-          <span>AI Screener: Konsa Share Lena Hai</span>
-          <span class="tab-pill special">5 Picks</span>
-        </button>
+          <button
+            type="button"
+            class="zk-tab-btn"
+            [class.active]="activeTab() === 'screener'"
+            (click)="setActiveTab('screener')">
+            <span>AI Screener</span>
+            <span class="zk-tab-badge special">5 Picks</span>
+          </button>
 
-        <button
-          type="button"
-          class="nav-tab-btn"
-          [class.active]="activeTab() === 'copilot'"
-          (click)="setActiveTab('copilot')">
-          <span class="tab-icon">🤖</span>
-          <span>Poocho AI Se (Live Copilot)</span>
-        </button>
+          <button
+            type="button"
+            class="zk-tab-btn"
+            [class.active]="activeTab() === 'copilot'"
+            (click)="setActiveTab('copilot')">
+            <span>AI Copilot</span>
+          </button>
 
-        <button
-          type="button"
-          class="nav-tab-btn"
-          [class.active]="activeTab() === 'agents'"
-          (click)="setActiveTab('agents')">
-          <span class="tab-icon">🤖</span>
-          <span>Agents Mission Control (Kaun Kya Kar Raha Hai)</span>
-          <span class="tab-pill special">3 Agents Live</span>
-        </button>
-      </nav>
+          <button
+            type="button"
+            class="zk-tab-btn"
+            [class.active]="activeTab() === 'agents'"
+            (click)="setActiveTab('agents')">
+            <span>Mission Control</span>
+            <span class="zk-tab-badge special">3 Agents Live</span>
+          </button>
+        </nav>
+
+        @if (activeTab() === 'portfolio' && overview() && overview()!.holdingsWithAnalysis.length > 0) {
+          <div class="zk-view-toggle">
+            <button
+              type="button"
+              class="zk-toggle-btn"
+              [class.active]="portfolioViewMode() === 'table'"
+              (click)="setPortfolioViewMode('table')"
+              title="Zerodha Table View">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/>
+              </svg>
+              <span>Table</span>
+            </button>
+            <button
+              type="button"
+              class="zk-toggle-btn"
+              [class.active]="portfolioViewMode() === 'cards'"
+              (click)="setPortfolioViewMode('cards')"
+              title="Compact Card View">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+              </svg>
+              <span>Cards</span>
+            </button>
+          </div>
+        }
+      </div>
 
       <!-- TAB 1: MY LIVE AI PORTFOLIO -->
       @if (activeTab() === 'portfolio') {
         <div class="tab-pane">
           @if (!overview() || overview()!.holdingsWithAnalysis.length === 0) {
-            <div class="empty-state-card">
-              <div class="empty-icon">📈</div>
-              <h3>Apna Pehla Share Add Karein!</h3>
-              <p>Add the stocks you own along with your target profit per share (e.g. ₹1,000). The AI engine will track live market prices and tell you exactly when to exit, how much higher it can rally, and where to set trailing stop-losses!</p>
-              <div class="empty-quick-add">
-                <button type="button" class="btn-primary-action" (click)="openAddStockModal()">
+            <div class="zk-empty-state">
+              <div class="zk-empty-icon">📈</div>
+              <h3>No stocks in your portfolio yet</h3>
+              <p>Add your stock holdings with your profit target per share. The AI engine will monitor real-time prices and guide your exits and trailing stop-losses!</p>
+              <div class="zk-empty-actions">
+                <button type="button" class="zk-btn-primary" (click)="openAddStockModal()">
                   + Add Your First Stock
                 </button>
-                <button type="button" class="btn-secondary-action" (click)="setActiveTab('screener')">
-                  Explore AI Buy Recommendations →
+                <button type="button" class="zk-btn-outline" (click)="setActiveTab('screener')">
+                  Explore AI Breakout Screener →
                 </button>
               </div>
             </div>
+          } @else if (portfolioViewMode() === 'table') {
+            <!-- Zerodha Kite Holdings Table View -->
+            <div class="zk-table-container">
+              <table class="zk-holdings-table">
+                <thead>
+                  <tr>
+                    <th class="th-instrument">Instrument</th>
+                    <th class="th-num">Qty</th>
+                    <th class="th-num">Avg. Cost</th>
+                    <th class="th-num">LTP</th>
+                    <th class="th-num">Cur. Value</th>
+                    <th class="th-num">P&L</th>
+                    <th class="th-num">Net Chg.</th>
+                    <th class="th-target">Target / Progress</th>
+                    <th class="th-signal">AI Signal</th>
+                    <th class="th-actions">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (item of overview()!.holdingsWithAnalysis; track item.holding.id) {
+                    <!-- Main Row -->
+                    <tr class="zk-holding-row" [class.expanded]="expandedHoldingId() === item.holding.id">
+                      <td class="td-instrument" (click)="toggleHoldingExpansion(item.holding.id)">
+                        <div class="zk-inst-cell">
+                          <button type="button" class="zk-expand-btn" [class.open]="expandedHoldingId() === item.holding.id" aria-label="Toggle details">
+                            ▶
+                          </button>
+                          <div>
+                            <div class="zk-ticker-name">
+                              <span class="zk-ticker">{{ item.holding.ticker }}</span>
+                              <span class="zk-exchange">{{ item.holding.exchange }}</span>
+                              @if (item.analysis.isTargetHit) {
+                                <span class="zk-tag-hit">TARGET HIT</span>
+                              }
+                            </div>
+                            <div class="zk-company-sub" [title]="item.holding.companyName">{{ item.holding.companyName }}</div>
+                          </div>
+                        </div>
+                      </td>
+
+                      <td class="td-num font-mono">{{ item.holding.quantity | number:'1.0-4' }}</td>
+
+                      <td class="td-num font-mono">₹{{ item.holding.buyPrice | number:'1.2-2' }}</td>
+
+                      <td class="td-num">
+                        <div class="zk-ltp-val font-mono">₹{{ item.quote.currentPrice | number:'1.2-2' }}</div>
+                        <div class="zk-day-delta" [class.zk-profit]="item.quote.dayChange >= 0" [class.zk-loss]="item.quote.dayChange < 0">
+                          {{ item.quote.dayChange >= 0 ? '+' : '' }}₹{{ item.quote.dayChange | number:'1.2-2' }} ({{ item.quote.dayChangePercent | number:'1.2-2' }}%)
+                        </div>
+                      </td>
+
+                      <td class="td-num font-mono">₹{{ item.analysis.currentValue | number:'1.2-2' }}</td>
+
+                      <td class="td-num">
+                        <span class="zk-pnl-cell font-mono" [class.zk-profit]="item.analysis.totalProfitLoss >= 0" [class.zk-loss]="item.analysis.totalProfitLoss < 0">
+                          {{ item.analysis.totalProfitLoss >= 0 ? '+' : '' }}₹{{ item.analysis.totalProfitLoss | number:'1.2-2' }}
+                        </span>
+                      </td>
+
+                      <td class="td-num">
+                        <span class="zk-badge-pnl" [class.zk-profit]="item.analysis.totalProfitLoss >= 0" [class.zk-loss]="item.analysis.totalProfitLoss < 0">
+                          {{ item.analysis.profitLossPercentage >= 0 ? '+' : '' }}{{ item.analysis.profitLossPercentage | number:'1.2-2' }}%
+                        </span>
+                      </td>
+
+                      <td class="td-target">
+                        <div class="zk-target-mini">
+                          <div class="zk-target-txt">
+                            <span>Tgt: ₹{{ (item.holding.targetProfitPerShare || 0) | number:'1.0-0' }}/sh</span>
+                            <span [class.zk-profit]="item.analysis.isTargetHit" class="font-mono">{{ item.analysis.targetProgressPercentage || 0 | number:'1.0-0' }}%</span>
+                          </div>
+                          <div class="zk-mini-progress">
+                            <div class="zk-mini-fill" [class.hit]="item.analysis.isTargetHit" [style.width.%]="Math.min(100, Math.max(0, item.analysis.targetProgressPercentage || 0))"></div>
+                          </div>
+                        </div>
+                      </td>
+
+                      <td class="td-signal">
+                        <div class="zk-signal-pill" [style.border-color]="item.analysis.actionColor" [style.color]="item.analysis.actionColor">
+                          {{ item.analysis.actionBadgeText }}
+                        </div>
+                        <div class="zk-bullish-sub">AI: {{ item.analysis.bullishScore }}/100</div>
+                      </td>
+
+                      <td class="td-actions">
+                        <div class="zk-row-btns">
+                          <button type="button" class="zk-icon-btn" (click)="toggleHoldingExpansion(item.holding.id)" title="AI Predictive Breakdown">
+                            🔍
+                          </button>
+                          <button type="button" class="zk-icon-btn" (click)="openGrowwAiForStock(item)" title="Ask AI Insights">
+                            🤖
+                          </button>
+                          <button type="button" class="zk-icon-btn" (click)="openEditStockModal(item)" title="Edit Target">
+                            ✏️
+                          </button>
+                          <button type="button" class="zk-icon-btn zk-del" (click)="deleteStock(item.holding.id)" title="Delete Stock">
+                            🗑️
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+
+                    <!-- Expandable Drawer for Deep Predictive Analytics -->
+                    @if (expandedHoldingId() === item.holding.id) {
+                      <tr class="zk-expanded-detail-row">
+                        <td colspan="10">
+                          <div class="zk-detail-drawer">
+                            <div class="zk-drawer-grid">
+                              <div class="zk-drawer-box upside">
+                                <div class="zk-drawer-box-head">
+                                  <span>🚀 Next Upside Target:</span>
+                                  <strong class="zk-profit">₹{{ item.analysis.nextUpsideTargetPrice | number:'1.2-2' }} (+{{ item.analysis.upsidePercentage | number:'1.1-1' }}%)</strong>
+                                  <span class="zk-prob-pill">Prob: {{ item.analysis.upsideProbabilityPercent }}%</span>
+                                </div>
+                                <p class="zk-drawer-text">{{ item.analysis.upsideRationale }}</p>
+                              </div>
+
+                              <div class="zk-drawer-box downside">
+                                <div class="zk-drawer-box-head">
+                                  <span>🛡️ Risk Support & Stop-Loss:</span>
+                                  <strong class="zk-loss">₹{{ item.analysis.keySupportPrice | number:'1.2-2' }} (-{{ item.analysis.downsidePercentage | number:'1.1-1' }}%)</strong>
+                                  @if (item.analysis.recommendedTrailingStopLoss) {
+                                    <span class="zk-sl-pill">SL: ₹{{ item.analysis.recommendedTrailingStopLoss | number:'1.2-2' }}</span>
+                                  }
+                                </div>
+                                <p class="zk-drawer-text">{{ item.analysis.downsideRationale }}</p>
+                              </div>
+                            </div>
+
+                            <div class="zk-strategy-bar">
+                              <div class="zk-strat-label">💡 AI Strategy:</div>
+                              <div class="zk-strat-text">{{ item.analysis.aiSummaryHindi }}</div>
+                              <button type="button" class="zk-btn-ask-ai" (click)="openGrowwAiForStock(item)">
+                                Ask AI Deep Dive →
+                              </button>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    }
+                  }
+                </tbody>
+              </table>
+            </div>
           } @else {
-            <div class="holdings-grid">
+            <!-- Compact Card View (Zerodha Style) -->
+            <div class="zk-card-grid">
               @for (item of overview()!.holdingsWithAnalysis; track item.holding.id) {
-                <div class="stock-analysis-card" [class.target-hit]="item.analysis.isTargetHit" [class.stop-breached]="item.analysis.isStopLossBreached">
-                  <!-- Card Header -->
-                  <div class="card-head">
-                    <div class="company-meta">
-                      <div class="ticker-badge-row">
-                        <span class="ticker-symbol">{{ item.holding.ticker }}</span>
-                        <span class="exchange-tag">{{ item.holding.exchange }}</span>
+                <div class="zk-stock-card" [class.target-hit]="item.analysis.isTargetHit" [class.stop-breached]="item.analysis.isStopLossBreached">
+                  <div class="zk-card-top">
+                    <div>
+                      <div class="zk-ticker-name">
+                        <span class="zk-ticker">{{ item.holding.ticker }}</span>
+                        <span class="zk-exchange">{{ item.holding.exchange }}</span>
                         @if (item.analysis.isTargetHit) {
-                          <span class="badge-target-achieved">🎯 TARGET HIT</span>
+                          <span class="zk-tag-hit">TARGET HIT</span>
                         }
                       </div>
-                      <h3 class="company-name">{{ item.holding.companyName }}</h3>
+                      <div class="zk-company-sub">{{ item.holding.companyName }}</div>
                     </div>
-
-                    <!-- Live Price & Day Change -->
-                    <div class="price-meta">
-                      <div class="live-ltp">₹{{ item.quote.currentPrice | number:'1.2-2' }}</div>
-                      <div class="day-change" [class.positive]="item.quote.dayChange >= 0" [class.negative]="item.quote.dayChange < 0">
-                        {{ item.quote.dayChange >= 0 ? '+' : '' }}₹{{ item.quote.dayChange | number:'1.2-2' }}
-                        ({{ item.quote.dayChangePercent | number:'1.2-2' }}%)
+                    <div class="zk-card-price-right">
+                      <div class="zk-ltp-val font-mono">₹{{ item.quote.currentPrice | number:'1.2-2' }}</div>
+                      <div class="zk-day-delta" [class.zk-profit]="item.quote.dayChange >= 0" [class.zk-loss]="item.quote.dayChange < 0">
+                        {{ item.quote.dayChange >= 0 ? '+' : '' }}₹{{ item.quote.dayChange | number:'1.2-2' }} ({{ item.quote.dayChangePercent | number:'1.2-2' }}%)
                       </div>
                     </div>
                   </div>
 
-                  <!-- Investment Stats Strip -->
-                  <div class="position-stats-strip">
-                    <div class="stat-col">
-                      <span class="stat-lbl">BUY PRICE</span>
-                      <span class="stat-val">₹{{ item.holding.buyPrice | number:'1.2-2' }}</span>
+                  <!-- Quick Stats Grid -->
+                  <div class="zk-card-stat-grid font-mono">
+                    <div class="zk-c-stat">
+                      <span class="zk-c-lbl">BUY PRICE</span>
+                      <span class="zk-c-val">₹{{ item.holding.buyPrice | number:'1.2-2' }}</span>
                     </div>
-                    <div class="stat-col">
-                      <span class="stat-lbl">QTY</span>
-                      <span class="stat-val">{{ item.holding.quantity | number:'1.0-4' }}</span>
+                    <div class="zk-c-stat">
+                      <span class="zk-c-lbl">QTY</span>
+                      <span class="zk-c-val">{{ item.holding.quantity | number:'1.0-4' }}</span>
                     </div>
-                    <div class="stat-col">
-                      <span class="stat-lbl">INVESTED</span>
-                      <span class="stat-val">₹{{ item.analysis.investedAmount | number:'1.2-2' }}</span>
+                    <div class="zk-c-stat">
+                      <span class="zk-c-lbl">INVESTED</span>
+                      <span class="zk-c-val">₹{{ item.analysis.investedAmount | number:'1.2-2' }}</span>
                     </div>
-                    <div class="stat-col">
-                      <span class="stat-lbl">CURRENT VALUE</span>
-                      <span class="stat-val">₹{{ item.analysis.currentValue | number:'1.2-2' }}</span>
+                    <div class="zk-c-stat">
+                      <span class="zk-c-lbl">CUR VALUE</span>
+                      <span class="zk-c-val">₹{{ item.analysis.currentValue | number:'1.2-2' }}</span>
                     </div>
-                    <div class="stat-col">
-                      <span class="stat-lbl">TOTAL PROFIT/LOSS</span>
-                      <span class="stat-val" [class.profit]="item.analysis.totalProfitLoss >= 0" [class.loss]="item.analysis.totalProfitLoss < 0">
-                        {{ item.analysis.totalProfitLoss >= 0 ? '+' : '' }}₹{{ item.analysis.totalProfitLoss | number:'1.2-2' }}
-                        ({{ item.analysis.profitLossPercentage | number:'1.2-2' }}%)
+                    <div class="zk-c-stat pnl-col">
+                      <span class="zk-c-lbl">TOTAL P&L</span>
+                      <span class="zk-c-val" [class.zk-profit]="item.analysis.totalProfitLoss >= 0" [class.zk-loss]="item.analysis.totalProfitLoss < 0">
+                        {{ item.analysis.totalProfitLoss >= 0 ? '+' : '' }}₹{{ item.analysis.totalProfitLoss | number:'1.2-2' }} ({{ item.analysis.profitLossPercentage | number:'1.2-2' }}%)
                       </span>
                     </div>
                   </div>
 
-                  <!-- Target Profit Progress Bar -->
-                  <div class="target-progress-block">
-                    <div class="target-header-row">
-                      <span class="target-subheading">
-                        🎯 Per-Share Target Profit:
-                        <strong>₹{{ (item.holding.targetProfitPerShare || 0) | number:'1.0-0' }} / share</strong>
-                      </span>
-                      <span class="target-current-achievement" [class.hit]="item.analysis.isTargetHit">
-                        Current Gain: <strong>{{ item.analysis.currentProfitPerShare >= 0 ? '+' : '' }}₹{{ item.analysis.currentProfitPerShare | number:'1.2-2' }} / share</strong>
-                        ({{ item.analysis.targetProgressPercentage || 0 | number:'1.0-0' }}% Achieved)
-                      </span>
+                  <!-- Target Strip -->
+                  <div class="zk-card-target-row">
+                    <div class="zk-target-txt">
+                      <span>🎯 Target: ₹{{ (item.holding.targetProfitPerShare || 0) | number:'1.0-0' }}/sh</span>
+                      <span [class.zk-profit]="item.analysis.isTargetHit" class="font-mono">Current: {{ item.analysis.currentProfitPerShare >= 0 ? '+' : '' }}₹{{ item.analysis.currentProfitPerShare | number:'1.2-2' }}/sh ({{ item.analysis.targetProgressPercentage || 0 | number:'1.0-0' }}%)</span>
                     </div>
-                    <div class="progress-bar-track">
-                      <div
-                        class="progress-bar-fill"
-                        [class.fill-hit]="item.analysis.isTargetHit"
-                        [style.width.%]="Math.min(100, Math.max(0, item.analysis.targetProgressPercentage || 0))">
-                      </div>
+                    <div class="zk-mini-progress">
+                      <div class="zk-mini-fill" [class.hit]="item.analysis.isTargetHit" [style.width.%]="Math.min(100, Math.max(0, item.analysis.targetProgressPercentage || 0))"></div>
                     </div>
                   </div>
 
-                  <!-- AI Strategic Action Recommendation Badge -->
-                  <div class="ai-recommendation-banner" [style.border-color]="item.analysis.actionColor">
-                    <div class="recommendation-badge" [style.background-color]="item.analysis.actionColor">
+                  <!-- AI Signal & Prediction Summary -->
+                  <div class="zk-card-ai-row">
+                    <div class="zk-signal-pill" [style.border-color]="item.analysis.actionColor" [style.color]="item.analysis.actionColor">
                       {{ item.analysis.actionBadgeText }}
                     </div>
-                    <div class="sentiment-meter">
-                      <span class="meter-label">AI Bullish Meter:</span>
-                      <span class="meter-score"><strong>{{ item.analysis.bullishScore }}/100</strong> ({{ item.analysis.sentimentLabel }})</span>
-                    </div>
+                    <div class="zk-bullish-sub">Bullish Score: <strong>{{ item.analysis.bullishScore }}/100</strong></div>
                   </div>
 
-                  <!-- Deep Predictive Market Analytics Grid -->
-                  <div class="predictive-analytics-grid">
-                    <!-- Upside Analysis Card ("Kitna Upar Ja Sakta Hai?") -->
-                    <div class="analytics-card upside-box">
-                      <div class="box-head">
-                        <span class="box-icon">🚀</span>
-                        <strong>Kitna Aur Upar Ja Sakta Hai? (Upside)</strong>
-                      </div>
-                      <div class="box-numbers">
-                        <div class="primary-num green">
-                          ₹{{ item.analysis.nextUpsideTargetPrice | number:'1.2-2' }}
-                          <span class="num-delta">(+{{ item.analysis.upsidePercentage | number:'1.1-1' }}%)</span>
-                        </div>
-                        <div class="prob-tag">
-                          Upside Probability: <strong>{{ item.analysis.upsideProbabilityPercent }}%</strong>
-                        </div>
-                      </div>
-                      <p class="box-rationale">{{ item.analysis.upsideRationale }}</p>
-                    </div>
-
-                    <!-- Downside Analysis Card ("Kitna Niche Gir Sakta Hai?") -->
-                    <div class="analytics-card downside-box">
-                      <div class="box-head">
-                        <span class="box-icon">🛡️</span>
-                        <strong>Kitna Niche Gir Sakta Hai? (Risk Cushion)</strong>
-                      </div>
-                      <div class="box-numbers">
-                        <div class="primary-num red">
-                          ₹{{ item.analysis.keySupportPrice | number:'1.2-2' }}
-                          <span class="num-delta">(-{{ item.analysis.downsidePercentage | number:'1.1-1' }}%)</span>
-                        </div>
-                        <div class="prob-tag risk">
-                          Downside Risk: <strong>{{ item.analysis.downsideProbabilityPercent }}%</strong>
-                        </div>
-                      </div>
-                      <p class="box-rationale">{{ item.analysis.downsideRationale }}</p>
-                      @if (item.analysis.recommendedTrailingStopLoss) {
-                        <div class="trailing-sl-pill">
-                          🔒 AI Trailing Stop-Loss: <strong>₹{{ item.analysis.recommendedTrailingStopLoss | number:'1.2-2' }}</strong>
-                        </div>
-                      }
-                    </div>
-                  </div>
-
-                  <!-- AI Narrative Guidance (Hindi) -->
-                  <div class="ai-narrative-box">
-                    <div class="narrative-title">
-                      <span>💡 AI Expert Strategy:</span>
-                    </div>
-                    <p class="narrative-text">{{ item.analysis.aiSummaryHindi }}</p>
-                  </div>
-
-                  <!-- Action Footers -->
-                  <div class="card-footer-actions">
-                    <button type="button" class="btn-card-ask-groww" (click)="openGrowwAiForStock(item)">
-                      🤖 Poocho AI Se (Groww Insights)
+                  <!-- Footer Actions -->
+                  <div class="zk-card-footer">
+                    <button type="button" class="zk-btn-ask-ai" (click)="openGrowwAiForStock(item)">
+                      🤖 Poocho AI Se
                     </button>
-                    <div class="right-footer-btns">
-                      <button type="button" class="btn-card-edit" (click)="openEditStockModal(item)">
-                        ✏️ Edit Target
+                    <div class="zk-row-btns">
+                      <button type="button" class="zk-icon-btn" (click)="openEditStockModal(item)" title="Edit Target">
+                        ✏️
                       </button>
-                      <button type="button" class="btn-card-delete" (click)="deleteStock(item.holding.id)">
-                        🗑️ Delete
+                      <button type="button" class="zk-icon-btn zk-del" (click)="deleteStock(item.holding.id)" title="Delete Stock">
+                        🗑️
                       </button>
                     </div>
                   </div>
@@ -1819,6 +1918,862 @@ import { ThemeService } from '../../core/services/theme.service';
     </div>
   `,
   styles: [`
+    /* ==========================================================================
+       Zerodha Kite Pro Minimalist Aesthetics
+       ========================================================================== */
+    .market-ai-container {
+      padding: 16px 20px;
+      max-width: 1520px;
+      margin: 0 auto;
+      color: var(--color-text-main, #1f2937);
+      font-size: 13px;
+    }
+
+    .font-mono {
+      font-family: var(--font-family-mono, monospace);
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Zerodha Pro Header */
+    .zk-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .zk-title-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .zk-page-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--color-text-main);
+      margin: 0;
+      letter-spacing: -0.015em;
+    }
+
+    .zk-pulse-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 600;
+      background: rgba(16, 185, 129, 0.12);
+      color: #059669;
+      border: 1px solid rgba(16, 185, 129, 0.25);
+
+      .zk-pulse-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #10b981;
+        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.35);
+        animation: zk-pulse 1.8s infinite ease-in-out;
+      }
+
+      &.closed {
+        background: rgba(100, 116, 139, 0.1);
+        color: #64748b;
+        border-color: rgba(100, 116, 139, 0.2);
+        .zk-pulse-dot {
+          background: #64748b;
+          animation: none;
+        }
+      }
+    }
+
+    @keyframes zk-pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.3); opacity: 0.7; }
+    }
+
+    .zk-engine-tag {
+      font-size: 10px;
+      font-weight: 700;
+      color: #387ed1;
+      background: rgba(56, 126, 209, 0.08);
+      border: 1px solid rgba(56, 126, 209, 0.2);
+      padding: 1px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .zk-page-subtitle {
+      font-size: 12px;
+      color: var(--color-text-muted);
+      margin: 2px 0 0;
+      line-height: 1.4;
+    }
+
+    .zk-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .zk-auto-box {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      font-size: 11.5px;
+      color: var(--color-text-muted);
+      background: var(--color-canvas-subtle, #f8fafc);
+      border: 1px solid var(--color-border, #e2e8f0);
+      border-radius: 6px;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.12s ease;
+
+      &:hover {
+        background: var(--color-bg-hover, #f1f5f9);
+        color: var(--color-text-main);
+      }
+
+      .zk-spin-icon.spinning {
+        display: inline-block;
+        animation: spin 1s infinite linear;
+      }
+    }
+
+    .zk-btn-outline {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      min-height: 28px;
+      padding: 4px 10px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--color-text-main);
+      background: var(--color-bg-card, #ffffff);
+      border: 1px solid var(--color-border, #e2e8f0);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.12s ease;
+
+      &:hover:not(:disabled) {
+        background: var(--color-canvas-subtle, #f8fafc);
+        border-color: var(--color-border-muted, #cbd5e1);
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      .spin {
+        display: inline-block;
+        animation: spin 0.8s infinite linear;
+      }
+    }
+
+    .zk-btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      min-height: 28px;
+      padding: 4px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #ffffff;
+      background: #387ed1;
+      border: 1px solid #387ed1;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.12s ease;
+
+      &:hover {
+        background: #2b6cb0;
+        border-color: #2b6cb0;
+      }
+    }
+
+    /* Target Alert Ribbon */
+    .zk-alert-banner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 14px;
+      border-radius: 6px;
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      color: #065f46;
+      margin-bottom: 12px;
+      font-size: 12px;
+      flex-wrap: wrap;
+
+      .zk-alert-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+      }
+
+      .zk-alert-icon { font-size: 16px; }
+
+      .zk-alert-sub {
+        display: block;
+        font-size: 11.5px;
+        color: #047857;
+        margin-top: 2px;
+      }
+
+      .zk-btn-alert {
+        background: #059669;
+        color: #ffffff;
+        border: none;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+    }
+
+    /* Zerodha Kite Portfolio Summary Strip */
+    .zk-summary-strip {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--color-bg-card, #ffffff);
+      border: 1px solid var(--color-border, #e2e8f0);
+      border-radius: 8px;
+      padding: 10px 16px;
+      margin-bottom: 14px;
+      gap: 12px;
+      flex-wrap: wrap;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+
+    .zk-summary-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+
+      &.clickable {
+        cursor: pointer;
+      }
+
+      .zk-sum-label {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--color-text-muted, #64748b);
+        letter-spacing: 0.05em;
+      }
+
+      .zk-sum-val {
+        font-size: 14.5px;
+        font-weight: 700;
+        color: var(--color-text-main);
+        font-variant-numeric: tabular-nums;
+        display: flex;
+        align-items: center;
+      }
+
+      .zk-sum-sub {
+        font-size: 11px;
+        color: var(--color-text-muted, #64748b);
+      }
+
+      .zk-accent {
+        color: #387ed1;
+      }
+
+      .zk-link {
+        color: #387ed1;
+        font-weight: 600;
+      }
+    }
+
+    .zk-summary-divider {
+      width: 1px;
+      height: 28px;
+      background: var(--color-border, #e2e8f0);
+      align-self: center;
+    }
+
+    .zk-profit {
+      color: #059669 !important;
+    }
+
+    .zk-loss {
+      color: #dc2626 !important;
+    }
+
+    .zk-sum-badge {
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 4px;
+      margin-left: 6px;
+      font-variant-numeric: tabular-nums;
+
+      &.zk-profit {
+        background: #ecfdf5;
+        color: #059669;
+      }
+
+      &.zk-loss {
+        background: #fef2f2;
+        color: #dc2626;
+      }
+    }
+
+    /* Zerodha Kite Tabs & View Switcher */
+    .zk-tabs-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--color-border, #e2e8f0);
+      margin-bottom: 14px;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .zk-nav-tabs {
+      display: flex;
+      gap: 4px;
+      overflow-x: auto;
+    }
+
+    .zk-tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 14px;
+      font-size: 12.5px;
+      font-weight: 600;
+      color: var(--color-text-muted, #64748b);
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      cursor: pointer;
+      transition: all 0.12s ease;
+      white-space: nowrap;
+
+      &:hover {
+        color: var(--color-text-main);
+      }
+
+      &.active {
+        color: #387ed1;
+        border-bottom-color: #387ed1;
+      }
+
+      .zk-tab-badge {
+        padding: 1px 6px;
+        border-radius: 9999px;
+        font-size: 10px;
+        font-weight: 700;
+        background: var(--color-canvas-subtle, #f1f5f9);
+        color: var(--color-text-muted);
+
+        &.special {
+          background: rgba(56, 126, 209, 0.12);
+          color: #387ed1;
+        }
+      }
+    }
+
+    .zk-view-toggle {
+      display: inline-flex;
+      gap: 2px;
+      background: var(--color-canvas-subtle, #f1f5f9);
+      padding: 2px;
+      border-radius: 6px;
+      border: 1px solid var(--color-border, #e2e8f0);
+
+      .zk-toggle-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 8px;
+        font-size: 11px;
+        font-weight: 500;
+        border: none;
+        background: transparent;
+        color: var(--color-text-muted);
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.12s ease;
+
+        &.active {
+          background: var(--color-bg-card, #ffffff);
+          color: var(--color-text-main);
+          font-weight: 600;
+          box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+        }
+      }
+    }
+
+    /* Zerodha Kite Holdings Table */
+    .zk-table-container {
+      width: 100%;
+      overflow-x: auto;
+      background: var(--color-bg-card, #ffffff);
+      border: 1px solid var(--color-border, #e2e8f0);
+      border-radius: 8px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+    }
+
+    .zk-holdings-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 12.5px;
+
+      thead th {
+        background: var(--color-canvas-subtle, #f8fafc);
+        color: var(--color-text-muted, #64748b);
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        padding: 9px 12px;
+        border-bottom: 1px solid var(--color-border, #e2e8f0);
+        white-space: nowrap;
+
+        &.th-num {
+          text-align: right;
+        }
+      }
+
+      tbody tr.zk-holding-row {
+        border-bottom: 1px solid var(--color-border-subtle, #f1f5f9);
+        transition: background-color 0.12s ease;
+
+        &:hover {
+          background-color: var(--color-canvas-subtle, #f8fafc);
+        }
+
+        &.expanded {
+          background-color: rgba(56, 126, 209, 0.03);
+        }
+
+        td {
+          padding: 10px 12px;
+          vertical-align: middle;
+
+          &.td-num {
+            text-align: right;
+          }
+        }
+      }
+    }
+
+    .zk-inst-cell {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+
+      .zk-expand-btn {
+        width: 18px;
+        height: 18px;
+        border-radius: 3px;
+        background: transparent;
+        border: none;
+        color: var(--color-text-muted);
+        font-size: 9px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.15s ease;
+
+        &.open {
+          transform: rotate(90deg);
+          color: #387ed1;
+        }
+      }
+
+      .zk-ticker-name {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+
+        .zk-ticker {
+          font-weight: 700;
+          font-size: 13px;
+          color: var(--color-text-main);
+        }
+
+        .zk-exchange {
+          font-size: 9.5px;
+          font-weight: 700;
+          padding: 1px 4px;
+          border-radius: 3px;
+          background: var(--color-canvas-subtle, #f1f5f9);
+          color: var(--color-text-muted);
+        }
+
+        .zk-tag-hit {
+          font-size: 9.5px;
+          font-weight: 700;
+          padding: 1px 6px;
+          border-radius: 4px;
+          background: #ecfdf5;
+          color: #059669;
+          border: 1px solid #a7f3d0;
+        }
+      }
+
+      .zk-company-sub {
+        font-size: 11px;
+        color: var(--color-text-muted, #64748b);
+        max-width: 190px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+
+    .zk-ltp-val {
+      font-weight: 700;
+      font-size: 12.5px;
+      color: var(--color-text-main);
+    }
+
+    .zk-day-delta {
+      font-size: 10.5px;
+      font-weight: 600;
+    }
+
+    .zk-pnl-cell {
+      font-weight: 700;
+      font-size: 12.5px;
+    }
+
+    .zk-badge-pnl {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 4px;
+
+      &.zk-profit {
+        background: #ecfdf5;
+        color: #059669;
+      }
+
+      &.zk-loss {
+        background: #fef2f2;
+        color: #dc2626;
+      }
+    }
+
+    .zk-target-mini {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 120px;
+
+      .zk-target-txt {
+        display: flex;
+        justify-content: space-between;
+        font-size: 10.5px;
+        color: var(--color-text-muted);
+      }
+
+      .zk-mini-progress {
+        width: 100%;
+        height: 4px;
+        background: var(--color-canvas-subtle, #e2e8f0);
+        border-radius: 2px;
+        overflow: hidden;
+
+        .zk-mini-fill {
+          height: 100%;
+          background: #387ed1;
+          transition: width 0.3s ease;
+
+          &.hit {
+            background: #059669;
+          }
+        }
+      }
+    }
+
+    .zk-signal-pill {
+      display: inline-block;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 4px;
+      border: 1px solid;
+      white-space: nowrap;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .zk-bullish-sub {
+      font-size: 10px;
+      color: var(--color-text-muted);
+      margin-top: 2px;
+    }
+
+    .zk-row-btns {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      justify-content: flex-end;
+    }
+
+    .zk-icon-btn {
+      width: 26px;
+      height: 26px;
+      border-radius: 4px;
+      border: 1px solid var(--color-border, #e2e8f0);
+      background: var(--color-bg-card, #ffffff);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      transition: all 0.12s ease;
+
+      &:hover {
+        background: var(--color-canvas-subtle, #f1f5f9);
+        border-color: #387ed1;
+      }
+
+      &.zk-del:hover {
+        background: #fef2f2;
+        border-color: #ef4444;
+      }
+    }
+
+    /* Expandable Detail Drawer */
+    .zk-expanded-detail-row {
+      background: var(--color-canvas-subtle, #f8fafc) !important;
+      border-bottom: 2px solid var(--color-border, #e2e8f0) !important;
+
+      td {
+        padding: 12px 16px !important;
+      }
+    }
+
+    .zk-detail-drawer {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .zk-drawer-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 10px;
+    }
+
+    .zk-drawer-box {
+      background: var(--color-bg-card, #ffffff);
+      border: 1px solid var(--color-border, #e2e8f0);
+      border-radius: 6px;
+      padding: 10px 12px;
+
+      &.upside {
+        border-left: 3px solid #10b981;
+      }
+
+      &.downside {
+        border-left: 3px solid #ef4444;
+      }
+
+      .zk-drawer-box-head {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11.5px;
+        margin-bottom: 4px;
+        flex-wrap: wrap;
+
+        .zk-prob-pill {
+          font-size: 10.5px;
+          padding: 1px 5px;
+          border-radius: 3px;
+          background: #ecfdf5;
+          color: #059669;
+          font-weight: 600;
+        }
+
+        .zk-sl-pill {
+          font-size: 10.5px;
+          padding: 1px 5px;
+          border-radius: 3px;
+          background: #fef2f2;
+          color: #dc2626;
+          font-weight: 700;
+        }
+      }
+
+      .zk-drawer-text {
+        font-size: 11.5px;
+        color: var(--color-text-muted);
+        line-height: 1.4;
+        margin: 0;
+      }
+    }
+
+    .zk-strategy-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      background: rgba(56, 126, 209, 0.05);
+      border: 1px solid rgba(56, 126, 209, 0.2);
+      border-radius: 6px;
+      padding: 8px 12px;
+      flex-wrap: wrap;
+
+      .zk-strat-label {
+        font-size: 11.5px;
+        font-weight: 700;
+        color: #387ed1;
+      }
+
+      .zk-strat-text {
+        font-size: 12px;
+        color: var(--color-text-main);
+        flex: 1;
+        line-height: 1.4;
+      }
+
+      .zk-btn-ask-ai {
+        font-size: 11.5px;
+        font-weight: 600;
+        padding: 4px 10px;
+        border-radius: 4px;
+        background: #387ed1;
+        color: #ffffff;
+        border: none;
+        cursor: pointer;
+        transition: background 0.12s ease;
+
+        &:hover {
+          background: #2b6cb0;
+        }
+      }
+    }
+
+    /* Zerodha Compact Cards */
+    .zk-card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 12px;
+    }
+
+    .zk-stock-card {
+      background: var(--color-bg-card, #ffffff);
+      border: 1px solid var(--color-border, #e2e8f0);
+      border-radius: 8px;
+      padding: 12px 14px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: all 0.15s ease;
+
+      &.target-hit {
+        border-color: #10b981;
+      }
+
+      &.stop-breached {
+        border-color: #ef4444;
+      }
+
+      .zk-card-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+
+      .zk-card-price-right {
+        text-align: right;
+      }
+
+      .zk-card-stat-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+        background: var(--color-canvas-subtle, #f8fafc);
+        padding: 8px 10px;
+        border-radius: 6px;
+
+        .zk-c-stat {
+          display: flex;
+          flex-direction: column;
+          gap: 1px;
+
+          &.pnl-col {
+            grid-column: 1 / -1;
+            padding-top: 4px;
+            border-top: 1px dashed var(--color-border, #e2e8f0);
+          }
+
+          .zk-c-lbl {
+            font-size: 9.5px;
+            font-weight: 700;
+            color: var(--color-text-muted);
+            letter-spacing: 0.04em;
+          }
+
+          .zk-c-val {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--color-text-main);
+          }
+        }
+      }
+
+      .zk-card-target-row {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+
+      .zk-card-ai-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .zk-card-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-top: 6px;
+        border-top: 1px solid var(--color-border-subtle, #f1f5f9);
+      }
+    }
+
+    .zk-empty-state {
+      background: var(--color-bg-card, #ffffff);
+      border: 1px dashed var(--color-border, #cbd5e1);
+      border-radius: 8px;
+      padding: 32px 20px;
+      text-align: center;
+      max-width: 520px;
+      margin: 20px auto;
+
+      .zk-empty-icon { font-size: 32px; margin-bottom: 8px; }
+      h3 { font-size: 15px; font-weight: 700; margin: 0 0 6px; }
+      p { font-size: 12px; color: var(--color-text-muted); margin: 0 0 16px; line-height: 1.5; }
+      .zk-empty-actions { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
+    }
+
     .market-ai-container {
       padding: 24px;
       max-width: 1440px;
@@ -5074,6 +6029,18 @@ import { ThemeService } from '../../core/services/theme.service';
   `]
 })
 export class MarketAiComponent implements OnInit, OnDestroy {
+  // Zerodha Kite View Switcher & Accordion Signals
+  readonly portfolioViewMode = signal<'table' | 'cards'>('table');
+  readonly expandedHoldingId = signal<string | null>(null);
+
+  setPortfolioViewMode(mode: 'table' | 'cards'): void {
+    this.portfolioViewMode.set(mode);
+  }
+
+  toggleHoldingExpansion(id: string): void {
+    this.expandedHoldingId.update(curr => curr === id ? null : id);
+  }
+
   private readonly marketService = inject(MarketAiService);
   readonly themeService = inject(ThemeService);
 

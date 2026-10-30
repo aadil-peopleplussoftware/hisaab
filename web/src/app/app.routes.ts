@@ -95,6 +95,12 @@ export const routes: Routes = [
         loadComponent: () => import('./features/investments/holding-detail/holding-detail.component').then(m => m.HoldingDetailComponent)
       },
       {
+        path: 'trade-desk',
+        canActivate: [authGuard, roleRightsGuard],
+        data: { module: 'TradeDesk' },
+        loadComponent: () => import('./features/trade-desk/trade-desk.component').then(m => m.TradeDeskComponent)
+      },
+      {
         path: 'market-ai',
         canActivate: [authGuard, roleRightsGuard],
         data: { module: 'MarketAi' },

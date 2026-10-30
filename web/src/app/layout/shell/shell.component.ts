@@ -99,6 +99,13 @@ interface CommandItem {
             </a>
           }
 
+          @if (roleRightsService.canView('TradeDesk')) {
+            <a routerLink="/trade-desk" routerLinkActive="active" class="nav-item" title="Trade & IPO Desk">
+              <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'tradedesk' }" />
+              <span class="nav-label">Trade & IPO Desk</span>
+            </a>
+          }
+
           @if (roleRightsService.canView('MarketAi')) {
             <a routerLink="/market-ai" routerLinkActive="active" class="nav-item nav-item-market-ai" title="AI Stock Market Hub">
               <span class="nav-ai-sparkle">✨</span>
@@ -788,6 +795,14 @@ interface CommandItem {
                 </a>
               }
 
+              @if (roleRightsService.canView('TradeDesk')) {
+                <a routerLink="/trade-desk" (click)="closeMobileMenu()" class="drawer-link">
+                  <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'tradedesk' }" />
+                  <span>Trade & IPO Desk</span>
+                  <span class="nav-badge-pill" style="background: rgba(16, 185, 129, 0.15); color: #059669; font-weight: 700; font-size: 10px;">IPO</span>
+                </a>
+              }
+
               @if (roleRightsService.canView('MarketAi')) {
                 <a routerLink="/market-ai" (click)="closeMobileMenu()" class="drawer-link drawer-market-ai">
                   <span class="drawer-ai-icon">✨</span>
@@ -930,6 +945,9 @@ interface CommandItem {
                 @case ('investments') {
                   <path d="M3 3a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zm18 4l-7 7-4-4-5 5-1.4-1.4 6.4-6.4 4 4 5.6-5.6H17V5h5v5h-1V7z" />
                 }
+                @case ('tradedesk') {
+                  <path d="M5 3a1 1 0 0 1 1 1v1h2a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H6v7a1 1 0 1 1-2 0v-7H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h2V4a1 1 0 0 1 1-1zm12 5a1 1 0 0 1 1 1v1h2a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-2v2a1 1 0 1 1-2 0v-2h-2a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1h2v-1a1 1 0 0 1 1-1z" />
+                }
                 @case ('business') {
                   <path d="M20 6h-4V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zm-10-2h4v2h-4V4zm10 16H4V8h16v12z" />
                 }
@@ -987,6 +1005,14 @@ interface CommandItem {
                     <polygon points="22 7 13.5 15.5 8.5 10.5 2 17 2 22 22 22" fill="currentColor" fill-opacity="0.2" stroke="none" />
                     <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
                     <polyline points="16 7 22 7 22 13" />
+                  }
+                  @case ('tradedesk') {
+                    <rect x="3" y="6" width="6" height="8" rx="1" fill="currentColor" fill-opacity="0.25" />
+                    <line x1="6" y1="2" x2="6" y2="6" />
+                    <line x1="6" y1="14" x2="6" y2="22" />
+                    <rect x="15" y="10" width="6" height="8" rx="1" fill="currentColor" fill-opacity="0.25" />
+                    <line x1="18" y1="5" x2="18" y2="10" />
+                    <line x1="18" y1="18" x2="18" y2="21" />
                   }
                   @case ('business') {
                     <rect width="20" height="14" x="2" y="7" rx="2" fill="currentColor" fill-opacity="0.2" />
@@ -1058,6 +1084,14 @@ interface CommandItem {
                   <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
                   <polyline points="16 7 22 7 22 13" />
                 }
+                @case ('tradedesk') {
+                  <rect x="3.5" y="6" width="5" height="8" rx="0.5" />
+                  <line x1="6" y1="2" x2="6" y2="6" />
+                  <line x1="6" y1="14" x2="6" y2="22" />
+                  <rect x="15.5" y="10" width="5" height="8" rx="0.5" />
+                  <line x1="18" y1="5" x2="18" y2="10" />
+                  <line x1="18" y1="18" x2="18" y2="21" />
+                }
                 @case ('business') {
                   <rect width="20" height="14" x="2" y="7" rx="1.5" />
                   <path d="M16 7V4a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3" />
@@ -1123,6 +1157,14 @@ interface CommandItem {
                 @case ('investments') {
                   <polyline points="22 7 13.5 15.5 8.5 10.5 2 17" />
                   <polyline points="16 7 22 7 22 13" />
+                }
+                @case ('tradedesk') {
+                  <rect x="3.5" y="6" width="5" height="8" rx="0.5" />
+                  <line x1="6" y1="2" x2="6" y2="6" />
+                  <line x1="6" y1="14" x2="6" y2="22" />
+                  <rect x="15.5" y="10" width="5" height="8" rx="0.5" />
+                  <line x1="18" y1="5" x2="18" y2="10" />
+                  <line x1="18" y1="18" x2="18" y2="21" />
                 }
                 @case ('business') {
                   <rect width="20" height="14" x="2" y="7" rx="2" />

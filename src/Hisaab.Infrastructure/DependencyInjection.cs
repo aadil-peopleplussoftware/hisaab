@@ -35,6 +35,7 @@ public static class DependencyInjection
         // Stock Market Real-Time Feed & AI Engine
         services.AddHttpClient<IStockMarketService, StockMarketService>();
         services.AddScoped<IStockAiEngine, StockAiEngine>();
+        services.AddScoped<IIpoMarketService, IpoMarketService>();
 
         // WhatsApp & Multi-Agent Market AI Services
         services.AddHttpClient("WhatsAppClient");

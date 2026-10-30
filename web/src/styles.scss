@@ -1430,22 +1430,22 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Google Play Console Heading Hierarchy */
+/* Compact Crisp Heading Hierarchy */
 h1, h2, h3, h4, h5, h6 {
   color: var(--color-text-main);
   font-family: var(--font-family-google);
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1.25;
 }
 
-h1 { font-size: 26px; font-weight: 400; letter-spacing: -0.015em; }
-h2 { font-size: 20px; font-weight: 500; letter-spacing: -0.01em; }
-h3 { font-size: 16px; font-weight: 500; }
-h4 { font-size: 14px; font-weight: 500; }
+h1 { font-size: 20px; font-weight: 600; letter-spacing: -0.015em; }
+h2 { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
+h3 { font-size: 14px; font-weight: 600; }
+h4 { font-size: 13px; font-weight: 600; }
 
 p {
   color: var(--color-text-muted);
-  font-size: 14px;
+  font-size: 13px;
 }
 
 /* Tabular Financial Figures */
@@ -1459,7 +1459,7 @@ p {
 }
 
 /* ==========================================================================
-   Google Play Console Pill Button System
+   Clean Compact Button System
    ========================================================================== */
 
 button, a, input, select, textarea {
@@ -1467,25 +1467,35 @@ button, a, input, select, textarea {
 }
 
 .btn,
+button.btn,
 .btn-primary,
+button.btn-primary,
 .btn-secondary,
+button.btn-secondary,
 .btn-outline,
+button.btn-outline,
 .btn-danger,
+button.btn-danger,
 .btn-invisible,
+button.btn-invisible,
 .btn-ghost,
+button.btn-ghost,
 .btn-action,
+button.btn-action,
 .btn-back,
-.btn-retry {
+button.btn-back,
+.btn-retry,
+button.btn-retry {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  min-height: 36px;
-  padding: 8px 20px;
-  font-size: 14px;
+  gap: 6px;
+  min-height: 32px;
+  padding: 5px 14px;
+  font-size: 13px;
   font-weight: 500;
-  line-height: 20px;
-  border-radius: var(--radius-pill); /* Google Pill Radius */
+  line-height: 18px;
+  border-radius: 8px; /* Clean compact radius */
   border: 1px solid var(--color-border-default);
   background-color: var(--color-canvas-default);
   color: var(--color-accent-fg);
@@ -1520,27 +1530,31 @@ button, a, input, select, textarea {
   }
 }
 
-/* 1. Primary Button (Google Blue Pill) */
-.btn-primary {
-  color: #ffffff;
-  background-color: var(--color-btn-primary-bg);
-  border-color: var(--color-btn-primary-border);
+/* 1. Primary Button */
+.btn-primary, button.btn-primary {
+  color: #ffffff !important;
+  background-color: var(--color-btn-primary-bg) !important;
+  border-color: var(--color-btn-primary-border) !important;
   box-shadow: 0 1px 2px rgba(11, 87, 208, 0.2);
 
-  &:hover {
-    background-color: var(--color-btn-primary-hover-bg);
-    border-color: var(--color-btn-primary-hover-bg);
+  &:hover:not(:disabled) {
+    background-color: var(--color-btn-primary-hover-bg) !important;
+    border-color: var(--color-btn-primary-hover-bg) !important;
     box-shadow: 0 2px 4px rgba(11, 87, 208, 0.3);
   }
 }
 
 /* 2. Secondary / Outlined Button */
-.btn, .btn-secondary, .btn-outline, .btn-action, .btn-back, .btn-retry {
-  color: var(--color-fg-muted);
+.btn-outline, button.btn-outline,
+.btn-secondary, button.btn-secondary,
+.btn-action, button.btn-action,
+.btn-back, button.btn-back,
+.btn-retry, button.btn-retry {
+  color: var(--color-text-main);
   background-color: var(--color-canvas-default);
   border: 1px solid var(--color-border-default);
 
-  &:hover {
+  &:hover:not(:disabled) {
     background-color: var(--color-canvas-subtle);
     color: var(--color-fg-default);
     border-color: var(--color-border-muted);
@@ -1548,15 +1562,26 @@ button, a, input, select, textarea {
 }
 
 /* 3. Danger Button */
-.btn-danger {
-  color: var(--color-btn-danger-text);
-  background-color: var(--color-btn-danger-bg);
-  border-color: var(--color-btn-danger-border);
+.btn-danger, button.btn-danger,
+.btn-action.btn-danger, button.btn-action.btn-danger {
+  color: var(--color-btn-danger-text) !important;
+  background-color: var(--color-btn-danger-bg) !important;
+  border-color: var(--color-btn-danger-border) !important;
 
-  &:hover {
-    color: #ffffff;
-    background-color: var(--color-btn-danger-hover-bg);
-    border-color: var(--color-btn-danger-hover-bg);
+  &:hover:not(:disabled) {
+    color: #ffffff !important;
+    background-color: var(--color-btn-danger-hover-bg) !important;
+    border-color: var(--color-btn-danger-hover-bg) !important;
+  }
+}
+
+/* Print button */
+.btn-print {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  svg {
+    vertical-align: middle;
   }
 }
 

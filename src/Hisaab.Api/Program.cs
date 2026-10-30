@@ -354,6 +354,90 @@ using (var scope = app.Services.CreateScope())
             );
 
             CREATE UNIQUE INDEX IF NOT EXISTS ""IX_role_rights_RoleName_Module"" ON role_rights (""RoleName"", ""Module"");
+
+            -- Trade Orders Table (Trade & IPO Desk)
+            CREATE TABLE IF NOT EXISTS trade_orders (
+                ""Id"" uuid NOT NULL,
+                ""UserId"" uuid NOT NULL,
+                ""Ticker"" character varying(50) NOT NULL,
+                ""CompanyName"" character varying(200) NOT NULL,
+                ""Exchange"" character varying(20) NOT NULL DEFAULT 'NSE',
+                ""TradeType"" integer NOT NULL DEFAULT 1,
+                ""Status"" integer NOT NULL DEFAULT 1,
+                ""BuyPrice"" numeric(18,2) NOT NULL,
+                ""Quantity"" numeric(18,4) NOT NULL,
+                ""InvestedAmount"" numeric(18,2) NOT NULL,
+                ""BuyDate"" timestamp with time zone NOT NULL,
+                ""PlannedHoldingDays"" integer NOT NULL DEFAULT 10,
+                ""TargetPrice"" numeric(18,2),
+                ""StopLossPrice"" numeric(18,2),
+                ""Notes"" character varying(1000),
+                ""SellDate"" timestamp with time zone,
+                ""SellPrice"" numeric(18,2),
+                ""TotalCharges"" numeric(18,2) NOT NULL DEFAULT 0,
+                ""RealizedProfitLoss"" numeric(18,2),
+                ""RealizedProfitLossPercentage"" numeric(18,2),
+                ""NetProfitLoss"" numeric(18,2),
+                ""NetProfitLossPercentage"" numeric(18,2),
+                ""ActualHoldingDays"" integer,
+                ""CreatedAtUtc"" timestamp with time zone NOT NULL,
+                ""UpdatedAtUtc"" timestamp with time zone,
+                ""CreatedBy"" uuid,
+                ""UpdatedBy"" uuid,
+                ""RowVersion"" bigint NOT NULL DEFAULT 0,
+                ""IsDeleted"" boolean NOT NULL DEFAULT false,
+                ""DeletedAtUtc"" timestamp with time zone,
+                ""DeletedBy"" uuid,
+                ""ImportBatchId"" uuid,
+                CONSTRAINT ""PK_trade_orders"" PRIMARY KEY (""Id"")
+            );
+
+            CREATE INDEX IF NOT EXISTS ""IX_trade_orders_UserId_Status"" ON trade_orders (""UserId"", ""Status"");
+            CREATE INDEX IF NOT EXISTS ""IX_trade_orders_UserId_BuyDate"" ON trade_orders (""UserId"", ""BuyDate"");
+
+            ALTER TABLE trade_orders ADD COLUMN IF NOT EXISTS ""TotalCharges"" numeric(18,2) NOT NULL DEFAULT 0;
+            ALTER TABLE trade_orders ADD COLUMN IF NOT EXISTS ""NetProfitLoss"" numeric(18,2);
+            ALTER TABLE trade_orders ADD COLUMN IF NOT EXISTS ""NetProfitLossPercentage"" numeric(18,2);
+
+            -- IPO Applications Table (Trade & IPO Desk)
+            CREATE TABLE IF NOT EXISTS ipo_applications (
+                ""Id"" uuid NOT NULL,
+                ""UserId"" uuid NOT NULL,
+                ""CompanyName"" character varying(200) NOT NULL,
+                ""Symbol"" character varying(50) NOT NULL,
+                ""IssueType"" integer NOT NULL DEFAULT 1,
+                ""Status"" integer NOT NULL DEFAULT 1,
+                ""ApplicationDate"" timestamp with time zone NOT NULL,
+                ""AllotmentDate"" timestamp with time zone,
+                ""ListingDate"" timestamp with time zone,
+                ""LotSize"" integer NOT NULL DEFAULT 1,
+                ""LotsApplied"" integer NOT NULL DEFAULT 1,
+                ""TotalShares"" integer NOT NULL,
+                ""BidPrice"" numeric(18,2) NOT NULL,
+                ""TotalAmountBlocked"" numeric(18,2) NOT NULL,
+                ""ApplicationNumber"" character varying(100),
+                ""UpiId"" character varying(100),
+                ""SharesAllotted"" integer NOT NULL DEFAULT 0,
+                ""ListingPrice"" numeric(18,2),
+                ""SellPrice"" numeric(18,2),
+                ""SellDate"" timestamp with time zone,
+                ""RealizedProfitLoss"" numeric(18,2),
+                ""RealizedProfitLossPercentage"" numeric(18,2),
+                ""Notes"" character varying(1000),
+                ""CreatedAtUtc"" timestamp with time zone NOT NULL,
+                ""UpdatedAtUtc"" timestamp with time zone,
+                ""CreatedBy"" uuid,
+                ""UpdatedBy"" uuid,
+                ""RowVersion"" bigint NOT NULL DEFAULT 0,
+                ""IsDeleted"" boolean NOT NULL DEFAULT false,
+                ""DeletedAtUtc"" timestamp with time zone,
+                ""DeletedBy"" uuid,
+                ""ImportBatchId"" uuid,
+                CONSTRAINT ""PK_ipo_applications"" PRIMARY KEY (""Id"")
+            );
+
+            CREATE INDEX IF NOT EXISTS ""IX_ipo_applications_UserId_Status"" ON ipo_applications (""UserId"", ""Status"");
+            CREATE INDEX IF NOT EXISTS ""IX_ipo_applications_UserId_ApplicationDate"" ON ipo_applications (""UserId"", ""ApplicationDate"");
         ");
     }
     catch

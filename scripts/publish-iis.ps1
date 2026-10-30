@@ -25,8 +25,9 @@ try {
 # Put app offline to release IIS w3wp locks if site is active
 $OfflineFile = Join-Path $PublishDir "app_offline.htm"
 if (Test-Path $PublishDir) {
-    Set-Content -Path $OfflineFile -Value "<html><body><h2>Deploying updates...</h2></body></html>" -Force
-    Start-Sleep -Seconds 2
+    Write-Host "`nGracefully detaching IIS via app_offline.htm..." -ForegroundColor Yellow
+    Set-Content -Path $OfflineFile -Value "<html><body><h2>Deploying updates... Please refresh in a moment.</h2></body></html>" -Force
+    Start-Sleep -Seconds 3
 }
 
 try {
@@ -37,7 +38,10 @@ try {
     # 3. Copy Angular Build to wwwroot
     Write-Host "`n[3/4] Copying Angular assets to wwwroot..." -ForegroundColor Cyan
     $WwwRoot = Join-Path $PublishDir "wwwroot"
-    if (-not (Test-Path $WwwRoot)) {
+    if (Test-Path $WwwRoot) {
+        # Clean obsolete hashed bundles, leaving uploads if any
+        Get-ChildItem -Path $WwwRoot -Exclude "uploads" | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue
+    } else {
         New-Item -ItemType Directory -Path $WwwRoot -Force | Out-Null
     }
 
@@ -55,21 +59,48 @@ if (-not (Test-Path $LogsDir)) {
     New-Item -ItemType Directory -Path $LogsDir -Force | Out-Null
 }
 
-# Ensure web.config has stdout logging & development environment enabled for troubleshooting
+# Ensure web.config has stdout logging, development environment, and no-cache headers
 $WebConfigFile = Join-Path $PublishDir "web.config"
 if (Test-Path $WebConfigFile) {
     [xml]$xml = Get-Content $WebConfigFile
-    $aspNetCore = $xml.configuration.location.'system.webServer'.aspNetCore
-    if ($aspNetCore) {
-        $aspNetCore.SetAttribute("stdoutLogEnabled", "true")
-        if (-not $aspNetCore.environmentVariables) {
-            $envVars = $xml.CreateElement("environmentVariables")
-            $envVar = $xml.CreateElement("environmentVariable")
-            $envVar.SetAttribute("name", "ASPNETCORE_ENVIRONMENT")
-            $envVar.SetAttribute("value", "Development")
-            $envVars.AppendChild($envVar) | Out-Null
-            $aspNetCore.AppendChild($envVars) | Out-Null
+    $systemWebServer = $xml.configuration.location.'system.webServer'
+    if ($systemWebServer) {
+        $aspNetCore = $systemWebServer.aspNetCore
+        if ($aspNetCore) {
+            $aspNetCore.SetAttribute("stdoutLogEnabled", "true")
+            if (-not $aspNetCore.environmentVariables) {
+                $envVars = $xml.CreateElement("environmentVariables")
+                $envVar = $xml.CreateElement("environmentVariable")
+                $envVar.SetAttribute("name", "ASPNETCORE_ENVIRONMENT")
+                $envVar.SetAttribute("value", "Development")
+                $envVars.AppendChild($envVar) | Out-Null
+                $aspNetCore.AppendChild($envVars) | Out-Null
+            }
         }
+
+        if (-not $systemWebServer.httpProtocol) {
+            $httpProtocol = $xml.CreateElement("httpProtocol")
+            $customHeaders = $xml.CreateElement("customHeaders")
+            
+            $h1 = $xml.CreateElement("add")
+            $h1.SetAttribute("name", "Cache-Control")
+            $h1.SetAttribute("value", "no-cache, no-store, must-revalidate")
+            $customHeaders.AppendChild($h1) | Out-Null
+
+            $h2 = $xml.CreateElement("add")
+            $h2.SetAttribute("name", "Pragma")
+            $h2.SetAttribute("value", "no-cache")
+            $customHeaders.AppendChild($h2) | Out-Null
+
+            $h3 = $xml.CreateElement("add")
+            $h3.SetAttribute("name", "Expires")
+            $h3.SetAttribute("value", "0")
+            $customHeaders.AppendChild($h3) | Out-Null
+
+            $httpProtocol.AppendChild($customHeaders) | Out-Null
+            $systemWebServer.AppendChild($httpProtocol) | Out-Null
+        }
+
         $xml.Save($WebConfigFile)
     }
 }
@@ -81,4 +112,3 @@ if ((Test-Path (Join-Path $PublishDir "Hisaab.Api.dll")) -and (Test-Path (Join-P
 } else {
     Write-Host "`n Warning: Publish completed but some expected files are missing." -ForegroundColor Red
 }
-

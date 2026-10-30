@@ -26,11 +26,11 @@ export type StatVariant = 'income' | 'expense' | 'loan' | 'epf' | 'investment' |
       background: var(--color-bg-card);
       border: 1px solid var(--color-border);
       border-radius: var(--radius-md);
-      padding: 1rem 1.15rem;
+      padding: 0.7rem 0.95rem;
       box-shadow: var(--shadow-xs);
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
+      gap: 0.2rem;
       position: relative;
       overflow: hidden;
       transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
@@ -69,11 +69,11 @@ export type StatVariant = 'income' | 'expense' | 'loan' | 'epf' | 'investment' |
     }
 
     .stat-title {
-      font-size: 0.725rem;
+      font-size: 0.6875rem;
       font-weight: 700;
       color: var(--color-text-muted);
       text-transform: uppercase;
-      letter-spacing: 0.05em;
+      letter-spacing: 0.04em;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -81,16 +81,16 @@ export type StatVariant = 'income' | 'expense' | 'loan' | 'epf' | 'investment' |
     }
 
     .stat-amount {
-      font-size: 1.35rem;
+      font-size: 1.15rem;
       font-weight: 700;
       line-height: 1.25;
       color: var(--color-text-main);
-      letter-spacing: -0.02em;
+      letter-spacing: -0.015em;
       white-space: nowrap;
     }
 
     .stat-subtitle {
-      font-size: 0.725rem;
+      font-size: 0.6875rem;
       color: var(--color-text-muted);
       font-weight: 500;
       white-space: nowrap;

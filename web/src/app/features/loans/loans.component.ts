@@ -689,13 +689,69 @@ import { DeletionPermissionsService } from '../../core/services/deletion-permiss
     .loans-page {
       display: flex;
       flex-direction: column;
-      gap: 1.5rem;
+      gap: 1rem;
+    }
+
+    .btn-primary {
+      background: var(--color-primary, #0b57d0);
+      color: #ffffff;
+      border: 1px solid var(--color-primary, #0b57d0);
+      border-radius: 8px;
+      padding: 0.35rem 0.85rem;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      cursor: pointer;
+      min-height: 32px;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--color-primary-hover, #0842a0);
+      border-color: var(--color-primary-hover, #0842a0);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn-outline {
+      background: var(--color-bg-card, #ffffff);
+      color: var(--color-text-main, #1f1f1f);
+      border: 1px solid var(--color-border, #e0e2e5);
+      border-radius: 8px;
+      padding: 0.35rem 0.85rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      cursor: pointer;
+      min-height: 32px;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn-outline:hover:not(:disabled) {
+      background: var(--color-bg-subtle, #f8fafd);
+      border-color: var(--color-border-subtle, #d0d7de);
+    }
+
+    .btn-outline:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
 
     .page-header {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: 0.75rem;
     }
 
     @media (min-width: 640px) {
@@ -708,14 +764,15 @@ import { DeletionPermissionsService } from '../../core/services/deletion-permiss
 
     .page-header h2 {
       margin: 0;
-      font-size: 1.5rem;
+      font-size: 1.15rem;
       font-weight: 700;
       color: var(--color-text-main);
+      letter-spacing: -0.01em;
     }
 
     .subtitle {
-      margin: 0.25rem 0 0;
-      font-size: 0.875rem;
+      margin: 0.2rem 0 0;
+      font-size: 0.8125rem;
       color: var(--color-text-muted);
     }
 
