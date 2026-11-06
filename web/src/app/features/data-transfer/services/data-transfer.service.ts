@@ -7,7 +7,8 @@ import {
   PreviewValidationResult,
   ImportResult,
   ImportBatchDetail,
-  MappingProfile
+  MappingProfile,
+  ExportArchive
 } from '../models/data-transfer.model';
 
 @Injectable({
@@ -90,6 +91,22 @@ export class DataTransferService {
 
   exportAll(): Observable<Blob> {
     return this.http.get(`${this.exportApi}/all`, {
+      responseType: 'blob'
+    });
+  }
+
+  getExportArchives(): Observable<ExportArchive[]> {
+    return this.http.get<ExportArchive[]>(`${this.exportApi}/archives`);
+  }
+
+  downloadExportArchive(id: string): Observable<Blob> {
+    return this.http.get(`${this.exportApi}/archives/${id}/download`, {
+      responseType: 'blob'
+    });
+  }
+
+  downloadOriginalImportFile(batchId: string): Observable<Blob> {
+    return this.http.get(`${this.importApi}/${batchId}/original-file`, {
       responseType: 'blob'
     });
   }

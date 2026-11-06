@@ -22,6 +22,8 @@ export class TransactionsService {
 
   getTransactions(params: {
     month?: string;
+    startDate?: string;
+    endDate?: string;
     type?: TransactionType;
     categoryId?: string;
     search?: string;
@@ -31,6 +33,8 @@ export class TransactionsService {
     let httpParams = new HttpParams();
 
     if (params.month) httpParams = httpParams.set('month', params.month);
+    if (params.startDate) httpParams = httpParams.set('startDate', params.startDate);
+    if (params.endDate) httpParams = httpParams.set('endDate', params.endDate);
     if (params.type) httpParams = httpParams.set('type', params.type.toString());
     if (params.categoryId) httpParams = httpParams.set('categoryId', params.categoryId);
     if (params.search) httpParams = httpParams.set('search', params.search);

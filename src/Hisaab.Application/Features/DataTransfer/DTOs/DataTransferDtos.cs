@@ -116,3 +116,13 @@ public record SaveMappingProfileRequest(
     string? DateFormat = null
 );
 
+public record ExportArchiveDto(
+    Guid Id,
+    string Module,
+    string FileName,
+    string Format,
+    long FileSizeBytes,
+    int RecordCount,
+    DateTime CreatedAtUtc
+);
+

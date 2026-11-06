@@ -10,11 +10,13 @@ namespace Hisaab.Application.Features.Transactions.Queries.GetTransactions;
 
 public record GetTransactionsQuery(
     string? Month = null,
+    string? StartDate = null,
+    string? EndDate = null,
     TransactionType? Type = null,
     Guid? CategoryId = null,
     string? Search = null,
     int Page = 1,
-    int PageSize = 20
+    int PageSize = 100
 ) : IRequest<Result<TransactionsResponseDto>>;
 
 public class GetTransactionsQueryHandler : IRequestHandler<GetTransactionsQuery, Result<TransactionsResponseDto>>
@@ -32,30 +34,71 @@ public class GetTransactionsQueryHandler : IRequestHandler<GetTransactionsQuery,
 
     public async Task<Result<TransactionsResponseDto>> Handle(GetTransactionsQuery request, CancellationToken cancellationToken)
     {
-        var targetMonth = string.IsNullOrWhiteSpace(request.Month)
-            ? _dateTimeService.NowInKolkata.ToString("yyyy-MM")
-            : request.Month.Trim();
-
         DateTime startDate;
         DateTime endDate;
+        string targetPeriod;
 
-        if (DateTime.TryParse($"{targetMonth}-01", out var parsedDate))
+        if (!string.IsNullOrWhiteSpace(request.StartDate) || !string.IsNullOrWhiteSpace(request.EndDate))
         {
-            startDate = new DateTime(parsedDate.Year, parsedDate.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-            endDate = startDate.AddMonths(1);
+            if (DateTime.TryParse(request.StartDate, out var sDate))
+            {
+                startDate = DateTime.SpecifyKind(sDate.Date, DateTimeKind.Utc);
+            }
+            else
+            {
+                startDate = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            }
+
+            if (DateTime.TryParse(request.EndDate, out var eDate))
+            {
+                endDate = DateTime.SpecifyKind(eDate.Date.AddDays(1), DateTimeKind.Utc);
+            }
+            else
+            {
+                endDate = DateTime.UtcNow.AddYears(10);
+            }
+
+            targetPeriod = $"{startDate:dd MMM yyyy} - {endDate.AddDays(-1):dd MMM yyyy}";
+        }
+        else if (string.Equals(request.Month, "all", StringComparison.OrdinalIgnoreCase))
+        {
+            startDate = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+            endDate = DateTime.UtcNow.AddYears(10);
+            targetPeriod = "All Time";
         }
         else
         {
-            var now = _dateTimeService.UtcNow;
-            startDate = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-            endDate = startDate.AddMonths(1);
+            var targetMonth = string.IsNullOrWhiteSpace(request.Month)
+                ? _dateTimeService.NowInKolkata.ToString("yyyy-MM")
+                : request.Month.Trim();
+
+            if (targetMonth.Length == 4 && int.TryParse(targetMonth, out var parsedYear))
+            {
+                startDate = new DateTime(parsedYear, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                endDate = new DateTime(parsedYear + 1, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+                targetPeriod = $"Year {parsedYear}";
+            }
+            else if (DateTime.TryParse($"{targetMonth}-01", out var parsedDate))
+            {
+                startDate = new DateTime(parsedDate.Year, parsedDate.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+                endDate = startDate.AddMonths(1);
+                targetPeriod = targetMonth;
+            }
+            else
+            {
+                var now = _dateTimeService.UtcNow;
+                startDate = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+                endDate = startDate.AddMonths(1);
+            }
+
+            targetPeriod = targetMonth;
         }
 
         var baseQuery = _context.Transactions
             .AsNoTracking()
             .Where(t => t.TransactionDate >= startDate && t.TransactionDate < endDate);
 
-        // Compute Monthly Summary seamlessly across PostgreSQL and SQLite
+        // Compute Summary seamlessly across PostgreSQL and SQLite
         var summaryRows = await baseQuery
             .Select(t => new { t.Type, t.Amount })
             .ToListAsync(cancellationToken);
@@ -66,7 +109,7 @@ public class GetTransactionsQueryHandler : IRequestHandler<GetTransactionsQuery,
         var savingsRate = totalIncome > 0 ? Math.Round((netSavings / totalIncome) * 100m, 2) : 0m;
 
         var summary = new MonthlySummaryDto(
-            targetMonth,
+            targetPeriod,
             totalIncome,
             totalExpense,
             netSavings,
@@ -97,7 +140,7 @@ public class GetTransactionsQueryHandler : IRequestHandler<GetTransactionsQuery,
         var totalCount = await filteredQuery.CountAsync(cancellationToken);
 
         var pageIndex = request.Page < 1 ? 1 : request.Page;
-        var pageSize = request.PageSize < 1 ? 20 : request.PageSize;
+        var pageSize = request.PageSize < 1 ? 100 : Math.Min(request.PageSize, 5000);
 
         var itemsRaw = await filteredQuery
             .OrderByDescending(t => t.TransactionDate)

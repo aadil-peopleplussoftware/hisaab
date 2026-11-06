@@ -103,3 +103,65 @@ public record LiveIpoDto(
     string? ListingDate
 );
 
+public record TradeDeskDashboardDto(
+    // Today's Live Performance
+    decimal TodayUnrealizedProfitLoss,
+    decimal TodayRealizedProfitLoss,
+    decimal TodayTotalProfitLoss,
+    decimal TodayProfitLossPercentage,
+    int TradesClosedTodayCount,
+    string? TodayTopGainerTicker,
+    decimal TodayTopGainerChangePercentage,
+    decimal TodayTopGainerProfit,
+    string? TodayTopLoserTicker,
+    decimal TodayTopLoserChangePercentage,
+    decimal TodayTopLoserLoss,
+
+    // Overall Lifetime & Portfolio Totals
+    decimal OverallTotalProfitLoss,
+    decimal OverallTotalProfitLossPercentage,
+    decimal ActiveCapitalInvested,
+    decimal ActiveCurrentValuation,
+    decimal ActiveUnrealizedProfitLoss,
+    decimal ActiveUnrealizedProfitLossPercentage,
+    int ActiveTradesCount,
+
+    // Closed Trades & Win/Loss Mastery
+    decimal TotalGrossRealizedProfitLoss,
+    decimal TotalChargesPaid,
+    decimal TotalNetRealizedProfitLoss,
+    decimal TotalNetRealizedProfitLossPercentage,
+    int TotalClosedTradesCount,
+    int WinningTradesCount,
+    int LosingTradesCount,
+    decimal WinRatePercentage,
+    decimal AverageWinningTradeAmount,
+    decimal AverageLosingTradeAmount,
+    decimal ProfitFactor,
+    decimal ChargesToGrossProfitPercentage,
+    string? BestTradeTicker,
+    decimal BestTradeNetProfit,
+    decimal BestTradeNetProfitPercentage,
+    string? WorstTradeTicker,
+    decimal WorstTradeNetLoss,
+    decimal WorstTradeNetLossPercentage,
+    decimal AverageHoldingDays,
+    decimal PlannedHoldingAdherencePercentage,
+
+    // Active Risk & Target Surveillance
+    int TradesNearTargetCount,
+    int TradesNearStopLossCount,
+    int TradesBreachedStopLossCount,
+    List<TradeOrderDto> TopActiveMovers,
+
+    // IPO Intelligence
+    int TotalIposApplied,
+    int TotalIposAllotted,
+    int TotalIposRejected,
+    int TotalIposPending,
+    decimal IpoAllotmentStrikeRatePercentage,
+    decimal TotalCapitalBlockedInIpos,
+    decimal TotalListingGainRealized,
+    decimal TotalListingGainPercentage
+);
+

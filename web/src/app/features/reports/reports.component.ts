@@ -43,10 +43,65 @@ import { ReportsService } from './services/reports.service';
           </div>
 
           <div class="card-controls">
-            <label>
-              <span>Reporting Month:</span>
-              <input type="month" [(ngModel)]="transactionsMonth" class="form-input" />
-            </label>
+            <!-- Mode Selector & Quick Presets -->
+            <div class="period-mode-row">
+              <span class="control-label">Period Type:</span>
+              <div class="pill-group">
+                <button type="button" class="pill-btn" [class.active]="txMode === 'single'" (click)="setTxMode('single')">Single Month</button>
+                <button type="button" class="pill-btn" [class.active]="txMode === 'range'" (click)="setTxMode('range')">Multi-Month Range</button>
+              </div>
+            </div>
+
+            <!-- Date Selectors -->
+            @if (txMode === 'single') {
+              <div class="month-input-row">
+                <label>
+                  <span>Select Month:</span>
+                  <input type="month" [(ngModel)]="txFromMonth" (ngModelChange)="txToMonth = txFromMonth" class="form-input" />
+                </label>
+              </div>
+            } @else {
+              <div class="range-inputs-grid">
+                <label>
+                  <span>From Month:</span>
+                  <input type="month" [(ngModel)]="txFromMonth" class="form-input" />
+                </label>
+                <label>
+                  <span>To Month:</span>
+                  <input type="month" [(ngModel)]="txToMonth" class="form-input" />
+                </label>
+              </div>
+            }
+
+            <!-- Quick Preset Chips -->
+            <div class="presets-row">
+              <span class="presets-label">Quick Presets:</span>
+              <div class="chips-list">
+                <button type="button" class="chip-btn" (click)="applyTxPreset('this-month')">This Month</button>
+                <button type="button" class="chip-btn" (click)="applyTxPreset('last-month')">Last Month</button>
+                <button type="button" class="chip-btn" (click)="applyTxPreset('last-3m')">Last 3 Months (Quarter)</button>
+                <button type="button" class="chip-btn" (click)="applyTxPreset('last-6m')">Last 6 Months</button>
+                <button type="button" class="chip-btn" (click)="applyTxPreset('current-fy')">Current FY (Apr-Mar)</button>
+                <button type="button" class="chip-btn" (click)="applyTxPreset('full-year')">Full Year (Jan-Dec)</button>
+              </div>
+            </div>
+
+            <!-- Prominent Live Period Mention Card -->
+            <div class="period-preview-badge">
+              <div class="period-badge-icon">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                  <line x1="16" y1="2" x2="16" y2="6"/>
+                  <line x1="8" y1="2" x2="8" y2="6"/>
+                  <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+              </div>
+              <div class="period-badge-content">
+                <div class="badge-title">Report Period Stated on Document:</div>
+                <div class="badge-highlight">{{ getPeriodDisplay(txFromMonth, txToMonth) }}</div>
+                <div class="badge-sub">Duration: {{ getDurationText(txFromMonth, txToMonth) }} • Mentioned prominently at top of PDF & Excel</div>
+              </div>
+            </div>
           </div>
 
           <div class="card-actions">
@@ -103,10 +158,65 @@ import { ReportsService } from './services/reports.service';
           </div>
 
           <div class="card-controls">
-            <label>
-              <span>Statement Month:</span>
-              <input type="month" [(ngModel)]="statementMonth" class="form-input" />
-            </label>
+            <!-- Mode Selector & Quick Presets -->
+            <div class="period-mode-row">
+              <span class="control-label">Period Type:</span>
+              <div class="pill-group">
+                <button type="button" class="pill-btn" [class.active]="dashMode === 'single'" (click)="setDashMode('single')">Single Month</button>
+                <button type="button" class="pill-btn" [class.active]="dashMode === 'range'" (click)="setDashMode('range')">Multi-Month Range</button>
+              </div>
+            </div>
+
+            <!-- Date Selectors -->
+            @if (dashMode === 'single') {
+              <div class="month-input-row">
+                <label>
+                  <span>Select Statement Month:</span>
+                  <input type="month" [(ngModel)]="dashFromMonth" (ngModelChange)="dashToMonth = dashFromMonth" class="form-input" />
+                </label>
+              </div>
+            } @else {
+              <div class="range-inputs-grid">
+                <label>
+                  <span>From Month:</span>
+                  <input type="month" [(ngModel)]="dashFromMonth" class="form-input" />
+                </label>
+                <label>
+                  <span>To Month:</span>
+                  <input type="month" [(ngModel)]="dashToMonth" class="form-input" />
+                </label>
+              </div>
+            }
+
+            <!-- Quick Preset Chips -->
+            <div class="presets-row">
+              <span class="presets-label">Quick Presets:</span>
+              <div class="chips-list">
+                <button type="button" class="chip-btn" (click)="applyDashPreset('this-month')">This Month</button>
+                <button type="button" class="chip-btn" (click)="applyDashPreset('last-month')">Last Month</button>
+                <button type="button" class="chip-btn" (click)="applyDashPreset('last-3m')">Last 3 Months</button>
+                <button type="button" class="chip-btn" (click)="applyDashPreset('last-6m')">Last 6 Months</button>
+                <button type="button" class="chip-btn" (click)="applyDashPreset('current-fy')">Current FY</button>
+                <button type="button" class="chip-btn" (click)="applyDashPreset('full-year')">Full Year</button>
+              </div>
+            </div>
+
+            <!-- Prominent Live Period Mention Card -->
+            <div class="period-preview-badge hero-badge">
+              <div class="period-badge-icon">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                  <line x1="16" y1="2" x2="16" y2="6"/>
+                  <line x1="8" y1="2" x2="8" y2="6"/>
+                  <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
+              </div>
+              <div class="period-badge-content">
+                <div class="badge-title">Statement Period Stated on Document:</div>
+                <div class="badge-highlight">{{ getPeriodDisplay(dashFromMonth, dashToMonth) }}</div>
+                <div class="badge-sub">Duration: {{ getDurationText(dashFromMonth, dashToMonth) }} • Cumulative balance sheet + period cashflow breakdown</div>
+              </div>
+            </div>
           </div>
 
           <div class="card-actions">
@@ -434,6 +544,151 @@ import { ReportsService } from './services/reports.service';
       }
     }
 
+    .period-mode-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      margin-bottom: 0.25rem;
+
+      .control-label {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--color-text-muted);
+      }
+    }
+
+    .pill-group {
+      display: inline-flex;
+      background: var(--color-bg-subtle, #f3f4f6);
+      border-radius: var(--radius-full, 9999px);
+      padding: 2px;
+      border: 1px solid var(--color-border);
+
+      .pill-btn {
+        background: transparent;
+        border: none;
+        padding: 0.25rem 0.75rem;
+        border-radius: var(--radius-full, 9999px);
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--color-text-muted);
+        cursor: pointer;
+        transition: all 0.15s ease;
+
+        &.active {
+          background: var(--color-bg-card, #ffffff);
+          color: var(--color-primary);
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+      }
+    }
+
+    .range-inputs-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.75rem;
+
+      label {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+        span { font-size: 0.75rem; color: var(--color-text-muted); }
+        .form-input { width: 100%; box-sizing: border-box; }
+      }
+    }
+
+    .month-input-row {
+      label {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.25rem;
+        span { font-size: 0.75rem; color: var(--color-text-muted); }
+        .form-input { width: 100%; box-sizing: border-box; }
+      }
+    }
+
+    .presets-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      margin-top: 0.25rem;
+
+      .presets-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--color-text-muted);
+      }
+    }
+
+    .chips-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+
+      .chip-btn {
+        background: var(--color-bg-subtle, #f3f4f6);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-full, 9999px);
+        padding: 0.2rem 0.55rem;
+        font-size: 0.75rem;
+        color: var(--color-text-main);
+        cursor: pointer;
+        transition: all 0.15s ease;
+
+        &:hover {
+          border-color: var(--color-primary);
+          color: var(--color-primary);
+          background: rgba(99, 102, 241, 0.08);
+        }
+      }
+    }
+
+    .period-preview-badge {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.65rem;
+      padding: 0.65rem 0.85rem;
+      border-radius: var(--radius-md);
+      background: rgba(99, 102, 241, 0.08);
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      margin-top: 0.5rem;
+
+      .period-badge-icon {
+        color: var(--color-primary);
+        margin-top: 0.1rem;
+        flex-shrink: 0;
+      }
+
+      .badge-title {
+        font-size: 0.72rem;
+        font-weight: 600;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+      }
+
+      .badge-highlight {
+        font-size: 0.95rem;
+        font-weight: 700;
+        color: var(--color-primary);
+        margin: 0.1rem 0;
+      }
+
+      .badge-sub {
+        font-size: 0.73rem;
+        color: var(--color-text-muted);
+        line-height: 1.3;
+      }
+
+      &.hero-badge {
+        background: rgba(79, 70, 229, 0.1);
+        border-color: rgba(79, 70, 229, 0.3);
+      }
+    }
+
     .form-input {
       padding: 0.45rem 0.75rem;
       border: 1px solid var(--color-border);
@@ -533,32 +788,167 @@ import { ReportsService } from './services/reports.service';
 export class ReportsComponent {
   private readonly reportsService = inject(ReportsService);
 
-  transactionsMonth = this.getCurrentMonth();
-  statementMonth = this.getCurrentMonth();
+  // Transaction Report Controls
+  txMode: 'single' | 'range' = 'range';
+  txFromMonth = this.getCurrentMonth();
+  txToMonth = this.getCurrentMonth();
+
+  // Comprehensive Statement Controls
+  dashMode: 'single' | 'range' = 'range';
+  dashFromMonth = this.getCurrentMonth();
+  dashToMonth = this.getCurrentMonth();
+
   epfYear = 2026;
 
   readonly loadingKey = signal<string | null>(null);
   readonly statusMessage = signal<string | null>(null);
   readonly isError = signal<boolean>(false);
 
+  setTxMode(mode: 'single' | 'range'): void {
+    this.txMode = mode;
+    if (mode === 'single') {
+      this.txToMonth = this.txFromMonth;
+    }
+  }
+
+  setDashMode(mode: 'single' | 'range'): void {
+    this.dashMode = mode;
+    if (mode === 'single') {
+      this.dashToMonth = this.dashFromMonth;
+    }
+  }
+
+  applyTxPreset(preset: string): void {
+    const [from, to] = this.calculatePresetRange(preset);
+    this.txFromMonth = from;
+    this.txToMonth = to;
+    this.txMode = from === to ? 'single' : 'range';
+  }
+
+  applyDashPreset(preset: string): void {
+    const [from, to] = this.calculatePresetRange(preset);
+    this.dashFromMonth = from;
+    this.dashToMonth = to;
+    this.dashMode = from === to ? 'single' : 'range';
+  }
+
+  private calculatePresetRange(preset: string): [string, string] {
+    const d = new Date();
+    const currYear = d.getFullYear();
+    const currMonth = d.getMonth() + 1;
+
+    const formatMonth = (y: number, m: number) => `${y}-${m.toString().padStart(2, '0')}`;
+    const thisMonthStr = formatMonth(currYear, currMonth);
+
+    switch (preset) {
+      case 'this-month':
+        return [thisMonthStr, thisMonthStr];
+
+      case 'last-month': {
+        const lastMDate = new Date(currYear, currMonth - 2, 1);
+        const lmStr = formatMonth(lastMDate.getFullYear(), lastMDate.getMonth() + 1);
+        return [lmStr, lmStr];
+      }
+
+      case 'last-3m': {
+        const start = new Date(currYear, currMonth - 3, 1);
+        return [formatMonth(start.getFullYear(), start.getMonth() + 1), thisMonthStr];
+      }
+
+      case 'last-6m': {
+        const start = new Date(currYear, currMonth - 6, 1);
+        return [formatMonth(start.getFullYear(), start.getMonth() + 1), thisMonthStr];
+      }
+
+      case 'current-fy': {
+        const fyStartYear = currMonth >= 4 ? currYear : currYear - 1;
+        return [formatMonth(fyStartYear, 4), thisMonthStr];
+      }
+
+      case 'full-year': {
+        return [formatMonth(currYear, 1), formatMonth(currYear, 12)];
+      }
+
+      default:
+        return [thisMonthStr, thisMonthStr];
+    }
+  }
+
+  getPeriodDisplay(fromStr: string, toStr: string): string {
+    if (!fromStr) return '—';
+    const to = toStr || fromStr;
+    const fDate = this.parseYearMonth(fromStr);
+    const tDate = this.parseYearMonth(to);
+
+    if (!fDate || !tDate) return fromStr;
+
+    const monthNames = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+
+    if (fDate.year === tDate.year && fDate.month === tDate.month) {
+      return `${monthNames[fDate.month - 1]} ${fDate.year}`;
+    }
+
+    if (fDate.year === tDate.year) {
+      return `${monthNames[fDate.month - 1]} to ${monthNames[tDate.month - 1]} ${fDate.year}`;
+    }
+
+    return `${monthNames[fDate.month - 1]} ${fDate.year} to ${monthNames[tDate.month - 1]} ${tDate.year}`;
+  }
+
+  getDurationText(fromStr: string, toStr: string): string {
+    const fDate = this.parseYearMonth(fromStr);
+    const tDate = this.parseYearMonth(toStr || fromStr);
+    if (!fDate || !tDate) return '1 Month';
+
+    let months = ((tDate.year - fDate.year) * 12) + (tDate.month - fDate.month) + 1;
+    if (months <= 0) months = 1;
+
+    return months === 1 ? '1 Month' : `${months} Months`;
+  }
+
+  private parseYearMonth(ym: string): { year: number; month: number } | null {
+    if (!ym) return null;
+    const parts = ym.split('-');
+    if (parts.length < 2) return null;
+    const year = parseInt(parts[0], 10);
+    const month = parseInt(parts[1], 10);
+    if (isNaN(year) || isNaN(month)) return null;
+    return { year, month };
+  }
+
   downloadTransactionsPdf(): void {
+    const from = this.txFromMonth;
+    const to = this.txToMonth || this.txFromMonth;
+    const fileTag = from === to ? from : `${from}_to_${to}`;
+
     this.executeDownload('tx-pdf', () =>
-      this.reportsService.getPdfReport('transactions', { month: this.transactionsMonth }),
-      `Hisaab_Transactions_${this.transactionsMonth}.pdf`
+      this.reportsService.getPdfReport('transactions', { fromMonth: from, toMonth: to }),
+      `Hisaab_Transactions_${fileTag}.pdf`
     );
   }
 
   downloadTransactionsExcel(): void {
+    const from = this.txFromMonth;
+    const to = this.txToMonth || this.txFromMonth;
+    const fileTag = from === to ? from : `${from}_to_${to}`;
+
     this.executeDownload('tx-xlsx', () =>
-      this.reportsService.getExcelReport('transactions', { month: this.transactionsMonth }),
-      `Hisaab_Transactions_${this.transactionsMonth}.xlsx`
+      this.reportsService.getExcelReport('transactions', { fromMonth: from, toMonth: to }),
+      `Hisaab_Transactions_${fileTag}.xlsx`
     );
   }
 
   downloadDashboardPdf(): void {
+    const from = this.dashFromMonth;
+    const to = this.dashToMonth || this.dashFromMonth;
+    const fileTag = from === to ? from : `${from}_to_${to}`;
+
     this.executeDownload('dash-pdf', () =>
-      this.reportsService.getPdfReport('dashboard', { month: this.statementMonth }),
-      `Hisaab_Statement_${this.statementMonth}.pdf`
+      this.reportsService.getPdfReport('dashboard', { fromMonth: from, toMonth: to }),
+      `Hisaab_Statement_${fileTag}.pdf`
     );
   }
 

@@ -253,3 +253,63 @@ public class ExportAllModulesQueryHandler : IRequestHandler<ExportAllModulesQuer
     }
 }
 
+public record GetExportArchivesQuery : IRequest<List<ExportArchiveDto>>;
+
+public class GetExportArchivesQueryHandler : IRequestHandler<GetExportArchivesQuery, List<ExportArchiveDto>>
+{
+    private readonly IDataTransferService _dataTransferService;
+    private readonly ICurrentUserService _currentUserService;
+
+    public GetExportArchivesQueryHandler(IDataTransferService dataTransferService, ICurrentUserService currentUserService)
+    {
+        _dataTransferService = dataTransferService;
+        _currentUserService = currentUserService;
+    }
+
+    public async Task<List<ExportArchiveDto>> Handle(GetExportArchivesQuery request, CancellationToken cancellationToken)
+    {
+        var userId = _currentUserService.UserId ?? throw new UnauthorizedAccessException();
+        return await _dataTransferService.GetExportArchivesAsync(userId, cancellationToken);
+    }
+}
+
+public record DownloadExportArchiveQuery(Guid ArchiveId) : IRequest<(byte[] Content, string ContentType, string FileName)>;
+
+public class DownloadExportArchiveQueryHandler : IRequestHandler<DownloadExportArchiveQuery, (byte[] Content, string ContentType, string FileName)>
+{
+    private readonly IDataTransferService _dataTransferService;
+    private readonly ICurrentUserService _currentUserService;
+
+    public DownloadExportArchiveQueryHandler(IDataTransferService dataTransferService, ICurrentUserService currentUserService)
+    {
+        _dataTransferService = dataTransferService;
+        _currentUserService = currentUserService;
+    }
+
+    public async Task<(byte[] Content, string ContentType, string FileName)> Handle(DownloadExportArchiveQuery request, CancellationToken cancellationToken)
+    {
+        var userId = _currentUserService.UserId ?? throw new UnauthorizedAccessException();
+        return await _dataTransferService.GetExportArchiveFileAsync(request.ArchiveId, userId, cancellationToken);
+    }
+}
+
+public record GetImportBatchOriginalFileQuery(Guid BatchId) : IRequest<(byte[] Content, string ContentType, string FileName)>;
+
+public class GetImportBatchOriginalFileQueryHandler : IRequestHandler<GetImportBatchOriginalFileQuery, (byte[] Content, string ContentType, string FileName)>
+{
+    private readonly IDataTransferService _dataTransferService;
+    private readonly ICurrentUserService _currentUserService;
+
+    public GetImportBatchOriginalFileQueryHandler(IDataTransferService dataTransferService, ICurrentUserService currentUserService)
+    {
+        _dataTransferService = dataTransferService;
+        _currentUserService = currentUserService;
+    }
+
+    public async Task<(byte[] Content, string ContentType, string FileName)> Handle(GetImportBatchOriginalFileQuery request, CancellationToken cancellationToken)
+    {
+        var userId = _currentUserService.UserId ?? throw new UnauthorizedAccessException();
+        return await _dataTransferService.GetImportBatchOriginalFileAsync(request.BatchId, userId, cancellationToken);
+    }
+}
+

@@ -414,15 +414,82 @@ public class StockMarketService : IStockMarketService
         decimal currentPrice = SafeGetDecimal(meta, "regularMarketPrice", 0m);
         if (currentPrice <= 0) return null;
 
-        decimal prevClose = SafeGetDecimal(meta, "chartPreviousClose", currentPrice);
         decimal dayHigh = SafeGetDecimal(meta, "regularMarketDayHigh", currentPrice * 1.01m);
         decimal dayLow = SafeGetDecimal(meta, "regularMarketDayLow", currentPrice * 0.99m);
         decimal high52 = SafeGetDecimal(meta, "fiftyTwoWeekHigh", currentPrice * 1.25m);
         decimal low52 = SafeGetDecimal(meta, "fiftyTwoWeekLow", currentPrice * 0.75m);
         long volume = meta.TryGetProperty("regularMarketVolume", out var vol) && vol.ValueKind == JsonValueKind.Number && vol.TryGetInt64(out var v) ? v : 1500000;
 
-        decimal dayChange = currentPrice - prevClose;
-        decimal dayChangePct = prevClose > 0 ? (dayChange / prevClose) * 100m : 0m;
+        decimal dayChange = 0m;
+        decimal dayChangePct = 0m;
+        decimal prevClose = 0m;
+
+        // 1. Try extracting previous day's close from consecutive daily chart bars
+        if (result.TryGetProperty("indicators", out var ind) &&
+            ind.TryGetProperty("quote", out var qArray) &&
+            qArray.GetArrayLength() > 0 &&
+            qArray[0].TryGetProperty("close", out var closeArr) &&
+            closeArr.ValueKind == JsonValueKind.Array)
+        {
+            var validCloses = new List<decimal>();
+            foreach (var c in closeArr.EnumerateArray())
+            {
+                if (c.ValueKind == JsonValueKind.Number && c.TryGetDecimal(out var cv) && cv > 0)
+                {
+                    validCloses.Add(cv);
+                }
+            }
+
+            if (validCloses.Count >= 2)
+            {
+                prevClose = validCloses[validCloses.Count - 2];
+                dayChange = currentPrice - prevClose;
+                dayChangePct = prevClose > 0 ? (dayChange / prevClose) * 100m : 0m;
+            }
+            else if (validCloses.Count == 1)
+            {
+                // Single day (fresh listing or new symbol): check open price
+                if (qArray[0].TryGetProperty("open", out var openArr) && openArr.GetArrayLength() > 0 &&
+                    openArr[0].TryGetDecimal(out var openVal) && openVal > 0)
+                {
+                    prevClose = openVal;
+                    dayChange = currentPrice - openVal;
+                    dayChangePct = openVal > 0 ? (dayChange / openVal) * 100m : 0m;
+                }
+            }
+        }
+
+        // 2. If prevClose still 0, check Yahoo's direct change properties
+        if (prevClose == 0m)
+        {
+            if (meta.TryGetProperty("fulldayChange", out var fdc) && fdc.TryGetDecimal(out var fdVal))
+            {
+                dayChange = fdVal;
+            }
+            else if (meta.TryGetProperty("regularMarketChange", out var rmc) && rmc.TryGetDecimal(out var rmVal))
+            {
+                dayChange = rmVal;
+            }
+
+            if (meta.TryGetProperty("fulldayChangePercent", out var fdcp) && fdcp.TryGetDecimal(out var fdpVal))
+            {
+                dayChangePct = fdpVal;
+            }
+            else if (meta.TryGetProperty("regularMarketChangePercent", out var rmcp) && rmcp.TryGetDecimal(out var rmpVal))
+            {
+                dayChangePct = rmpVal;
+            }
+
+            prevClose = currentPrice - dayChange;
+        }
+
+        // Fallback if still 0
+        if (prevClose <= 0m)
+        {
+            prevClose = SafeGetDecimal(meta, "chartPreviousClose", currentPrice);
+            dayChange = currentPrice - prevClose;
+            dayChangePct = prevClose > 0 ? (dayChange / prevClose) * 100m : 0m;
+        }
 
         string companyName = symbol;
         if (meta.TryGetProperty("longName", out var lnElem) && !string.IsNullOrWhiteSpace(lnElem.GetString()))

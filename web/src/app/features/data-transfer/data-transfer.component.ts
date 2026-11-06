@@ -8,7 +8,8 @@ import {
   PreviewValidationResult,
   ImportResult,
   ImportBatchDetail,
-  MappingProfile
+  MappingProfile,
+  ExportArchive
 } from './models/data-transfer.model';
 import { ThemeService } from '../../core/services/theme.service';
 
@@ -47,7 +48,7 @@ interface ModuleOption {
         </button>
         <button
           [class.active]="activeTab() === 'export'"
-          (click)="activeTab.set('export')"
+          (click)="activeTab.set('export'); loadExportArchives()"
           class="tab-btn">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" class="tab-svg">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
@@ -308,11 +309,18 @@ interface ModuleOption {
                   </div>
 
                   <div class="form-group">
-                    <label>Import Mode:</label>
+                    <label>Duplicate Prevention & Import Mode:</label>
                     <select [(ngModel)]="importMode">
-                      <option [ngValue]="1">Add New Records Only (Default)</option>
-                      <option [ngValue]="2">Update Existing (Matches External ID)</option>
+                      <option [ngValue]="1">Add New Records & Ignore Duplicates (Recommended)</option>
+                      <option [ngValue]="2">Update Existing Records (Match ID / Fingerprint)</option>
                     </select>
+                    <div style="font-size: 0.75rem; color: var(--color-text-muted); margin-top: 0.35rem; line-height: 1.3;">
+                      @if (importMode === 1) {
+                        <span style="color: var(--color-income);">✓ <strong>Ignore Duplicates:</strong></span> Existing matching records are safely skipped; only new entries are added.
+                      } @else {
+                        <span style="color: var(--color-investment);">↻ <strong>Update Existing:</strong></span> Existing records will be updated with values from this file.
+                      }
+                    </div>
                   </div>
 
                   <div class="form-group checkbox-group">
@@ -371,7 +379,7 @@ interface ModuleOption {
                 </div>
                 <div class="metric-box warning">
                   <span class="m-val">{{ validationResult()!.duplicateCount }}</span>
-                  <span class="m-label">Duplicates Detected</span>
+                  <span class="m-label">{{ importMode === 2 ? 'Duplicates (Will Update)' : 'Duplicates (Will Skip)' }}</span>
                 </div>
               </div>
 
@@ -405,7 +413,9 @@ interface ModuleOption {
                             </span>
                           }
                           @if (row.isDuplicate) {
-                            <span class="badge badge-warning">Duplicate</span>
+                            <span class="badge badge-warning" [title]="importMode === 2 ? 'Existing record - will be updated' : 'Existing record or duplicate in file - will be skipped'">
+                              {{ importMode === 2 ? 'Duplicate (Update)' : 'Duplicate (Skip)' }}
+                            </span>
                           }
                         </td>
                         @for (col of getMappedColumnsList(); track col) {
@@ -491,9 +501,15 @@ interface ModuleOption {
                 </div>
                 <div class="metric-box warning">
                   <span class="m-val">{{ importResult()!.skippedRows }}</span>
-                  <span class="m-label">Skipped (Duplicates)</span>
+                  <span class="m-label">Ignored (Duplicates)</span>
                 </div>
               </div>
+
+              @if (importResult()!.skippedRows > 0) {
+                <div class="alert alert-warning" style="text-align: center; margin: 0.5rem auto 1.5rem; max-width: 600px;">
+                  🛡️ <strong>{{ importResult()!.skippedRows }} duplicate records</strong> were safely ignored to protect your ledger from double entries.
+                </div>
+              }
 
               <div class="step-actions centered">
                 @if (importResult()!.failedRows > 0) {
@@ -575,6 +591,71 @@ interface ModuleOption {
             </div>
           </div>
         </div>
+
+        <!-- Export Backups Archive Table -->
+        <div class="card export-archive-card" style="margin-top: 1.5rem;">
+          <div class="card-header-row">
+            <div>
+              <h3>Export Backups Archive & History</h3>
+              <p class="subtitle">Persistently stored export files. Re-download your generated backups anytime.</p>
+            </div>
+            <button type="button" class="btn-secondary btn-sm" (click)="loadExportArchives()">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" class="mr-1">
+                <polyline points="23 4 23 10 17 10"/>
+                <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+              </svg>
+              <span>Refresh</span>
+            </button>
+          </div>
+
+          @if (isLoadingArchives()) {
+            <div class="empty-state">Loading stored export archives...</div>
+          } @else if (exportArchives().length === 0) {
+            <div class="empty-state">No export archives generated yet. When you generate an export above, a copy is automatically archived here for long-term safety.</div>
+          } @else {
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Created Date</th>
+                    <th>Module</th>
+                    <th>File Name</th>
+                    <th>Format</th>
+                    <th>Records</th>
+                    <th>Size</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (arch of exportArchives(); track arch.id) {
+                    <tr>
+                      <td>{{ arch.createdAtUtc | date:'dd MMM yyyy, HH:mm' }}</td>
+                      <td><strong>{{ getModuleName(arch.module) }}</strong></td>
+                      <td>{{ arch.fileName }}</td>
+                      <td>
+                        <span class="badge" [class.badge-info]="arch.format === 'xlsx'" [class.badge-warning]="arch.format === 'csv'">
+                          {{ arch.format.toUpperCase() }}
+                        </span>
+                      </td>
+                      <td>{{ arch.recordCount }}</td>
+                      <td>{{ (arch.fileSizeBytes / 1024).toFixed(1) }} KB</td>
+                      <td>
+                        <button class="btn-sm btn-outline-primary" (click)="downloadExportArchive(arch)">
+                          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" class="mr-1">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                          </svg>
+                          <span>Download</span>
+                        </button>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
       }
 
       <!-- TAB 3: IMPORT HISTORY -->
@@ -626,6 +707,18 @@ interface ModuleOption {
                       <td class="text-success">{{ b.successRows }}</td>
                       <td class="text-danger">{{ b.failedRows }}</td>
                       <td class="actions-cell">
+                        <button
+                          class="btn-sm btn-outline-primary"
+                          (click)="downloadOriginalFile(b)"
+                          [disabled]="downloadingBatchFile() === b.id"
+                          title="Download original file uploaded for this batch">
+                          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" class="mr-1">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="7 10 12 15 17 10"/>
+                            <line x1="12" y1="15" x2="12" y2="3"/>
+                          </svg>
+                          <span>{{ downloadingBatchFile() === b.id ? 'Loading...' : 'Original' }}</span>
+                        </button>
                         @if (b.failedRows > 0) {
                           <button class="btn-sm btn-outline-danger" (click)="downloadErrors(b.id)" title="Download Errors">
                             <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" class="mr-1">
@@ -1180,9 +1273,13 @@ export class DataTransferComponent implements OnInit {
   exportFrom = '';
   exportTo = '';
   readonly isExporting = signal<boolean>(false);
+  readonly exportArchives = signal<ExportArchive[]>([]);
+  readonly isLoadingArchives = signal<boolean>(false);
+  readonly downloadingBatchFile = signal<string | null>(null);
 
   ngOnInit(): void {
     this.loadProfiles();
+    this.loadExportArchives();
   }
 
   getModuleName(id: string): string {
@@ -1506,6 +1603,7 @@ export class DataTransferComponent implements OnInit {
           this.themeService.playSuccessSound();
           this.saveBlob(blob, `hisaab_full_backup_${new Date().toISOString().slice(0, 10)}.xlsx`);
           this.isExporting.set(false);
+          this.loadExportArchives();
         },
         error: () => this.isExporting.set(false)
       });
@@ -1521,10 +1619,45 @@ export class DataTransferComponent implements OnInit {
           const ext = this.exportFormat === 'csv' ? 'csv' : 'xlsx';
           this.saveBlob(blob, `hisaab_${this.exportModule.toLowerCase()}_${new Date().toISOString().slice(0, 10)}.${ext}`);
           this.isExporting.set(false);
+          this.loadExportArchives();
         },
         error: () => this.isExporting.set(false)
       });
     }
+  }
+
+  loadExportArchives(): void {
+    this.isLoadingArchives.set(true);
+    this.dataTransferService.getExportArchives().subscribe({
+      next: (archives) => {
+        this.exportArchives.set(archives);
+        this.isLoadingArchives.set(false);
+      },
+      error: () => this.isLoadingArchives.set(false)
+    });
+  }
+
+  downloadExportArchive(arch: ExportArchive): void {
+    this.dataTransferService.downloadExportArchive(arch.id).subscribe({
+      next: (blob) => {
+        this.saveBlob(blob, arch.fileName);
+      },
+      error: () => alert('Failed to download archive file.')
+    });
+  }
+
+  downloadOriginalFile(batch: ImportBatchDetail): void {
+    this.downloadingBatchFile.set(batch.id);
+    this.dataTransferService.downloadOriginalImportFile(batch.id).subscribe({
+      next: (blob) => {
+        this.saveBlob(blob, batch.fileName || `import_file_${batch.id.substring(0, 8)}.dat`);
+        this.downloadingBatchFile.set(null);
+      },
+      error: (err) => {
+        alert(err.error?.message || 'Original file is not available or has expired.');
+        this.downloadingBatchFile.set(null);
+      }
+    });
   }
 
   private saveBlob(blob: Blob, fileName: string): void {

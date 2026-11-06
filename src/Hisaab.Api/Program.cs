@@ -438,6 +438,31 @@ using (var scope = app.Services.CreateScope())
 
             CREATE INDEX IF NOT EXISTS ""IX_ipo_applications_UserId_Status"" ON ipo_applications (""UserId"", ""Status"");
             CREATE INDEX IF NOT EXISTS ""IX_ipo_applications_UserId_ApplicationDate"" ON ipo_applications (""UserId"", ""ApplicationDate"");
+
+            -- Export Archives Table (Data Transfer persistent storage)
+            CREATE TABLE IF NOT EXISTS export_archives (
+                ""Id"" uuid NOT NULL,
+                ""UserId"" uuid NOT NULL,
+                ""Module"" character varying(100) NOT NULL,
+                ""FileName"" character varying(255) NOT NULL,
+                ""FilePath"" character varying(1000) NOT NULL,
+                ""Format"" character varying(10) NOT NULL,
+                ""FileSizeBytes"" bigint NOT NULL,
+                ""RecordCount"" integer NOT NULL,
+                ""CreatedAtUtc"" timestamp with time zone NOT NULL,
+                ""UpdatedAtUtc"" timestamp with time zone,
+                ""CreatedBy"" uuid,
+                ""UpdatedBy"" uuid,
+                ""RowVersion"" bigint NOT NULL DEFAULT 0,
+                ""IsDeleted"" boolean NOT NULL DEFAULT false,
+                ""DeletedAtUtc"" timestamp with time zone,
+                ""DeletedBy"" uuid,
+                ""ImportBatchId"" uuid,
+                CONSTRAINT ""PK_export_archives"" PRIMARY KEY (""Id"")
+            );
+
+            CREATE INDEX IF NOT EXISTS ""IX_export_archives_UserId_CreatedAtUtc"" ON export_archives (""UserId"", ""CreatedAtUtc"");
+            CREATE INDEX IF NOT EXISTS ""IX_export_archives_UserId_Module"" ON export_archives (""UserId"", ""Module"");
         ");
     }
     catch

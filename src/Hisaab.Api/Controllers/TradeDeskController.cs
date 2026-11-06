@@ -30,6 +30,13 @@ public class TradeDeskController : ApiControllerBase
         return Ok(result);
     }
 
+    [HttpGet("dashboard")]
+    public async Task<IActionResult> GetDashboard()
+    {
+        var result = await Mediator.Send(new GetTradeDeskDashboardQuery());
+        return Ok(result);
+    }
+
     [AllowAnonymous]
     [HttpGet("search-stocks")]
     public async Task<IActionResult> SearchStocks([FromQuery] string? query, CancellationToken ct)

@@ -16,14 +16,16 @@ public class TransactionsController : ApiControllerBase
     [ProducesResponseType(typeof(TransactionsResponseDto), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetTransactions(
         [FromQuery] string? month,
+        [FromQuery] string? startDate,
+        [FromQuery] string? endDate,
         [FromQuery] TransactionType? type,
         [FromQuery] Guid? categoryId,
         [FromQuery] string? search,
         [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 20,
+        [FromQuery] int pageSize = 100,
         CancellationToken cancellationToken = default)
     {
-        var query = new GetTransactionsQuery(month, type, categoryId, search, page, pageSize);
+        var query = new GetTransactionsQuery(month, startDate, endDate, type, categoryId, search, page, pageSize);
         var result = await Mediator.Send(query, cancellationToken);
         return Ok(result.Data);
     }

@@ -16,6 +16,7 @@ public interface IApplicationDbContext
     DbSet<AuditLog> AuditLogs { get; }
     DbSet<ImportBatch> ImportBatches { get; }
     DbSet<ImportError> ImportErrors { get; }
+    DbSet<ExportArchive> ExportArchives { get; }
     DbSet<MappingProfile> MappingProfiles { get; }
     DbSet<BusinessEntity> Businesses { get; }
     DbSet<BusinessTransaction> BusinessTransactions { get; }

@@ -52,5 +52,19 @@ public interface IDataTransferService
     Task<(byte[] Content, string ContentType, string FileName)> ExportAllModulesAsync(
         Guid userId,
         CancellationToken cancellationToken = default);
+
+    Task<List<ExportArchiveDto>> GetExportArchivesAsync(
+        Guid userId,
+        CancellationToken cancellationToken = default);
+
+    Task<(byte[] Content, string ContentType, string FileName)> GetExportArchiveFileAsync(
+        Guid archiveId,
+        Guid userId,
+        CancellationToken cancellationToken = default);
+
+    Task<(byte[] Content, string ContentType, string FileName)> GetImportBatchOriginalFileAsync(
+        Guid batchId,
+        Guid userId,
+        CancellationToken cancellationToken = default);
 }
 

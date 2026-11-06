@@ -25,18 +25,21 @@ public class ReportsController : ApiControllerBase
     public async Task<IActionResult> ExportPdf(
         [FromRoute] string type,
         [FromQuery] string? month,
+        [FromQuery] string? fromMonth,
+        [FromQuery] string? toMonth,
         [FromQuery] int? year,
         [FromQuery] Guid? loanId,
         CancellationToken cancellationToken = default)
     {
         var normalizedType = type.ToLowerInvariant().Trim();
-        var targetMonth = month ?? DateTime.UtcNow.ToString("yyyy-MM");
+        var effectiveFrom = !string.IsNullOrWhiteSpace(fromMonth) ? fromMonth : month;
+        var effectiveTo = !string.IsNullOrWhiteSpace(toMonth) ? toMonth : effectiveFrom;
         var targetYear = year ?? DateTime.UtcNow.Year;
 
         FileExportResult result = normalizedType switch
         {
             "transactions" or "income-expense" =>
-                await _reportExportService.ExportTransactionsPdfAsync(targetMonth, cancellationToken),
+                await _reportExportService.ExportTransactionsPdfAsync(effectiveFrom ?? DateTime.UtcNow.ToString("yyyy-MM"), effectiveTo, cancellationToken),
 
             "loans" =>
                 await _reportExportService.ExportLoansPdfAsync(loanId, cancellationToken),
@@ -48,7 +51,7 @@ public class ReportsController : ApiControllerBase
                 await _reportExportService.ExportInvestmentsPdfAsync(cancellationToken),
 
             "dashboard" or "statement" or "monthly-statement" =>
-                await _reportExportService.ExportDashboardPdfAsync(targetMonth, cancellationToken),
+                await _reportExportService.ExportDashboardPdfAsync(effectiveFrom ?? DateTime.UtcNow.ToString("yyyy-MM"), effectiveTo, cancellationToken),
 
             _ => throw new ArgumentException($"Unsupported report type: '{type}'. Valid types: 'transactions', 'loans', 'epf', 'investments', 'dashboard'.")
         };
@@ -66,17 +69,20 @@ public class ReportsController : ApiControllerBase
     public async Task<IActionResult> ExportExcel(
         [FromRoute] string type,
         [FromQuery] string? month,
+        [FromQuery] string? fromMonth,
+        [FromQuery] string? toMonth,
         [FromQuery] int? year,
         CancellationToken cancellationToken = default)
     {
         var normalizedType = type.ToLowerInvariant().Trim();
-        var targetMonth = month ?? DateTime.UtcNow.ToString("yyyy-MM");
+        var effectiveFrom = !string.IsNullOrWhiteSpace(fromMonth) ? fromMonth : month;
+        var effectiveTo = !string.IsNullOrWhiteSpace(toMonth) ? toMonth : effectiveFrom;
         var targetYear = year ?? DateTime.UtcNow.Year;
 
         FileExportResult result = normalizedType switch
         {
             "transactions" or "income-expense" =>
-                await _reportExportService.ExportTransactionsExcelAsync(targetMonth, cancellationToken),
+                await _reportExportService.ExportTransactionsExcelAsync(effectiveFrom ?? DateTime.UtcNow.ToString("yyyy-MM"), effectiveTo, cancellationToken),
 
             "loans" =>
                 await _reportExportService.ExportLoansExcelAsync(cancellationToken),

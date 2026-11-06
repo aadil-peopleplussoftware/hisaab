@@ -27,10 +27,10 @@ public class ReportExportService : IReportExportService
         _dateTimeService = dateTimeService;
     }
 
-    public async Task<FileExportResult> ExportTransactionsPdfAsync(string month, CancellationToken cancellationToken)
+    public async Task<FileExportResult> ExportTransactionsPdfAsync(string fromMonth, string? toMonth = null, CancellationToken cancellationToken = default)
     {
         var currentUserId = _currentUserService.UserId;
-        var (startUtc, endUtc, monthDisplay) = ParseMonthRange(month);
+        var (startUtc, endUtc, monthDisplay, fileTag, totalMonths) = ParseDateRange(fromMonth, toMonth);
 
         var transactions = await _context.Transactions
             .AsNoTracking()
@@ -51,12 +51,28 @@ public class ReportExportService : IReportExportService
                 page.Margin(36);
                 page.DefaultTextStyle(x => x.FontSize(10).FontColor(Colors.Grey.Darken3));
 
-                page.Header().Element(c => ComposeReportHeader(c, "Monthly Income & Expense Statement", monthDisplay));
+                page.Header().Element(c => ComposeReportHeader(c, totalMonths > 1 ? "Income & Expense Multi-Month Statement" : "Monthly Income & Expense Statement", $"Period: {monthDisplay}"));
 
                 page.Content().PaddingVertical(15).Column(col =>
                 {
+                    // Prominent Statement Period Banner
+                    col.Item().Border(1).BorderColor(Colors.Indigo.Medium).Background(Colors.Indigo.Lighten5).Padding(10).Row(r =>
+                    {
+                        r.RelativeItem().Column(c =>
+                        {
+                            c.Item().Text("STATEMENT PERIOD").Bold().FontSize(8).FontColor(Colors.Indigo.Darken2);
+                            c.Item().Text($"{monthDisplay}  ({startUtc:dd-MMM-yyyy} to {endUtc.AddDays(-1):dd-MMM-yyyy})")
+                                .Bold().FontSize(12).FontColor(Colors.Indigo.Darken4);
+                        });
+                        r.AutoItem().AlignRight().Column(c =>
+                        {
+                            c.Item().Text("TOTAL DURATION").FontSize(8).FontColor(Colors.Grey.Darken1);
+                            c.Item().Text(totalMonths == 1 ? "1 Month" : $"{totalMonths} Months").Bold().FontSize(11).FontColor(Colors.Indigo.Darken3);
+                        });
+                    });
+
                     // Summary KPI Box
-                    col.Item().Border(1).BorderColor(Colors.Grey.Lighten2).Background(Colors.Grey.Lighten4).Padding(12).Row(r =>
+                    col.Item().PaddingTop(10).Border(1).BorderColor(Colors.Grey.Lighten2).Background(Colors.Grey.Lighten4).Padding(12).Row(r =>
                     {
                         r.RelativeItem().Column(c =>
                         {
@@ -75,7 +91,54 @@ public class ReportExportService : IReportExportService
                         });
                     });
 
-                    col.Item().PaddingTop(15).Text($"Transactions ({transactions.Count})").Bold().FontSize(11);
+                    // Month-by-month summary if multi-month
+                    if (totalMonths > 1)
+                    {
+                        var monthlyGroups = transactions
+                            .GroupBy(t => new { t.TransactionDate.Year, t.TransactionDate.Month })
+                            .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month)
+                            .Select(g => new
+                            {
+                                MonthName = new DateTime(g.Key.Year, g.Key.Month, 1).ToString("MMM yyyy"),
+                                Income = g.Where(t => t.Type == TransactionType.Income).Sum(t => t.Amount),
+                                Expense = g.Where(t => t.Type == TransactionType.Expense).Sum(t => t.Amount),
+                                Savings = g.Where(t => t.Type == TransactionType.Income).Sum(t => t.Amount) - g.Where(t => t.Type == TransactionType.Expense).Sum(t => t.Amount)
+                            })
+                            .ToList();
+
+                        if (monthlyGroups.Count > 0)
+                        {
+                            col.Item().PaddingTop(12).Text("Month-by-Month Breakdown").Bold().FontSize(11);
+                            col.Item().PaddingTop(4).Table(mTable =>
+                            {
+                                mTable.ColumnsDefinition(cols =>
+                                {
+                                    cols.RelativeColumn(2);
+                                    cols.RelativeColumn(2);
+                                    cols.RelativeColumn(2);
+                                    cols.RelativeColumn(2);
+                                });
+
+                                mTable.Header(h =>
+                                {
+                                    h.Cell().BorderBottom(1).Padding(3).Text("Month").Bold().FontSize(9);
+                                    h.Cell().BorderBottom(1).Padding(3).AlignRight().Text("Income").Bold().FontSize(9);
+                                    h.Cell().BorderBottom(1).Padding(3).AlignRight().Text("Expense").Bold().FontSize(9);
+                                    h.Cell().BorderBottom(1).Padding(3).AlignRight().Text("Net Savings").Bold().FontSize(9);
+                                });
+
+                                foreach (var m in monthlyGroups)
+                                {
+                                    mTable.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(3).Text(m.MonthName).FontSize(9);
+                                    mTable.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(3).AlignRight().Text(new Money(m.Income).ToIndianFormat()).FontColor(Colors.Green.Darken2).FontSize(9);
+                                    mTable.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(3).AlignRight().Text(new Money(m.Expense).ToIndianFormat()).FontColor(Colors.Red.Darken2).FontSize(9);
+                                    mTable.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(3).AlignRight().Text(new Money(m.Savings).ToIndianFormat()).FontColor(m.Savings >= 0 ? Colors.Green.Darken2 : Colors.Red.Darken2).Bold().FontSize(9);
+                                }
+                            });
+                        }
+                    }
+
+                    col.Item().PaddingTop(15).Text($"Itemized Transactions ({transactions.Count})").Bold().FontSize(11);
 
                     // Table
                     col.Item().PaddingTop(8).Table(table =>
@@ -115,13 +178,13 @@ public class ReportExportService : IReportExportService
             });
         }).GeneratePdf();
 
-        return new FileExportResult(pdfBytes, "application/pdf", $"Hisaab_Transactions_{month}.pdf");
+        return new FileExportResult(pdfBytes, "application/pdf", $"Hisaab_Transactions_{fileTag}.pdf");
     }
 
-    public async Task<FileExportResult> ExportTransactionsExcelAsync(string month, CancellationToken cancellationToken)
+    public async Task<FileExportResult> ExportTransactionsExcelAsync(string fromMonth, string? toMonth = null, CancellationToken cancellationToken = default)
     {
         var currentUserId = _currentUserService.UserId;
-        var (startUtc, endUtc, monthDisplay) = ParseMonthRange(month);
+        var (startUtc, endUtc, monthDisplay, fileTag, totalMonths) = ParseDateRange(fromMonth, toMonth);
 
         var transactions = await _context.Transactions
             .AsNoTracking()
@@ -134,11 +197,13 @@ public class ReportExportService : IReportExportService
         var ws = workbook.Worksheets.Add("Transactions");
 
         // Header Title
-        ws.Cell(1, 1).Value = "Hisaab - Monthly Transactions Statement";
+        ws.Cell(1, 1).Value = totalMonths > 1 ? "Hisaab - Multi-Month Transactions Statement" : "Hisaab - Monthly Transactions Statement";
         ws.Cell(1, 1).Style.Font.Bold = true;
         ws.Cell(1, 1).Style.Font.FontSize = 14;
-        ws.Cell(2, 1).Value = $"Period: {monthDisplay} (User ID: {currentUserId})";
-        ws.Cell(2, 1).Style.Font.Italic = true;
+        ws.Cell(2, 1).Value = $"Statement Period: {monthDisplay} (From {startUtc:dd-MMM-yyyy} to {endUtc.AddDays(-1):dd-MMM-yyyy}) | Total Duration: {totalMonths} Month(s)";
+        ws.Cell(2, 1).Style.Font.Bold = true;
+        ws.Cell(2, 1).Style.Font.FontSize = 11;
+        ws.Cell(2, 1).Style.Font.FontColor = XLColor.FromHtml("#4F46E5");
 
         // Table Header
         var row = 4;
@@ -168,9 +233,45 @@ public class ReportExportService : IReportExportService
 
         ws.Columns().AdjustToContents();
 
+        if (totalMonths > 1)
+        {
+            var wsSummary = workbook.Worksheets.Add("Monthly Summary");
+            wsSummary.Cell(1, 1).Value = "Monthly Breakdown Summary";
+            wsSummary.Cell(1, 1).Style.Font.Bold = true;
+            wsSummary.Cell(1, 1).Style.Font.FontSize = 13;
+            wsSummary.Cell(2, 1).Value = $"Period: {monthDisplay}";
+            wsSummary.Cell(2, 1).Style.Font.Italic = true;
+
+            wsSummary.Cell(4, 1).Value = "Month";
+            wsSummary.Cell(4, 2).Value = "Income (INR)";
+            wsSummary.Cell(4, 3).Value = "Expense (INR)";
+            wsSummary.Cell(4, 4).Value = "Net Savings (INR)";
+            var sHdr = wsSummary.Range(4, 1, 4, 4);
+            sHdr.Style.Font.Bold = true;
+            sHdr.Style.Fill.BackgroundColor = XLColor.FromHtml("#4F46E5");
+            sHdr.Style.Font.FontColor = XLColor.White;
+
+            var sRow = 5;
+            var monthlyGroups = transactions
+                .GroupBy(t => new { t.TransactionDate.Year, t.TransactionDate.Month })
+                .OrderBy(g => g.Key.Year).ThenBy(g => g.Key.Month);
+
+            foreach (var mg in monthlyGroups)
+            {
+                var inc = mg.Where(t => t.Type == TransactionType.Income).Sum(t => t.Amount);
+                var exp = mg.Where(t => t.Type == TransactionType.Expense).Sum(t => t.Amount);
+                wsSummary.Cell(sRow, 1).Value = new DateTime(mg.Key.Year, mg.Key.Month, 1).ToString("MMMM yyyy");
+                wsSummary.Cell(sRow, 2).Value = inc;
+                wsSummary.Cell(sRow, 3).Value = exp;
+                wsSummary.Cell(sRow, 4).Value = inc - exp;
+                sRow++;
+            }
+            wsSummary.Columns().AdjustToContents();
+        }
+
         using var ms = new MemoryStream();
         workbook.SaveAs(ms);
-        return new FileExportResult(ms.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Hisaab_Transactions_{month}.xlsx");
+        return new FileExportResult(ms.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"Hisaab_Transactions_{fileTag}.xlsx");
     }
 
     public async Task<FileExportResult> ExportLoansPdfAsync(Guid? loanId, CancellationToken cancellationToken)
@@ -682,20 +783,20 @@ public class ReportExportService : IReportExportService
         return new FileExportResult(ms.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Hisaab_Investments_Portfolio.xlsx");
     }
 
-    public async Task<FileExportResult> ExportDashboardPdfAsync(string month, CancellationToken cancellationToken)
+    public async Task<FileExportResult> ExportDashboardPdfAsync(string fromMonth, string? toMonth = null, CancellationToken cancellationToken = default)
     {
         var currentUserId = _currentUserService.UserId;
-        var (startUtc, endUtc, monthDisplay) = ParseMonthRange(month);
+        var (startUtc, endUtc, monthDisplay, fileTag, totalMonths) = ParseDateRange(fromMonth, toMonth);
 
-        // Transactions in month
-        var txInMonth = await _context.Transactions
+        // Transactions in period
+        var txInPeriod = await _context.Transactions
             .AsNoTracking()
             .Include(t => t.Category)
             .Where(t => t.UserId == currentUserId && t.TransactionDate >= startUtc && t.TransactionDate < endUtc)
             .ToListAsync(cancellationToken);
 
-        var monthInc = txInMonth.Where(t => t.Type == TransactionType.Income).Sum(t => t.Amount);
-        var monthExp = txInMonth.Where(t => t.Type == TransactionType.Expense).Sum(t => t.Amount);
+        var monthInc = txInPeriod.Where(t => t.Type == TransactionType.Income).Sum(t => t.Amount);
+        var monthExp = txInPeriod.Where(t => t.Type == TransactionType.Expense).Sum(t => t.Amount);
         var netSavings = monthInc - monthExp;
 
         // Cumulative Net Worth calculations
@@ -751,12 +852,28 @@ public class ReportExportService : IReportExportService
                 page.Margin(36);
                 page.DefaultTextStyle(x => x.FontSize(10).FontColor(Colors.Grey.Darken3));
 
-                page.Header().Element(c => ComposeReportHeader(c, "Comprehensive Monthly Financial Statement", monthDisplay));
+                page.Header().Element(c => ComposeReportHeader(c, totalMonths > 1 ? "Executive Multi-Month Financial Statement" : "Comprehensive Monthly Financial Statement", $"Period: {monthDisplay}"));
 
                 page.Content().PaddingVertical(15).Column(col =>
                 {
+                    // Prominent Statement Period Banner
+                    col.Item().Border(1).BorderColor(Colors.Indigo.Medium).Background(Colors.Indigo.Lighten5).Padding(10).Row(r =>
+                    {
+                        r.RelativeItem().Column(c =>
+                        {
+                            c.Item().Text("STATEMENT PERIOD").Bold().FontSize(8).FontColor(Colors.Indigo.Darken2);
+                            c.Item().Text($"{monthDisplay}  ({startUtc:dd-MMM-yyyy} to {endUtc.AddDays(-1):dd-MMM-yyyy})")
+                                .Bold().FontSize(12).FontColor(Colors.Indigo.Darken4);
+                        });
+                        r.AutoItem().AlignRight().Column(c =>
+                        {
+                            c.Item().Text("TOTAL DURATION").FontSize(8).FontColor(Colors.Grey.Darken1);
+                            c.Item().Text(totalMonths == 1 ? "1 Month" : $"{totalMonths} Months").Bold().FontSize(11).FontColor(Colors.Indigo.Darken3);
+                        });
+                    });
+
                     // Net Worth Box
-                    col.Item().Border(1).BorderColor(Colors.Indigo.Medium).Background(Colors.Indigo.Lighten5).Padding(12).Row(r =>
+                    col.Item().PaddingTop(10).Border(1).BorderColor(Colors.Indigo.Medium).Background(Colors.Indigo.Lighten5).Padding(12).Row(r =>
                     {
                         r.RelativeItem().Column(c =>
                         {
@@ -765,7 +882,7 @@ public class ReportExportService : IReportExportService
                         });
                         r.RelativeItem().Column(c =>
                         {
-                            c.Item().Text("Monthly Net Savings").Bold().FontSize(10).FontColor(Colors.Indigo.Darken3);
+                            c.Item().Text(totalMonths > 1 ? "Period Net Savings" : "Monthly Net Savings").Bold().FontSize(10).FontColor(Colors.Indigo.Darken3);
                             c.Item().Text(new Money(netSavings).ToIndianFormat()).Bold().FontSize(14).FontColor(netSavings >= 0 ? Colors.Green.Darken2 : Colors.Red.Darken2);
                         });
                     });
@@ -809,7 +926,7 @@ public class ReportExportService : IReportExportService
                         table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten3).Padding(4).AlignRight().Text(new Money(payable).ToIndianFormat()).FontColor(Colors.Red.Darken2);
                     });
 
-                    col.Item().PaddingTop(15).Text($"Monthly Cashflow Breakdown ({monthDisplay})").Bold().FontSize(12);
+                    col.Item().PaddingTop(15).Text($"Cashflow Summary ({monthDisplay})").Bold().FontSize(12);
 
                     col.Item().PaddingTop(6).Row(r =>
                     {
@@ -836,7 +953,7 @@ public class ReportExportService : IReportExportService
             });
         }).GeneratePdf();
 
-        return new FileExportResult(pdfBytes, "application/pdf", $"Hisaab_Statement_{month}.pdf");
+        return new FileExportResult(pdfBytes, "application/pdf", $"Hisaab_Statement_{fileTag}.pdf");
     }
 
     private static void ComposeReportHeader(IContainer container, string reportTitle, string periodSubtitle)
@@ -851,7 +968,7 @@ public class ReportExportService : IReportExportService
             row.RelativeItem().AlignRight().Column(col =>
             {
                 col.Item().Text(reportTitle).Bold().FontSize(11);
-                col.Item().Text(periodSubtitle).FontSize(9).FontColor(Colors.Grey.Darken1);
+                col.Item().Text(periodSubtitle).Bold().FontSize(9).FontColor(Colors.Indigo.Darken2);
             });
         });
     }
@@ -872,16 +989,70 @@ public class ReportExportService : IReportExportService
         });
     }
 
-    private (DateTime startUtc, DateTime endUtc, string display) ParseMonthRange(string month)
+    private (DateTime startUtc, DateTime endUtc, string display, string fileTag, int totalMonths) ParseDateRange(string? fromMonth, string? toMonth = null)
     {
-        if (DateTime.TryParseExact(month, "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed))
+        var nowKolkata = _dateTimeService.NowInKolkata;
+        var defaultMonthStr = nowKolkata.ToString("yyyy-MM");
+
+        var fStr = !string.IsNullOrWhiteSpace(fromMonth) ? fromMonth.Trim() : defaultMonthStr;
+        var tStr = !string.IsNullOrWhiteSpace(toMonth) ? toMonth.Trim() : fStr;
+
+        DateTime fromDate;
+        if (DateTime.TryParseExact(fStr, "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.None, out var pFrom))
         {
-            var start = new DateTime(parsed.Year, parsed.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-            return (start, start.AddMonths(1), parsed.ToString("MMMM yyyy"));
+            fromDate = new DateTime(pFrom.Year, pFrom.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        }
+        else if (DateTime.TryParse(fStr, CultureInfo.InvariantCulture, DateTimeStyles.None, out var dFrom))
+        {
+            fromDate = new DateTime(dFrom.Year, dFrom.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        }
+        else
+        {
+            fromDate = new DateTime(nowKolkata.Year, nowKolkata.Month, 1, 0, 0, 0, DateTimeKind.Utc);
         }
 
-        var now = _dateTimeService.NowInKolkata;
-        var defaultStart = new DateTime(now.Year, now.Month, 1, 0, 0, 0, DateTimeKind.Utc);
-        return (defaultStart, defaultStart.AddMonths(1), defaultStart.ToString("MMMM yyyy"));
+        DateTime toDate;
+        if (DateTime.TryParseExact(tStr, "yyyy-MM", CultureInfo.InvariantCulture, DateTimeStyles.None, out var pTo))
+        {
+            toDate = new DateTime(pTo.Year, pTo.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        }
+        else if (DateTime.TryParse(tStr, CultureInfo.InvariantCulture, DateTimeStyles.None, out var dTo))
+        {
+            toDate = new DateTime(dTo.Year, dTo.Month, 1, 0, 0, 0, DateTimeKind.Utc);
+        }
+        else
+        {
+            toDate = fromDate;
+        }
+
+        if (fromDate > toDate)
+        {
+            (fromDate, toDate) = (toDate, fromDate);
+        }
+
+        var startUtc = fromDate;
+        var endUtc = toDate.AddMonths(1);
+        var totalMonths = ((toDate.Year - fromDate.Year) * 12) + toDate.Month - fromDate.Month + 1;
+
+        string display;
+        string fileTag;
+
+        if (fromDate.Year == toDate.Year && fromDate.Month == toDate.Month)
+        {
+            display = fromDate.ToString("MMMM yyyy");
+            fileTag = fromDate.ToString("yyyy-MM");
+        }
+        else if (fromDate.Year == toDate.Year)
+        {
+            display = $"{fromDate:MMMM} to {toDate:MMMM yyyy}";
+            fileTag = $"{fromDate:yyyy-MM}_to_{toDate:yyyy-MM}";
+        }
+        else
+        {
+            display = $"{fromDate:MMMM yyyy} to {toDate:MMMM yyyy}";
+            fileTag = $"{fromDate:yyyy-MM}_to_{toDate:yyyy-MM}";
+        }
+
+        return (startUtc, endUtc, display, fileTag, totalMonths);
     }
 }

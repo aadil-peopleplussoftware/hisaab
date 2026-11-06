@@ -9,8 +9,10 @@ export class ReportsService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = '/api/v1/reports';
 
-  getPdfReport(type: string, params?: { month?: string; year?: number; loanId?: string }): Observable<Blob> {
+  getPdfReport(type: string, params?: { month?: string; fromMonth?: string; toMonth?: string; year?: number; loanId?: string }): Observable<Blob> {
     let httpParams = new HttpParams();
+    if (params?.fromMonth) httpParams = httpParams.set('fromMonth', params.fromMonth);
+    if (params?.toMonth) httpParams = httpParams.set('toMonth', params.toMonth);
     if (params?.month) httpParams = httpParams.set('month', params.month);
     if (params?.year) httpParams = httpParams.set('year', params.year.toString());
     if (params?.loanId) httpParams = httpParams.set('loanId', params.loanId);
@@ -21,8 +23,10 @@ export class ReportsService {
     });
   }
 
-  getExcelReport(type: string, params?: { month?: string; year?: number }): Observable<Blob> {
+  getExcelReport(type: string, params?: { month?: string; fromMonth?: string; toMonth?: string; year?: number }): Observable<Blob> {
     let httpParams = new HttpParams();
+    if (params?.fromMonth) httpParams = httpParams.set('fromMonth', params.fromMonth);
+    if (params?.toMonth) httpParams = httpParams.set('toMonth', params.toMonth);
     if (params?.month) httpParams = httpParams.set('month', params.month);
     if (params?.year) httpParams = httpParams.set('year', params.year.toString());
 

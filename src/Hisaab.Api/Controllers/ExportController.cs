@@ -1,3 +1,4 @@
+using Hisaab.Application.Features.DataTransfer.DTOs;
 using Hisaab.Application.Features.DataTransfer.Queries;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -40,6 +41,29 @@ public class ExportController : ApiControllerBase
             new ExportAllModulesQuery(),
             cancellationToken);
 
+        return File(content, contentType, fileName);
+    }
+
+    /// <summary>
+    /// Gets all persisted export backup archives for the current user.
+    /// </summary>
+    [HttpGet("archives")]
+    [ProducesResponseType(typeof(List<ExportArchiveDto>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetArchives(CancellationToken cancellationToken = default)
+    {
+        var list = await Mediator.Send(new GetExportArchivesQuery(), cancellationToken);
+        return Ok(list);
+    }
+
+    /// <summary>
+    /// Downloads a previously exported backup archive.
+    /// </summary>
+    [HttpGet("archives/{id:guid}/download")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DownloadArchive([FromRoute] Guid id, CancellationToken cancellationToken = default)
+    {
+        var (content, contentType, fileName) = await Mediator.Send(new DownloadExportArchiveQuery(id), cancellationToken);
         return File(content, contentType, fileName);
     }
 }

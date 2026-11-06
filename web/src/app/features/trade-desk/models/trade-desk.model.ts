@@ -178,3 +178,65 @@ export interface LiveIpo {
   listingDate?: string;
 }
 
+export interface TradeDeskDashboard {
+  // 1. Today's Movements
+  todayUnrealizedProfitLoss: number;
+  todayRealizedProfitLoss: number;
+  todayTotalProfitLoss: number;
+  todayProfitLossPercentage: number;
+  tradesClosedTodayCount: number;
+  todayTopGainerTicker?: string | null;
+  todayTopGainerChangePercentage: number;
+  todayTopGainerProfit: number;
+  todayTopLoserTicker?: string | null;
+  todayTopLoserChangePercentage: number;
+  todayTopLoserLoss: number;
+
+  // 2. Overall Portfolio Totals
+  overallTotalProfitLoss: number;
+  overallTotalProfitLossPercentage: number;
+  activeCapitalInvested: number;
+  activeCurrentValuation: number;
+  activeUnrealizedProfitLoss: number;
+  activeUnrealizedProfitLossPercentage: number;
+  activeTradesCount: number;
+
+  // 3. Closed Trades Cumulative & Performance Metrics
+  totalGrossRealizedProfitLoss: number;
+  totalChargesPaid: number;
+  totalNetRealizedProfitLoss: number;
+  totalNetRealizedProfitLossPercentage: number;
+  totalClosedTradesCount: number;
+  winningTradesCount: number;
+  losingTradesCount: number;
+  winRatePercentage: number;
+  averageWinningTradeAmount: number;
+  averageLosingTradeAmount: number;
+  profitFactor: number;
+  chargesToGrossProfitPercentage: number;
+  bestTradeTicker?: string | null;
+  bestTradeNetProfit: number;
+  bestTradeNetProfitPercentage: number;
+  worstTradeTicker?: string | null;
+  worstTradeNetLoss: number;
+  worstTradeNetLossPercentage: number;
+  averageHoldingDays: number;
+  plannedHoldingAdherencePercentage: number;
+
+  // 4. Active Risk Radar
+  tradesNearTargetCount: number;
+  tradesNearStopLossCount: number;
+  tradesBreachedStopLossCount: number;
+  topActiveMovers: TradeOrder[];
+
+  // 5. IPO Desk Metrics
+  totalIposApplied: number;
+  totalIposAllotted: number;
+  totalIposRejected: number;
+  totalIposPending: number;
+  ipoAllotmentStrikeRatePercentage: number;
+  totalCapitalBlockedInIpos: number;
+  totalListingGainRealized: number;
+  totalListingGainPercentage: number;
+}
+

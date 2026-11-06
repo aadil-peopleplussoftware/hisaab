@@ -11,6 +11,7 @@ import {
   IpoIssueType,
   LiveIpo,
   StockSearchResult,
+  TradeDeskDashboard,
   TradeDeskOverview,
   TradeOrder,
   TradeStatus,
@@ -40,7 +41,28 @@ import { ThemeService } from '../../core/services/theme.service';
         </div>
 
         <div class="header-actions">
-          <button type="button" class="btn-outline" (click)="loadOverview()" [disabled]="loading()">
+          <button
+            type="button"
+            class="btn-outline view-toggle-pill"
+            [class.active]="activeTab() === 'dashboard'"
+            (click)="setActiveTab('dashboard')">
+            <span>📊 Performance Dashboard</span>
+          </button>
+          <button
+            type="button"
+            class="btn-outline view-toggle-pill"
+            [class.active]="activeTab() === 'trades'"
+            (click)="setActiveTab('trades')">
+            <span>📈 Swing Trades</span>
+          </button>
+          <button
+            type="button"
+            class="btn-outline view-toggle-pill"
+            [class.active]="activeTab() === 'ipos'"
+            (click)="setActiveTab('ipos')">
+            <span>🎯 IPO Desk</span>
+          </button>
+          <button type="button" class="btn-outline" (click)="loadOverview()" [disabled]="loading()" title="Refresh live quotes and data">
             <span>⚡ Refresh</span>
           </button>
           <button type="button" class="btn-outline" (click)="openCreateIpoModal()">
@@ -105,6 +127,15 @@ import { ThemeService } from '../../core/services/theme.service';
           <button
             type="button"
             class="tab-btn"
+            [class.active]="activeTab() === 'dashboard'"
+            (click)="setActiveTab('dashboard')">
+            <span>📊 Performance Dashboard</span>
+            <span class="tab-badge special">Live Analytics</span>
+          </button>
+
+          <button
+            type="button"
+            class="tab-btn"
             [class.active]="activeTab() === 'trades'"
             (click)="setActiveTab('trades')">
             <span>📈 Swing & Short-Term Trades</span>
@@ -142,6 +173,341 @@ import { ThemeService } from '../../core/services/theme.service';
       </div>
 
       <!-- Loading State -->
+      @if (loading()) {
+        <div class="loading-state">
+          <div class="skeleton-bar"></div>
+          <div class="skeleton-table"></div>
+        </div>
+      }
+
+      <!-- TAB: PERFORMANCE DASHBOARD -->
+      @if (!loading() && activeTab() === 'dashboard') {
+        @if (dashboard(); as d) {
+          <div class="dashboard-container">
+            <!-- 1. KEY HERO STRIP: LIVE UNREALIZED, TODAY'S MOVE & REALIZED P&L -->
+            <div class="dash-grid-4">
+              <!-- Card 1: Live Unrealized Portfolio P&L -->
+              <div class="dash-card hero-card">
+                <div class="card-head-sm">
+                  <span class="card-eyebrow">LIVE UNREALIZED P&L</span>
+                  <span class="dash-badge" [class.profit]="d.activeUnrealizedProfitLoss >= 0" [class.loss]="d.activeUnrealizedProfitLoss < 0">
+                    {{ d.activeUnrealizedProfitLossPercentage >= 0 ? '+' : '' }}{{ d.activeUnrealizedProfitLossPercentage }}%
+                  </span>
+                </div>
+                <div class="dash-big-num" [class.profit]="d.activeUnrealizedProfitLoss >= 0" [class.loss]="d.activeUnrealizedProfitLoss < 0">
+                  {{ d.activeUnrealizedProfitLoss >= 0 ? '+' : '' }}{{ d.activeUnrealizedProfitLoss | inrCurrency }}
+                </div>
+                <div class="dash-sub-details">
+                  <div class="sub-item">
+                    <span>Active Capital Invested:</span>
+                    <strong class="font-mono">{{ d.activeCapitalInvested | inrCurrency }}</strong>
+                  </div>
+                  <div class="sub-item">
+                    <span>Current Valuation:</span>
+                    <strong class="font-mono">{{ d.activeCurrentValuation | inrCurrency }}</strong>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card 2: Today's Movement -->
+              <div class="dash-card">
+                <div class="card-head-sm">
+                  <span class="card-eyebrow">TODAY'S MOVEMENT (DAY'S P&L)</span>
+                  <span class="dash-badge" [class.profit]="d.todayTotalProfitLoss >= 0" [class.loss]="d.todayTotalProfitLoss < 0">
+                    {{ d.todayProfitLossPercentage >= 0 ? '+' : '' }}{{ d.todayProfitLossPercentage }}% Today
+                  </span>
+                </div>
+                <div class="dash-big-num" [class.profit]="d.todayTotalProfitLoss >= 0" [class.loss]="d.todayTotalProfitLoss < 0">
+                  {{ d.todayTotalProfitLoss >= 0 ? '+' : '' }}{{ d.todayTotalProfitLoss | inrCurrency }}
+                </div>
+                <div class="dash-sub-details">
+                  <div class="sub-item">
+                    <span>Active Day Movement:</span>
+                    <strong [class.profit]="d.todayUnrealizedProfitLoss >= 0" [class.loss]="d.todayUnrealizedProfitLoss < 0">
+                      {{ d.todayUnrealizedProfitLoss >= 0 ? '+' : '' }}{{ d.todayUnrealizedProfitLoss | inrCurrency }}
+                    </strong>
+                  </div>
+                  <div class="sub-item">
+                    <span>Closed Today ({{ d.tradesClosedTodayCount }}):</span>
+                    <strong [class.profit]="d.todayRealizedProfitLoss >= 0" [class.loss]="d.todayRealizedProfitLoss < 0">
+                      {{ d.todayRealizedProfitLoss >= 0 ? '+' : '' }}{{ d.todayRealizedProfitLoss | inrCurrency }}
+                    </strong>
+                  </div>
+                  @if (d.todayTopGainerTicker) {
+                    <div class="sub-item">
+                      <span>Top Gainer:</span>
+                      <strong class="profit font-mono">{{ d.todayTopGainerTicker }} ({{ d.todayTopGainerChangePercentage >= 0 ? '+' : '' }}{{ d.todayTopGainerChangePercentage }}%)</strong>
+                    </div>
+                  }
+                  @if (d.todayTopLoserTicker) {
+                    <div class="sub-item">
+                      <span>Top Drag:</span>
+                      <strong class="loss font-mono">{{ d.todayTopLoserTicker }} ({{ d.todayTopLoserChangePercentage }}%)</strong>
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <!-- Card 3: Cumulative Net Realized P&L -->
+              <div class="dash-card">
+                <div class="card-head-sm">
+                  <span class="card-eyebrow">NET REALIZED (IN-HAND)</span>
+                  <span class="dash-badge" [class.profit]="d.totalNetRealizedProfitLoss >= 0" [class.loss]="d.totalNetRealizedProfitLoss < 0">
+                    {{ d.totalNetRealizedProfitLossPercentage >= 0 ? '+' : '' }}{{ d.totalNetRealizedProfitLossPercentage }}%
+                  </span>
+                </div>
+                <div class="dash-big-num" [class.profit]="d.totalNetRealizedProfitLoss >= 0" [class.loss]="d.totalNetRealizedProfitLoss < 0">
+                  {{ d.totalNetRealizedProfitLoss >= 0 ? '+' : '' }}{{ d.totalNetRealizedProfitLoss | inrCurrency }}
+                </div>
+                <div class="dash-sub-details">
+                  <div class="sub-item">
+                    <span>Gross Realized:</span>
+                    <strong class="font-mono">{{ d.totalGrossRealizedProfitLoss | inrCurrency }}</strong>
+                  </div>
+                  <div class="sub-item">
+                    <span>Brokerage & Charges:</span>
+                    <strong class="loss font-mono">-{{ d.totalChargesPaid | inrCurrency }}</strong>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Card 4: Total Lifetime Combined P&L -->
+              <div class="dash-card">
+                <div class="card-head-sm">
+                  <span class="card-eyebrow">LIFETIME COMBINED P&L</span>
+                  <span class="dash-badge" [class.profit]="d.overallTotalProfitLoss >= 0" [class.loss]="d.overallTotalProfitLoss < 0">
+                    {{ d.overallTotalProfitLossPercentage >= 0 ? '+' : '' }}{{ d.overallTotalProfitLossPercentage }}% Return
+                  </span>
+                </div>
+                <div class="dash-big-num" [class.profit]="d.overallTotalProfitLoss >= 0" [class.loss]="d.overallTotalProfitLoss < 0">
+                  {{ d.overallTotalProfitLoss >= 0 ? '+' : '' }}{{ d.overallTotalProfitLoss | inrCurrency }}
+                </div>
+                <div class="dash-sub-details">
+                  <div class="sub-item">
+                    <span>Active Unrealized:</span>
+                    <strong [class.profit]="d.activeUnrealizedProfitLoss >= 0" [class.loss]="d.activeUnrealizedProfitLoss < 0">
+                      {{ d.activeUnrealizedProfitLoss >= 0 ? '+' : '' }}{{ d.activeUnrealizedProfitLoss | inrCurrency }}
+                    </strong>
+                  </div>
+                  <div class="sub-item">
+                    <span>Net Realized:</span>
+                    <strong [class.profit]="d.totalNetRealizedProfitLoss >= 0" [class.loss]="d.totalNetRealizedProfitLoss < 0">
+                      {{ d.totalNetRealizedProfitLoss >= 0 ? '+' : '' }}{{ d.totalNetRealizedProfitLoss | inrCurrency }}
+                    </strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. ANALYTICS GRID: WIN/LOSS SCORECARD & DISCIPLINE RADAR -->
+            <div class="dash-grid-2 mt-4">
+              <!-- Win Rate & Profitability Card -->
+              <div class="dash-card">
+                <div class="card-head-bar">
+                  <div class="head-title">
+                    <span class="section-icon">🎯</span>
+                    <h3>Swing Trading Scorecard & Win Rate</h3>
+                  </div>
+                  <span class="pill-kpi" [class.profit]="d.winRatePercentage >= 50" [class.loss]="d.winRatePercentage < 50">
+                    {{ d.winRatePercentage }}% Win Rate
+                  </span>
+                </div>
+
+                <!-- Win vs Loss Progress Bar -->
+                <div class="win-loss-visual mt-3">
+                  <div class="progress-split">
+                    <div class="win-bar" [style.width.%]="d.winRatePercentage" title="Wins: {{ d.winningTradesCount }}"></div>
+                    <div class="loss-bar" [style.width.%]="100 - d.winRatePercentage" title="Losses: {{ d.losingTradesCount }}"></div>
+                  </div>
+                  <div class="win-loss-labels">
+                    <span class="label-win">🟢 {{ d.winningTradesCount }} Winning Trades</span>
+                    <span class="label-loss">🔴 {{ d.losingTradesCount }} Losing Trades</span>
+                  </div>
+                </div>
+
+                <!-- Scorecard Metrics Grid -->
+                <div class="metrics-subgrid mt-4">
+                  <div class="metric-box">
+                    <span class="m-label">PROFIT FACTOR</span>
+                    <strong class="m-val" [class.profit]="d.profitFactor >= 1.5">{{ d.profitFactor }}x</strong>
+                    <span class="m-hint">Ratio of gross gains to losses</span>
+                  </div>
+                  <div class="metric-box">
+                    <span class="m-label">AVERAGE WIN</span>
+                    <strong class="m-val profit">+{{ d.averageWinningTradeAmount | inrCurrency }}</strong>
+                    <span class="m-hint">Per profitable trade</span>
+                  </div>
+                  <div class="metric-box">
+                    <span class="m-label">AVERAGE LOSS</span>
+                    <strong class="m-val loss">-{{ d.averageLosingTradeAmount | inrCurrency }}</strong>
+                    <span class="m-hint">Per losing trade</span>
+                  </div>
+                  <div class="metric-box">
+                    <span class="m-label">CHARGES EROSION</span>
+                    <strong class="m-val" [class.loss]="d.chargesToGrossProfitPercentage > 10">{{ d.chargesToGrossProfitPercentage }}%</strong>
+                    <span class="m-hint">Of gross profit paid in taxes</span>
+                  </div>
+                </div>
+
+                <!-- Best & Worst Records -->
+                <div class="records-row mt-3">
+                  <div class="record-badge best">
+                    <span class="rec-tag">🏆 Best Trade:</span>
+                    @if (d.bestTradeTicker) {
+                      <strong>{{ d.bestTradeTicker }}</strong>
+                      <span class="profit font-mono">+{{ d.bestTradeNetProfit | inrCurrency }} ({{ d.bestTradeNetProfitPercentage }}%)</span>
+                    } @else {
+                      <span class="text-muted">None</span>
+                    }
+                  </div>
+                  <div class="record-badge worst">
+                    <span class="rec-tag">⚠️ Worst Trade:</span>
+                    @if (d.worstTradeTicker) {
+                      <strong>{{ d.worstTradeTicker }}</strong>
+                      <span class="loss font-mono">{{ d.worstTradeNetLoss | inrCurrency }} ({{ d.worstTradeNetLossPercentage }}%)</span>
+                    } @else {
+                      <span class="profit font-semibold">None (0 losing trades)</span>
+                    }
+                  </div>
+                </div>
+              </div>
+
+              <!-- Active Risk Surveillance & IPO Intelligence Card -->
+              <div class="dash-card">
+                <div class="card-head-bar">
+                  <div class="head-title">
+                    <span class="section-icon">🛡️</span>
+                    <h3>Active Position Risk Surveillance</h3>
+                  </div>
+                  <span class="badge-mini">{{ d.activeTradesCount }} Open Trades</span>
+                </div>
+
+                <!-- Risk Alerts Row -->
+                <div class="risk-signals mt-3">
+                  <div class="risk-pill target" title="Stocks within 8% of target price or exceeded">
+                    <span class="risk-dot green"></span>
+                    <span class="risk-title">Near Target (Book Profit):</span>
+                    <strong class="risk-count">{{ d.tradesNearTargetCount }}</strong>
+                  </div>
+                  <div class="risk-pill warn" title="Stocks within 3% of Stop-Loss level">
+                    <span class="risk-dot amber"></span>
+                    <span class="risk-title">Near Stop-Loss (Watch):</span>
+                    <strong class="risk-count">{{ d.tradesNearStopLossCount }}</strong>
+                  </div>
+                  <div class="risk-pill danger" title="Stocks below your defined Stop-Loss level">
+                    <span class="risk-dot red"></span>
+                    <span class="risk-title">Breached SL (Cut Loss):</span>
+                    <strong class="risk-count">{{ d.tradesBreachedStopLossCount }}</strong>
+                  </div>
+                </div>
+
+                <!-- Discipline & IPO Quick Split -->
+                <div class="metrics-subgrid mt-3">
+                  <div class="metric-box">
+                    <span class="m-label">AVG HOLDING TIME</span>
+                    <strong class="m-val">{{ d.averageHoldingDays }} Days</strong>
+                    <span class="m-hint">Planned target: 10-14 days</span>
+                  </div>
+                  <div class="metric-box">
+                    <span class="m-label">PLAN ADHERENCE</span>
+                    <strong class="m-val profit">{{ d.plannedHoldingAdherencePercentage }}%</strong>
+                    <span class="m-hint">Exited within planned period</span>
+                  </div>
+                  <div class="metric-box">
+                    <span class="m-label">IPO ALLOTMENT STRIKE</span>
+                    <strong class="m-val accent">{{ d.ipoAllotmentStrikeRatePercentage }}%</strong>
+                    <span class="m-hint">{{ d.totalIposAllotted }} Allotted / {{ d.totalIposApplied }} Applied</span>
+                  </div>
+                  <div class="metric-box">
+                    <span class="m-label">IPO LISTING GAINS</span>
+                    <strong class="m-val profit">+{{ d.totalListingGainRealized | inrCurrency }}</strong>
+                    <span class="m-hint">{{ d.totalListingGainPercentage }}% Gain Realized</span>
+                  </div>
+                </div>
+
+                <!-- Quick Navigation Shortcuts -->
+                <div class="quick-nav-actions mt-3">
+                  <button type="button" class="btn-quick-nav" (click)="setActiveTab('trades'); tradeSubFilter.set('open')">
+                    <span>👉 Manage Active Open Trades ({{ d.activeTradesCount }})</span>
+                  </button>
+                  <button type="button" class="btn-quick-nav" (click)="setActiveTab('trades'); tradeSubFilter.set('closed')">
+                    <span>📜 Closed Trades History ({{ d.totalClosedTradesCount }})</span>
+                  </button>
+                  <button type="button" class="btn-quick-nav" (click)="setActiveTab('ipos')">
+                    <span>🎯 IPO Desk ({{ d.totalIposApplied }})</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. TOP ACTIVE MOVERS TABLE -->
+            @if (d.topActiveMovers && d.topActiveMovers.length > 0) {
+              <div class="dash-card mt-4">
+                <div class="card-head-bar">
+                  <div class="head-title">
+                    <span class="section-icon">⚡</span>
+                    <h3>Active Positions Live Movement</h3>
+                  </div>
+                  <span class="badge-mini">Top Movers Sorted by Today's Volatility</span>
+                </div>
+
+                <div class="table-container mt-2">
+                  <table class="desk-table">
+                    <thead>
+                      <tr>
+                        <th>Stock / Ticker</th>
+                        <th class="text-right">Qty</th>
+                        <th class="text-right">Buy Price</th>
+                        <th class="text-right">Live CMP</th>
+                        <th class="text-right">Today's Move</th>
+                        <th class="text-right">Invested</th>
+                        <th class="text-right">Current Value</th>
+                        <th class="text-right">Total Unrealized P&L</th>
+                        <th class="text-right">Holding</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (t of d.topActiveMovers; track t.id) {
+                        <tr>
+                          <td>
+                            <div class="inst-cell">
+                              <span class="ticker-bold">{{ t.ticker }}</span>
+                              <span class="badge-exchange">{{ t.exchange }}</span>
+                            </div>
+                            <div class="company-sub">{{ t.companyName }}</div>
+                          </td>
+                          <td class="text-right font-mono">{{ t.quantity }}</td>
+                          <td class="text-right font-mono">{{ t.buyPrice | inrCurrency }}</td>
+                          <td class="text-right font-mono">
+                            <strong>{{ (t.currentMarketPrice || t.buyPrice) | inrCurrency }}</strong>
+                          </td>
+                          <td class="text-right font-mono">
+                            <span class="day-change-tag" [class.profit]="t.dayChangePercent > 0" [class.loss]="t.dayChangePercent < 0">
+                              {{ t.dayChangePercent >= 0 ? '+' : '' }}{{ t.dayChangePercent }}%
+                              @if (t.dayChange !== 0) {
+                                ({{ t.dayChange >= 0 ? '+' : '' }}{{ t.dayChange | inrCurrency }})
+                              }
+                            </span>
+                          </td>
+                          <td class="text-right font-mono">{{ t.investedAmount | inrCurrency }}</td>
+                          <td class="text-right font-mono">{{ t.currentValue | inrCurrency }}</td>
+                          <td class="text-right font-mono">
+                            <span class="pnl-pill" [class.profit]="t.unrealizedProfitLoss >= 0" [class.loss]="t.unrealizedProfitLoss < 0">
+                              {{ t.unrealizedProfitLoss >= 0 ? '+' : '' }}{{ t.unrealizedProfitLoss | inrCurrency }}
+                              ({{ t.unrealizedProfitLossPercentage >= 0 ? '+' : '' }}{{ t.unrealizedProfitLossPercentage }}%)
+                            </span>
+                          </td>
+                          <td class="text-right font-mono text-muted">{{ t.currentHoldingDays }}d / {{ t.plannedHoldingDays }}d</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      }
       @if (loading()) {
         <div class="loading-state">
           <div class="skeleton-bar"></div>
@@ -721,12 +1087,12 @@ import { ThemeService } from '../../core/services/theme.service';
                           <button type="button" class="btn-tiny-close" (click)="showIpoSuggestions.set(false)">&times;</button>
                         </div>
                         <div class="dropdown-list">
-                          @for (ipo of ipoSuggestions(); track ipo.symbol) {
-                            <div class="suggestion-item ipo-suggestion-item" (click)="selectIpo(ipo)">
+                          @for (ipo of ipoSuggestions(); track ipo.companyName + ipo.symbol) {
+                            <div class="suggestion-item ipo-suggestion-item" (click)="selectIpo(ipo); $event.stopPropagation()">
                               <div class="item-left">
                                 <div class="ticker-row">
                                   <strong class="item-ticker">{{ ipo.companyName }}</strong>
-                                  <span class="issue-type-badge" [class.sme]="ipo.issueType === 'Sme'">{{ ipo.issueType }}</span>
+                                  <span class="issue-type-badge" [class.sme]="ipo.issueType?.toLowerCase()?.includes('sme')">{{ ipo.issueType }}</span>
                                   <span class="status-pill-mini" [class.open]="ipo.status === 'Open'" [class.upcoming]="ipo.status === 'Upcoming'" [class.listed]="ipo.status === 'Listed'">
                                     {{ ipo.status }}
                                   </span>
@@ -1586,6 +1952,368 @@ import { ThemeService } from '../../core/services/theme.service';
       h3 { font-size: 1rem; font-weight: 700; margin: 0 0 0.25rem; }
       p { color: var(--color-text-muted); font-size: 0.8125rem; max-width: 440px; margin: 0 auto; }
     }
+
+    /* View Toggle Pills in Header */
+    .view-toggle-pill {
+      font-size: 11.5px;
+      padding: 5px 10px;
+      &.active {
+        background: var(--color-primary, #0b57d0);
+        color: #ffffff;
+        border-color: var(--color-primary, #0b57d0);
+      }
+    }
+
+    /* Dashboard Layout */
+    .dashboard-container {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+
+    .dash-grid-4 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .dash-grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .dash-card {
+      background: var(--color-bg-card, #ffffff);
+      border: 1px solid var(--color-border);
+      border-radius: 8px;
+      padding: 1rem 1.15rem;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+
+      &.hero-card {
+        border-left: 3.5px solid var(--color-primary, #0b57d0);
+      }
+    }
+
+    .card-head-sm {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .card-head-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--color-border-subtle);
+
+      .head-title {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        h3 {
+          font-size: 13px;
+          font-weight: 700;
+          margin: 0;
+          color: var(--color-text-main);
+        }
+      }
+    }
+
+    .card-eyebrow {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--color-text-muted);
+      letter-spacing: 0.05em;
+    }
+
+    .badge-mini {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--color-text-muted);
+      background: var(--color-bg-subtle);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .dash-badge {
+      font-size: 10.5px;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 4px;
+      &.profit { background: #ecfdf5; color: #059669; }
+      &.loss { background: #fef2f2; color: #dc2626; }
+    }
+
+    .pill-kpi {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 9999px;
+      &.profit { background: #ecfdf5; color: #059669; }
+      &.loss { background: #fef2f2; color: #dc2626; }
+    }
+
+    .dash-big-num {
+      font-size: 20px;
+      font-weight: 800;
+      font-family: monospace;
+      color: var(--color-text-main);
+      margin: 4px 0 8px;
+      letter-spacing: -0.02em;
+    }
+
+    .dash-sub-details {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      font-size: 11px;
+      border-top: 1px dashed var(--color-border-subtle);
+      padding-top: 6px;
+
+      .sub-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        color: var(--color-text-muted);
+        strong {
+          color: var(--color-text-main);
+        }
+      }
+    }
+
+    /* Movers Stack */
+    .movers-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-top: 2px;
+    }
+
+    .mover-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 8px;
+      border-radius: 5px;
+      background: var(--color-bg-subtle);
+
+      .mover-left {
+        display: flex;
+        flex-direction: column;
+        gap: 1px;
+      }
+      .mover-type {
+        font-size: 9.5px;
+        color: var(--color-text-muted);
+        text-transform: uppercase;
+        font-weight: 600;
+      }
+      .mover-ticker {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--color-text-main);
+      }
+      .mover-right {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 1px;
+      }
+      .mover-pct {
+        font-size: 11px;
+        font-weight: 700;
+      }
+      .mover-val {
+        font-size: 10px;
+        font-family: monospace;
+        color: var(--color-text-muted);
+      }
+
+      &.profit .mover-pct { color: #059669; }
+      &.loss .mover-pct { color: #dc2626; }
+    }
+
+    /* Win / Loss Visual */
+    .win-loss-visual {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .progress-split {
+      display: flex;
+      height: 8px;
+      border-radius: 9999px;
+      overflow: hidden;
+      background: #e2e8f0;
+
+      .win-bar {
+        background: #10b981;
+        transition: width 0.3s ease;
+      }
+      .loss-bar {
+        background: #ef4444;
+        transition: width 0.3s ease;
+      }
+    }
+
+    .win-loss-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 600;
+
+      .label-win { color: #059669; }
+      .label-loss { color: #dc2626; }
+    }
+
+    /* Subgrid Metrics */
+    .metrics-subgrid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .metric-box {
+      background: var(--color-bg-subtle);
+      border: 1px solid var(--color-border-subtle);
+      border-radius: 6px;
+      padding: 8px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 1px;
+
+      .m-label {
+        font-size: 9.5px;
+        font-weight: 700;
+        color: var(--color-text-muted);
+        letter-spacing: 0.04em;
+      }
+      .m-val {
+        font-size: 14px;
+        font-family: monospace;
+        font-weight: 700;
+        color: var(--color-text-main);
+      }
+      .m-hint {
+        font-size: 9.5px;
+        color: var(--color-text-muted);
+      }
+    }
+
+    /* Records Row */
+    .records-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .record-badge {
+      flex: 1;
+      min-width: 150px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      background: var(--color-bg-subtle);
+      border: 1px solid var(--color-border-subtle);
+
+      .rec-tag {
+        font-weight: 600;
+        color: var(--color-text-muted);
+      }
+    }
+
+    /* Risk Signals */
+    .risk-signals {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .risk-pill {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 11.5px;
+
+      .risk-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 6px;
+        display: inline-block;
+        &.green { background: #10b981; }
+        &.amber { background: #f59e0b; }
+        &.red { background: #ef4444; }
+      }
+
+      .risk-title {
+        flex: 1;
+        font-weight: 500;
+      }
+
+      .risk-count {
+        font-size: 13px;
+        font-family: monospace;
+      }
+
+      &.target {
+        background: rgba(16, 185, 129, 0.08);
+        border: 1px solid rgba(16, 185, 129, 0.25);
+        color: #065f46;
+      }
+
+      &.warn {
+        background: rgba(245, 158, 11, 0.08);
+        border: 1px solid rgba(245, 158, 11, 0.25);
+        color: #92400e;
+      }
+
+      &.danger {
+        background: rgba(239, 68, 68, 0.08);
+        border: 1px solid rgba(239, 68, 68, 0.25);
+        color: #991b1b;
+      }
+    }
+
+    /* Quick Nav Actions */
+    .quick-nav-actions {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .btn-quick-nav {
+      flex: 1;
+      padding: 6px 8px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--color-primary, #0b57d0);
+      background: var(--color-bg-subtle);
+      border: 1px solid var(--color-border);
+      border-radius: 5px;
+      cursor: pointer;
+      white-space: nowrap;
+      text-align: center;
+      transition: all 0.15s ease;
+
+      &:hover {
+        background: rgba(11, 87, 208, 0.08);
+        border-color: var(--color-primary, #0b57d0);
+      }
+    }
   `]
 })
 export class TradeDeskComponent implements OnInit, OnDestroy {
@@ -1594,11 +2322,12 @@ export class TradeDeskComponent implements OnInit, OnDestroy {
   readonly themeService = inject(ThemeService);
 
   readonly overview = signal<TradeDeskOverview | null>(null);
+  readonly dashboard = signal<TradeDeskDashboard | null>(null);
   readonly loading = signal<boolean>(false);
   readonly submitting = signal<boolean>(false);
   private autoRefreshTimer: any = null;
 
-  readonly activeTab = signal<'trades' | 'ipos'>('trades');
+  readonly activeTab = signal<'dashboard' | 'trades' | 'ipos'>('dashboard');
   readonly tradeSubFilter = signal<'open' | 'closed'>('open');
 
   // Modals
@@ -1697,9 +2426,18 @@ export class TradeDeskComponent implements OnInit, OnDestroy {
         if (!silent) this.loading.set(false);
       }
     });
+
+    this.tradeDeskService.getDashboard().subscribe({
+      next: (dash) => {
+        this.dashboard.set(dash);
+      },
+      error: (err) => {
+        console.error('Failed to load trade desk dashboard:', err);
+      }
+    });
   }
 
-  setActiveTab(tab: 'trades' | 'ipos'): void {
+  setActiveTab(tab: 'dashboard' | 'trades' | 'ipos'): void {
     this.activeTab.set(tab);
   }
 
@@ -1826,15 +2564,16 @@ export class TradeDeskComponent implements OnInit, OnDestroy {
   }
 
   selectIpo(ipo: LiveIpo): void {
-    const issueTypeVal = ipo.issueType === 'Sme' ? 2 : 1;
+    const isSme = !!ipo.issueType?.toLowerCase()?.includes('sme');
+    const issueTypeVal = isSme ? 2 : 1;
     this.ipoForm.patchValue({
       companyName: ipo.companyName,
       symbol: ipo.symbol,
       issueType: issueTypeVal,
-      lotSize: ipo.lotSize,
+      lotSize: ipo.lotSize > 0 ? ipo.lotSize : (isSme ? 1000 : 50),
       lotsApplied: 1,
-      bidPrice: ipo.maxPrice,
-      notes: `Issue: ${ipo.issueType} | Price Band: ₹${ipo.minPrice}-₹${ipo.maxPrice} | Closes: ${ipo.closeDate}`
+      bidPrice: ipo.maxPrice > 0 ? ipo.maxPrice : (ipo.minPrice > 0 ? ipo.minPrice : 100),
+      notes: `Issue: ${ipo.issueType} | Price Band: ₹${ipo.minPrice}-₹${ipo.maxPrice} | Dates: ${ipo.openDate} - ${ipo.closeDate}`
     });
     this.showIpoSuggestions.set(false);
   }

@@ -6,14 +6,26 @@ import { RouterModule } from '@angular/router';
 import { TransactionsService } from './services/transactions.service';
 import { AttachmentMetadata, Category, MonthlySummary, Transaction, TransactionType } from './models/transaction.model';
 import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
-import { MonthPickerComponent } from '../../shared/components/month-picker/month-picker.component';
 import { DeletionPermissionsService } from '../../core/services/deletion-permissions.service';
 import { ThemeService } from '../../core/services/theme.service';
+
+export type DatePreset =
+  | 'month'
+  | 'year'
+  | 'today'
+  | 'yesterday'
+  | 'thisWeek'
+  | 'last7Days'
+  | 'lastMonth'
+  | 'last30Days'
+  | 'thisYear'
+  | 'all'
+  | 'custom';
 
 @Component({
   selector: 'app-transactions',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule, InrCurrencyPipe, MonthPickerComponent],
+  imports: [CommonModule, ReactiveFormsModule, RouterModule, InrCurrencyPipe],
   template: `
     <div class="google-console-page">
       <!-- Top Page Header (Google Play Console Style, Hisaab Content) -->
@@ -105,10 +117,10 @@ import { ThemeService } from '../../core/services/theme.service';
             <span class="metric-caption">Total Records</span>
           </div>
           <div class="metric-amount font-google">
-            {{ transactions().length }}
+            {{ totalCount() }}
           </div>
           <div class="metric-trend-row neutral">
-            <span>Active transactions listed</span>
+            <span>{{ transactions().length }} shown of {{ totalCount() }} records</span>
           </div>
         </div>
       </section>
@@ -176,9 +188,280 @@ import { ThemeService } from '../../core/services/theme.service';
           </div>
         </div>
 
-        <!-- 4. Date/Month Picker -->
-        <div class="date-range-container">
-          <app-month-picker (monthChange)="onMonthChange($event)" />
+        <!-- 4. Date Filter, Month/Year Picker & Custom Range Dropdown -->
+        <div class="date-filter-group" (click)="$event.stopPropagation()">
+          <!-- Month & Year Direct Selector Bar Control -->
+          <div class="month-year-bar-control">
+            <button
+              type="button"
+              class="btn-bar-nav"
+              (click)="stepMonth(-1)"
+              title="Previous Month"
+            >
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+            </button>
+
+            <!-- Month Dropdown -->
+            <select
+              class="filter-select-pill month-select"
+              [value]="selectedFilterMonth()"
+              (change)="onFilterMonthChange($event)"
+              title="Filter by Month"
+            >
+              <option value="all">Whole Year (All Months)</option>
+              @for (m of monthsList; track m.value) {
+                <option [value]="m.value">{{ m.fullName }}</option>
+              }
+            </select>
+
+            <!-- Year Dropdown -->
+            <select
+              class="filter-select-pill year-select"
+              [value]="selectedFilterYear()"
+              (change)="onFilterYearChange($event)"
+              title="Filter by Year"
+            >
+              @for (yr of availableYears; track yr) {
+                <option [value]="yr">{{ yr }}</option>
+              }
+            </select>
+
+            <button
+              type="button"
+              class="btn-bar-nav"
+              (click)="stepMonth(1)"
+              title="Next Month"
+            >
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+          </div>
+
+          <div class="custom-date-filter-wrap">
+            <button
+              type="button"
+              class="btn-date-filter"
+              [class.active-custom]="isCustomOrPresetActive()"
+              (click)="toggleDateDropdown($event)"
+              title="Filter by quick presets, specific month/year, or custom date range"
+            >
+              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              <span class="date-filter-text">{{ dateFilterLabel() }}</span>
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" class="chevron-icon" [class.rotated]="isDateDropdownOpen()">
+                <polyline points="6 9 12 15 18 9"></polyline>
+              </svg>
+            </button>
+
+            @if (isCustomOrPresetActive()) {
+              <button
+                type="button"
+                class="btn-reset-preset"
+                (click)="resetToCurrentMonth($event)"
+                title="Reset to current month"
+              >
+                ✕
+              </button>
+            }
+
+            @if (isDateDropdownOpen()) {
+              <div class="date-popover" (click)="$event.stopPropagation()">
+                <div class="popover-header">
+                  <div class="popover-title-row">
+                    <span class="p-title">Filter by Date & Period</span>
+                    @if (isCustomOrPresetActive()) {
+                      <button type="button" class="btn-popover-reset" (click)="resetToCurrentMonth($event)">
+                        Reset
+                      </button>
+                    }
+                  </div>
+                  <span class="p-subtitle">Select month, whole year, quick preset, or custom range</span>
+                </div>
+
+                <div class="popover-body">
+                  <!-- 1. Month & Year Matrix Section -->
+                  <div class="month-year-matrix-section">
+                    <div class="matrix-header-row">
+                      <span class="section-tag">SELECT MONTH & YEAR</span>
+                      <div class="matrix-year-control">
+                        <button type="button" class="btn-yr-step" (click)="stepPopoverYear(-1)" title="Previous Year">‹</button>
+                        <select
+                          class="matrix-year-select"
+                          [value]="popoverYear()"
+                          (change)="onPopoverYearChange($event)"
+                        >
+                          @for (yr of availableYears; track yr) {
+                            <option [value]="yr">{{ yr }}</option>
+                          }
+                        </select>
+                        <button type="button" class="btn-yr-step" (click)="stepPopoverYear(1)" title="Next Year">›</button>
+                      </div>
+                    </div>
+
+                    <!-- Whole Year Button -->
+                    <button
+                      type="button"
+                      class="btn-full-year-pill"
+                      [class.active]="activeDatePreset() === 'year' && selectedFilterYear() === popoverYear()"
+                      (click)="selectMonthAndYear('all')"
+                    >
+                      <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                      </svg>
+                      <span>Full Year {{ popoverYear() }} (All 12 Months)</span>
+                    </button>
+
+                    <!-- 12-Month Matrix -->
+                    <div class="month-matrix-grid">
+                      @for (m of monthsList; track m.value) {
+                        <button
+                          type="button"
+                          class="month-matrix-btn"
+                          [class.active]="activeDatePreset() === 'month' && selectedFilterYear() === popoverYear() && selectedFilterMonth() === m.value"
+                          (click)="selectMonthAndYear(m.value)"
+                        >
+                          {{ m.name }}
+                        </button>
+                      }
+                    </div>
+                  </div>
+
+                  <div class="popover-divider"></div>
+
+                  <!-- 2. Quick Presets Grid -->
+                  <div class="presets-section">
+                    <div class="section-tag">QUICK PRESETS</div>
+                    <div class="presets-grid">
+                      <button
+                        type="button"
+                        class="preset-chip"
+                        [class.active]="activeDatePreset() === 'today'"
+                        (click)="applyPreset('today')"
+                      >
+                        ⚡ Today
+                      </button>
+                      <button
+                        type="button"
+                        class="preset-chip"
+                        [class.active]="activeDatePreset() === 'yesterday'"
+                        (click)="applyPreset('yesterday')"
+                      >
+                        Yesterday
+                      </button>
+                      <button
+                        type="button"
+                        class="preset-chip"
+                        [class.active]="activeDatePreset() === 'thisWeek'"
+                        (click)="applyPreset('thisWeek')"
+                      >
+                        This Week
+                      </button>
+                      <button
+                        type="button"
+                        class="preset-chip"
+                        [class.active]="activeDatePreset() === 'last7Days'"
+                        (click)="applyPreset('last7Days')"
+                      >
+                        Last 7 Days
+                      </button>
+                      <button
+                        type="button"
+                        class="preset-chip"
+                        [class.active]="activeDatePreset() === 'month' && selectedFilterMonth() === (now.getMonth() + 1) && selectedFilterYear() === now.getFullYear()"
+                        (click)="resetToCurrentMonth()"
+                      >
+                        📅 This Month
+                      </button>
+                      <button
+                        type="button"
+                        class="preset-chip"
+                        [class.active]="activeDatePreset() === 'lastMonth'"
+                        (click)="applyPreset('lastMonth')"
+                      >
+                        Last Month
+                      </button>
+                      <button
+                        type="button"
+                        class="preset-chip"
+                        [class.active]="activeDatePreset() === 'last30Days'"
+                        (click)="applyPreset('last30Days')"
+                      >
+                        Last 30 Days
+                      </button>
+                      <button
+                        type="button"
+                        class="preset-chip"
+                        [class.active]="activeDatePreset() === 'thisYear'"
+                        (click)="applyPreset('thisYear')"
+                      >
+                        This Year
+                      </button>
+                      <button
+                        type="button"
+                        class="preset-chip"
+                        [class.active]="activeDatePreset() === 'all'"
+                        (click)="applyPreset('all')"
+                      >
+                        ♾️ All Time
+                      </button>
+                    </div>
+                  </div>
+
+                  <div class="popover-divider"></div>
+
+                  <!-- 3. Custom Date Range -->
+                  <div class="custom-range-section">
+                    <div class="section-tag">CUSTOM DATE RANGE</div>
+                    <div class="date-pickers-row">
+                      <div class="date-field-col">
+                        <span class="field-label">From Date</span>
+                        <input
+                          type="date"
+                          class="date-input"
+                          [value]="customStartDate()"
+                          (input)="onCustomStartDateChange($event)"
+                        />
+                      </div>
+                      <div class="date-range-sep">to</div>
+                      <div class="date-field-col">
+                        <span class="field-label">To Date</span>
+                        <input
+                          type="date"
+                          class="date-input"
+                          [value]="customEndDate()"
+                          (input)="onCustomEndDateChange($event)"
+                        />
+                      </div>
+                    </div>
+
+                    <div class="popover-footer-actions">
+                      <button type="button" class="btn-popover-cancel" (click)="closeDateDropdown()">
+                        Close
+                      </button>
+                      <button
+                        type="button"
+                        class="btn-popover-apply"
+                        (click)="applyCustomRange()"
+                        [disabled]="!customStartDate() || !customEndDate()"
+                      >
+                        Apply Date Range
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
         </div>
       </div>
 
@@ -301,6 +584,54 @@ import { ThemeService } from '../../core/services/theme.service';
               </tbody>
             </table>
           </div>
+
+          <!-- Google Play Console Pagination Bar -->
+          @if (totalCount() > 0) {
+            <div class="console-pagination-bar no-print">
+              <div class="pagination-left">
+                <span class="pagination-label">Rows per page:</span>
+                <select class="pagination-select" [value]="pageSize()" (change)="onPageSizeChange($event)">
+                  <option [value]="25">25</option>
+                  <option [value]="50">50</option>
+                  <option [value]="100">100</option>
+                  <option [value]="250">250</option>
+                  <option [value]="1000">All (up to 1,000)</option>
+                </select>
+              </div>
+
+              <div class="pagination-right">
+                <span class="pagination-range-text">
+                  {{ paginationStart() }}–{{ paginationEnd() }} of {{ totalCount() }}
+                </span>
+
+                <div class="pagination-nav-btns">
+                  <button
+                    type="button"
+                    class="btn-nav-page"
+                    [disabled]="currentPage() <= 1"
+                    (click)="goToPage(currentPage() - 1)"
+                    title="Previous page"
+                  >
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                  </button>
+
+                  <button
+                    type="button"
+                    class="btn-nav-page"
+                    [disabled]="currentPage() >= totalPages()"
+                    (click)="goToPage(currentPage() + 1)"
+                    title="Next page"
+                  >
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5">
+                      <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          }
         }
       </div>
 
@@ -579,10 +910,284 @@ export class TransactionsComponent implements OnInit {
   readonly categories = signal<Category[]>([]);
   readonly summary = signal<MonthlySummary | null>(null);
 
+  readonly availableYears: number[] = [2028, 2027, 2026, 2025, 2024, 2023, 2022, 2021, 2020];
+  readonly now = new Date();
+  readonly selectedFilterYear = signal<number>(new Date().getFullYear());
+  readonly selectedFilterMonth = signal<number | 'all'>(new Date().getMonth() + 1);
+  readonly popoverYear = signal<number>(new Date().getFullYear());
+
+  readonly monthsList = [
+    { value: 1, name: 'Jan', fullName: 'January' },
+    { value: 2, name: 'Feb', fullName: 'February' },
+    { value: 3, name: 'Mar', fullName: 'March' },
+    { value: 4, name: 'Apr', fullName: 'April' },
+    { value: 5, name: 'May', fullName: 'May' },
+    { value: 6, name: 'Jun', fullName: 'June' },
+    { value: 7, name: 'Jul', fullName: 'July' },
+    { value: 8, name: 'Aug', fullName: 'August' },
+    { value: 9, name: 'Sep', fullName: 'September' },
+    { value: 10, name: 'Oct', fullName: 'October' },
+    { value: 11, name: 'Nov', fullName: 'November' },
+    { value: 12, name: 'Dec', fullName: 'December' },
+  ];
+
   readonly selectedMonth = signal<string>(new Date().toISOString().substring(0, 7));
   readonly selectedType = signal<TransactionType | null>(null);
   readonly selectedCategory = signal<string | null>(null);
   readonly searchTerm = signal<string>('');
+
+  // Custom Date Filter States
+  readonly activeDatePreset = signal<DatePreset>('month');
+  readonly isDateDropdownOpen = signal<boolean>(false);
+  readonly customStartDate = signal<string>('');
+  readonly customEndDate = signal<string>('');
+
+  // Pagination States
+  readonly totalCount = signal<number>(0);
+  readonly totalPages = signal<number>(1);
+  readonly currentPage = signal<number>(1);
+  readonly pageSize = signal<number>(100);
+
+  paginationStart(): number {
+    if (this.totalCount() === 0) return 0;
+    return (this.currentPage() - 1) * this.pageSize() + 1;
+  }
+
+  paginationEnd(): number {
+    return Math.min(this.currentPage() * this.pageSize(), this.totalCount());
+  }
+
+  onPageSizeChange(event: Event): void {
+    const val = Number((event.target as HTMLSelectElement).value);
+    this.pageSize.set(val);
+    this.currentPage.set(1);
+    this.loadTransactions();
+  }
+
+  goToPage(page: number): void {
+    if (page >= 1 && page <= this.totalPages()) {
+      this.currentPage.set(page);
+      this.loadTransactions();
+    }
+  }
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    this.isDateDropdownOpen.set(false);
+  }
+
+  toggleDateDropdown(event: Event): void {
+    event.stopPropagation();
+    this.isDateDropdownOpen.update(v => !v);
+  }
+
+  closeDateDropdown(): void {
+    this.isDateDropdownOpen.set(false);
+  }
+
+  onFilterMonthChange(event: Event): void {
+    const val = (event.target as HTMLSelectElement).value;
+    if (val === 'all') {
+      this.selectedFilterMonth.set('all');
+      this.activeDatePreset.set('year');
+    } else {
+      const numMo = Number(val);
+      this.selectedFilterMonth.set(numMo);
+      this.activeDatePreset.set('month');
+      this.selectedMonth.set(`${this.selectedFilterYear()}-${String(numMo).padStart(2, '0')}`);
+    }
+    this.currentPage.set(1);
+    this.loadTransactions();
+  }
+
+  onFilterYearChange(event: Event): void {
+    const val = Number((event.target as HTMLSelectElement).value);
+    this.selectedFilterYear.set(val);
+    this.popoverYear.set(val);
+    const mo = this.selectedFilterMonth();
+    if (mo !== 'all') {
+      this.selectedMonth.set(`${val}-${String(mo).padStart(2, '0')}`);
+    }
+    this.currentPage.set(1);
+    this.loadTransactions();
+  }
+
+  stepMonth(delta: number): void {
+    let yr = this.selectedFilterYear();
+    let mo = this.selectedFilterMonth();
+    if (mo === 'all') {
+      yr += delta;
+      this.selectedFilterYear.set(yr);
+      this.popoverYear.set(yr);
+      this.activeDatePreset.set('year');
+    } else {
+      let numMo = Number(mo) + delta;
+      if (numMo < 1) {
+        numMo = 12;
+        yr -= 1;
+      } else if (numMo > 12) {
+        numMo = 1;
+        yr += 1;
+      }
+      this.selectedFilterYear.set(yr);
+      this.popoverYear.set(yr);
+      this.selectedFilterMonth.set(numMo);
+      this.selectedMonth.set(`${yr}-${String(numMo).padStart(2, '0')}`);
+      this.activeDatePreset.set('month');
+    }
+    this.currentPage.set(1);
+    this.loadTransactions();
+  }
+
+  stepPopoverYear(delta: number): void {
+    this.popoverYear.update(y => y + delta);
+  }
+
+  onPopoverYearChange(event: Event): void {
+    const val = Number((event.target as HTMLSelectElement).value);
+    this.popoverYear.set(val);
+  }
+
+  selectMonthAndYear(month: number | 'all', year?: number): void {
+    const targetYear = year ?? this.popoverYear();
+    this.selectedFilterYear.set(targetYear);
+    this.popoverYear.set(targetYear);
+    this.selectedFilterMonth.set(month);
+    if (month === 'all') {
+      this.activeDatePreset.set('year');
+    } else {
+      this.activeDatePreset.set('month');
+      this.selectedMonth.set(`${targetYear}-${String(month).padStart(2, '0')}`);
+    }
+    this.isDateDropdownOpen.set(false);
+    this.currentPage.set(1);
+    this.loadTransactions();
+  }
+
+  applyPreset(preset: DatePreset): void {
+    this.activeDatePreset.set(preset);
+    const now = new Date();
+    if (preset === 'month') {
+      const yr = now.getFullYear();
+      const mo = now.getMonth() + 1;
+      this.selectedFilterYear.set(yr);
+      this.selectedFilterMonth.set(mo);
+      this.popoverYear.set(yr);
+      this.selectedMonth.set(`${yr}-${String(mo).padStart(2, '0')}`);
+    } else if (preset === 'lastMonth') {
+      const prevM = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const yr = prevM.getFullYear();
+      const mo = prevM.getMonth() + 1;
+      this.selectedFilterYear.set(yr);
+      this.selectedFilterMonth.set(mo);
+      this.popoverYear.set(yr);
+      this.selectedMonth.set(`${yr}-${String(mo).padStart(2, '0')}`);
+    } else if (preset === 'thisYear') {
+      const yr = now.getFullYear();
+      this.selectedFilterYear.set(yr);
+      this.selectedFilterMonth.set('all');
+      this.popoverYear.set(yr);
+    }
+    this.isDateDropdownOpen.set(false);
+    this.currentPage.set(1);
+    this.loadTransactions();
+  }
+
+  onCustomStartDateChange(event: Event): void {
+    const val = (event.target as HTMLInputElement).value;
+    this.customStartDate.set(val);
+  }
+
+  onCustomEndDateChange(event: Event): void {
+    const val = (event.target as HTMLInputElement).value;
+    this.customEndDate.set(val);
+  }
+
+  applyCustomRange(): void {
+    if (this.customStartDate() && this.customEndDate()) {
+      this.activeDatePreset.set('custom');
+      this.isDateDropdownOpen.set(false);
+      this.currentPage.set(1);
+      this.loadTransactions();
+    }
+  }
+
+  resetToCurrentMonth(event?: Event): void {
+    if (event) event.stopPropagation();
+    const now = new Date();
+    const currentYear = now.getFullYear();
+    const currentMonth = now.getMonth() + 1;
+    this.selectedFilterYear.set(currentYear);
+    this.selectedFilterMonth.set(currentMonth);
+    this.popoverYear.set(currentYear);
+    this.selectedMonth.set(`${currentYear}-${String(currentMonth).padStart(2, '0')}`);
+    this.activeDatePreset.set('month');
+    this.customStartDate.set('');
+    this.customEndDate.set('');
+    this.isDateDropdownOpen.set(false);
+    this.currentPage.set(1);
+    this.loadTransactions();
+  }
+
+  isCustomOrPresetActive(): boolean {
+    const p = this.activeDatePreset();
+    if (p === 'custom' || p === 'today' || p === 'yesterday' || p === 'thisWeek' || p === 'last7Days' || p === 'last30Days' || p === 'all') {
+      return true;
+    }
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth() + 1;
+    if (p === 'year') {
+      return this.selectedFilterYear() !== currentYear;
+    }
+    if (p === 'month') {
+      return this.selectedFilterYear() !== currentYear || this.selectedFilterMonth() !== currentMonth;
+    }
+    return false;
+  }
+
+  dateFilterLabel(): string {
+    const p = this.activeDatePreset();
+    if (p === 'today') return '⚡ Today';
+    if (p === 'yesterday') return 'Yesterday';
+    if (p === 'thisWeek') return 'This Week';
+    if (p === 'last7Days') return 'Last 7 Days';
+    if (p === 'month') {
+      const mo = this.selectedFilterMonth();
+      const yr = this.selectedFilterYear();
+      if (mo === 'all') return `Year ${yr}`;
+      const mObj = this.monthsList.find(m => m.value === mo);
+      return `${mObj ? mObj.name : mo} ${yr}`;
+    }
+    if (p === 'year') return `Year ${this.selectedFilterYear()}`;
+    if (p === 'lastMonth') return 'Last Month';
+    if (p === 'last30Days') return 'Last 30 Days';
+    if (p === 'thisYear') return `Year ${new Date().getFullYear()}`;
+    if (p === 'all') return 'All Time';
+    if (p === 'custom') {
+      if (this.customStartDate() && this.customEndDate()) {
+        return `${this.formatShortDate(this.customStartDate())} - ${this.formatShortDate(this.customEndDate())}`;
+      }
+      return 'Custom Range';
+    }
+    return 'Filter Date';
+  }
+
+  private formatShortDate(iso: string): string {
+    if (!iso) return '';
+    const parts = iso.split('-');
+    if (parts.length === 3) {
+      const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+      return d.toLocaleDateString('en-US', { day: 'numeric', month: 'short' });
+    }
+    return iso;
+  }
+
+  private formatDateIso(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
 
   readonly isLoading = signal<boolean>(false);
   readonly isModalOpen = signal<boolean>(false);
@@ -624,15 +1229,86 @@ export class TransactionsComponent implements OnInit {
   loadTransactions(): void {
     this.isLoading.set(true);
 
+    const preset = this.activeDatePreset();
+    let monthParam: string | undefined = undefined;
+    let startParam: string | undefined = undefined;
+    let endParam: string | undefined = undefined;
+
+    if (preset === 'month') {
+      const yr = this.selectedFilterYear();
+      const mo = this.selectedFilterMonth();
+      if (mo === 'all') {
+        startParam = `${yr}-01-01`;
+        endParam = `${yr}-12-31`;
+      } else {
+        monthParam = `${yr}-${String(mo).padStart(2, '0')}`;
+      }
+    } else if (preset === 'year') {
+      const yr = this.selectedFilterYear();
+      startParam = `${yr}-01-01`;
+      endParam = `${yr}-12-31`;
+    } else if (preset === 'all') {
+      monthParam = 'all';
+    } else if (preset === 'today') {
+      const today = this.formatDateIso(new Date());
+      startParam = today;
+      endParam = today;
+    } else if (preset === 'yesterday') {
+      const d = new Date();
+      d.setDate(d.getDate() - 1);
+      const y = this.formatDateIso(d);
+      startParam = y;
+      endParam = y;
+    } else if (preset === 'thisWeek') {
+      const now = new Date();
+      const day = now.getDay();
+      const diffToMonday = (day === 0 ? -6 : 1) - day;
+      const monday = new Date(now);
+      monday.setDate(now.getDate() + diffToMonday);
+      startParam = this.formatDateIso(monday);
+      endParam = this.formatDateIso(now);
+    } else if (preset === 'last7Days') {
+      const now = new Date();
+      const past = new Date(now);
+      past.setDate(now.getDate() - 6);
+      startParam = this.formatDateIso(past);
+      endParam = this.formatDateIso(now);
+    } else if (preset === 'lastMonth') {
+      const now = new Date();
+      const prevM = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const y = prevM.getFullYear();
+      const m = String(prevM.getMonth() + 1).padStart(2, '0');
+      monthParam = `${y}-${m}`;
+    } else if (preset === 'last30Days') {
+      const now = new Date();
+      const past = new Date(now);
+      past.setDate(now.getDate() - 29);
+      startParam = this.formatDateIso(past);
+      endParam = this.formatDateIso(now);
+    } else if (preset === 'thisYear') {
+      const now = new Date();
+      startParam = `${now.getFullYear()}-01-01`;
+      endParam = `${now.getFullYear()}-12-31`;
+    } else if (preset === 'custom') {
+      startParam = this.customStartDate();
+      endParam = this.customEndDate();
+    }
+
     this.transactionsService.getTransactions({
-      month: this.selectedMonth(),
+      month: monthParam,
+      startDate: startParam,
+      endDate: endParam,
       type: this.selectedType() || undefined,
       categoryId: this.selectedCategory() || undefined,
-      search: this.searchTerm() || undefined
+      search: this.searchTerm() || undefined,
+      page: this.currentPage(),
+      pageSize: this.pageSize()
     }).subscribe({
       next: (res) => {
         this.isLoading.set(false);
         this.transactions.set(res.transactions.items);
+        this.totalCount.set(res.transactions.totalCount);
+        this.totalPages.set(res.transactions.totalPages);
         this.summary.set(res.summary);
       },
       error: () => this.isLoading.set(false)
@@ -641,23 +1317,27 @@ export class TransactionsComponent implements OnInit {
 
   onMonthChange(month: string): void {
     this.selectedMonth.set(month);
+    this.currentPage.set(1);
     this.loadTransactions();
   }
 
   setTypeFilter(type: TransactionType | null): void {
     this.selectedType.set(type);
+    this.currentPage.set(1);
     this.loadTransactions();
   }
 
   onCategoryChange(event: Event): void {
     const val = (event.target as HTMLSelectElement).value;
     this.selectedCategory.set(val || null);
+    this.currentPage.set(1);
     this.loadTransactions();
   }
 
   onSearchInput(event: Event): void {
     const val = (event.target as HTMLInputElement).value;
     this.searchTerm.set(val);
+    this.currentPage.set(1);
     this.loadTransactions();
   }
 

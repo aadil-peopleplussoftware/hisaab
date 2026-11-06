@@ -104,3 +104,14 @@ export interface MappingProfile {
   createdAtUtc: string;
 }
 
+export interface ExportArchive {
+  id: string;
+  module: string;
+  fileName: string;
+  format: string;
+  fileSizeBytes: number;
+  recordCount: number;
+  createdAtUtc: string;
+}
+
+

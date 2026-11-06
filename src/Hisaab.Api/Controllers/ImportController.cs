@@ -99,6 +99,17 @@ public class ImportController : ApiControllerBase
         return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"import_errors_{batchId}.xlsx");
     }
 
+    [HttpGet("{batchId:guid}/original-file")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> DownloadOriginalFile(
+        [FromRoute] Guid batchId,
+        CancellationToken cancellationToken)
+    {
+        var (content, contentType, fileName) = await Mediator.Send(new GetImportBatchOriginalFileQuery(batchId), cancellationToken);
+        return File(content, contentType, fileName);
+    }
+
     [HttpPost("{batchId:guid}/rollback")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

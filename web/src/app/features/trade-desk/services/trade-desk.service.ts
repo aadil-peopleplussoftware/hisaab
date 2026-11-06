@@ -7,6 +7,7 @@ import {
   CreateTradePayload,
   LiveIpo,
   StockSearchResult,
+  TradeDeskDashboard,
   TradeDeskOverview,
   UpdateIpoStatusPayload
 } from '../models/trade-desk.model';
@@ -20,6 +21,10 @@ export class TradeDeskService {
 
   getOverview(): Observable<TradeDeskOverview> {
     return this.http.get<TradeDeskOverview>(`${this.baseUrl}/overview`);
+  }
+
+  getDashboard(): Observable<TradeDeskDashboard> {
+    return this.http.get<TradeDeskDashboard>(`${this.baseUrl}/dashboard`);
   }
 
   searchStocks(query: string): Observable<StockSearchResult[]> {

@@ -21,6 +21,7 @@ public class DataTransferService : IDataTransferService
     private readonly IAuditService _auditService;
     private readonly IEpfoPdfParserService _epfoPdfParserService;
     private readonly string _uploadDirectory;
+    private readonly string _exportDirectory;
 
     public DataTransferService(
         IApplicationDbContext context,
@@ -31,7 +32,9 @@ public class DataTransferService : IDataTransferService
         _auditService = auditService;
         _epfoPdfParserService = epfoPdfParserService ?? new EpfoPdfParserService();
         _uploadDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "uploads", "imports");
+        _exportDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "uploads", "exports");
         Directory.CreateDirectory(_uploadDirectory);
+        Directory.CreateDirectory(_exportDirectory);
 
         // Required for ExcelDataReader on .NET Core
         Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
@@ -399,12 +402,13 @@ public class DataTransferService : IDataTransferService
         int validCount = 0;
         int invalidCount = 0;
         int duplicateCount = 0;
+        var inBatchFingerprints = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         for (int i = 0; i < rows.Count; i++)
         {
             var rowNumber = i + 2; // header is row 1
             var raw = rows[i];
-            var (mapped, errors, warnings, isDuplicate) = await ValidateSingleRowAsync(raw, rowNumber, meta, mapping, userId, cancellationToken);
+            var (mapped, errors, warnings, isDuplicate) = await ValidateSingleRowAsync(raw, rowNumber, meta, mapping, userId, inBatchFingerprints, cancellationToken);
 
             var isValid = errors.Count == 0;
             if (isValid) validCount++; else invalidCount++;
@@ -455,6 +459,7 @@ public class DataTransferService : IDataTransferService
 
         var importErrors = new List<ImportError>();
         var entitiesToInsert = new List<object>();
+        var inBatchFingerprints = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         // Cache existing lookup data in memory for fast resolution
         var categories = await _context.Categories.Where(c => c.UserId == userId || c.IsSystem).ToListAsync(cancellationToken);
@@ -466,7 +471,7 @@ public class DataTransferService : IDataTransferService
             var rowNumber = i + 2;
             var raw = allRows[i];
 
-            var (mapped, errors, warnings, isDuplicate) = await ValidateSingleRowAsync(raw, rowNumber, meta, mapping, userId, cancellationToken);
+            var (mapped, errors, warnings, isDuplicate) = await ValidateSingleRowAsync(raw, rowNumber, meta, mapping, userId, inBatchFingerprints, cancellationToken);
 
             if (errors.Count > 0)
             {
@@ -485,10 +490,22 @@ public class DataTransferService : IDataTransferService
                 continue;
             }
 
-            if (isDuplicate && batch.Mode == ImportMode.AddNewOnly)
+            if (isDuplicate)
             {
-                skippedCount++;
-                continue;
+                if (batch.Mode == ImportMode.AddNewOnly)
+                {
+                    skippedCount++;
+                    continue;
+                }
+                else if (batch.Mode == ImportMode.UpdateExisting)
+                {
+                    var updated = await UpdateExistingEntityAsync(batch.Module, mapped, userId, categories, loans, holdings, cancellationToken);
+                    if (updated)
+                    {
+                        successCount++;
+                        continue;
+                    }
+                }
             }
 
             // Materialize entity for database insertion
@@ -763,7 +780,9 @@ public class DataTransferService : IDataTransferService
             }
 
             writer.Flush();
-            return (ms.ToArray(), "text/csv", $"{baseFileName}.csv");
+            var content = ms.ToArray();
+            await SaveExportArchiveAsync(userId, normalized, $"{baseFileName}.csv", "csv", content, rows.Count, cancellationToken);
+            return (content, "text/csv", $"{baseFileName}.csv");
         }
         else
         {
@@ -808,7 +827,9 @@ public class DataTransferService : IDataTransferService
 
             using var ms = new MemoryStream();
             workbook.SaveAs(ms);
-            return (ms.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"{baseFileName}.xlsx");
+            var content = ms.ToArray();
+            await SaveExportArchiveAsync(userId, normalized, $"{baseFileName}.xlsx", "xlsx", content, rows.Count, cancellationToken);
+            return (content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", $"{baseFileName}.xlsx");
         }
     }
 
@@ -836,6 +857,7 @@ public class DataTransferService : IDataTransferService
         infoSheet.Range(5, 1, 5, 2).Style.Fill.BackgroundColor = XLColor.FromArgb(226, 232, 240);
 
         int infoRow = 6;
+        int totalBackupRows = 0;
 
         foreach (var mod in GetSupportedModules())
         {
@@ -844,6 +866,7 @@ public class DataTransferService : IDataTransferService
 
             infoSheet.Cell(infoRow, 1).Value = meta.Title;
             infoSheet.Cell(infoRow, 2).Value = rows.Count;
+            totalBackupRows += rows.Count;
             infoRow++;
 
             // Create module sheet
@@ -890,7 +913,9 @@ public class DataTransferService : IDataTransferService
 
         using var ms = new MemoryStream();
         workbook.SaveAs(ms);
-        return (ms.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
+        var content = ms.ToArray();
+        await SaveExportArchiveAsync(userId, "Full Backup (All Modules)", fileName, "xlsx", content, totalBackupRows, cancellationToken);
+        return (content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
     }
 
     #region Private Helper Methods
@@ -1212,6 +1237,7 @@ public class DataTransferService : IDataTransferService
             ModuleTemplateMetadata meta,
             MappingRequestDto mapping,
             Guid userId,
+            HashSet<string>? inBatchFingerprints,
             CancellationToken ct)
     {
         var mapped = new Dictionary<string, object?>();
@@ -1279,17 +1305,84 @@ public class DataTransferService : IDataTransferService
             }
         }
 
-        // Check duplicate detection in database
+        // Check duplicate detection in file and database
         if (errors.Count == 0)
         {
-            isDuplicate = await CheckIsDuplicateAsync(meta.Module, mapped, userId, ct);
-            if (isDuplicate)
+            var fingerprint = GenerateRowFingerprint(meta.Module, mapped);
+            if (inBatchFingerprints != null && inBatchFingerprints.Contains(fingerprint))
             {
-                warnings.Add("Potential duplicate record detected with identical date, amount, and reference.");
+                isDuplicate = true;
+                warnings.Add("Duplicate record detected inside this same import file. Only the first occurrence will be imported.");
+            }
+            else
+            {
+                isDuplicate = await CheckIsDuplicateAsync(meta.Module, mapped, userId, ct);
+                if (isDuplicate)
+                {
+                    warnings.Add("Record already exists in your database. It will be safely ignored without duplicate creation.");
+                }
+
+                if (inBatchFingerprints != null && !string.IsNullOrEmpty(fingerprint))
+                {
+                    inBatchFingerprints.Add(fingerprint);
+                }
             }
         }
 
         return (mapped, errors, warnings, isDuplicate);
+    }
+
+    private static string GenerateRowFingerprint(string module, Dictionary<string, object?> mapped)
+    {
+        var normalized = NormalizeModuleName(module);
+        switch (normalized)
+        {
+            case "Transactions":
+                var extId = mapped.TryGetValue("ExternalId", out var ext) ? ext?.ToString()?.Trim() ?? "" : "";
+                if (!string.IsNullOrEmpty(extId)) return $"tx:ext:{extId}";
+
+                var dateStr = mapped.TryGetValue("Date", out var d) && d is DateTime dt ? dt.ToString("yyyy-MM-dd") : "";
+                var amtStr = mapped.TryGetValue("Amount", out var a) && a is decimal amt ? amt.ToString("0.00") : "";
+                var typeStr = mapped.TryGetValue("Type", out var t) ? t?.ToString()?.Trim().ToLowerInvariant() ?? "" : "";
+                var noteStr = mapped.TryGetValue("Note", out var n) ? n?.ToString()?.Trim().ToLowerInvariant() ?? "" : "";
+                return $"tx:{dateStr}:{amtStr}:{typeStr}:{noteStr}";
+
+            case "LoanAccounts":
+                var lName = mapped.TryGetValue("Name", out var ln) ? ln?.ToString()?.Trim().ToLowerInvariant() ?? "" : "";
+                return $"loanacc:{lName}";
+
+            case "LoanTransactions":
+                var ltLoan = mapped.TryGetValue("LoanAccount", out var ltl) ? ltl?.ToString()?.Trim().ToLowerInvariant() ?? "" : "";
+                var ltDate = mapped.TryGetValue("Date", out var ltd) && ltd is DateTime ltDt ? ltDt.ToString("yyyy-MM-dd") : "";
+                var ltAmt = mapped.TryGetValue("Amount", out var lta) && lta is decimal ltAm ? ltAm.ToString("0.00") : "";
+                var ltType = mapped.TryGetValue("Type", out var ltt) ? ltt?.ToString()?.Trim().ToLowerInvariant() ?? "" : "";
+                return $"loantx:{ltLoan}:{ltDate}:{ltAmt}:{ltType}";
+
+            case "Epfo":
+                var epfMonth = mapped.TryGetValue("Month", out var em) && em is DateTime emDt ? emDt.ToString("yyyy-MM") : "";
+                return $"epfo:{epfMonth}";
+
+            case "Holdings":
+                var hName = mapped.TryGetValue("Name", out var hn) ? hn?.ToString()?.Trim().ToLowerInvariant() ?? "" : "";
+                var hSym = mapped.TryGetValue("Symbol", out var hs) ? hs?.ToString()?.Trim().ToLowerInvariant() ?? "" : "";
+                return $"holding:{hName}:{hSym}";
+
+            case "InvestmentTransactions":
+                var itSym = mapped.TryGetValue("Symbol", out var its) ? its?.ToString()?.Trim().ToLowerInvariant() ?? "" : "";
+                var itDate = mapped.TryGetValue("Date", out var itd) && itd is DateTime itDt ? itDt.ToString("yyyy-MM-dd") : "";
+                var itType = mapped.TryGetValue("Type", out var itt) ? itt?.ToString()?.Trim().ToLowerInvariant() ?? "" : "";
+                var itQty = mapped.TryGetValue("Quantity", out var itq) ? itq?.ToString()?.Trim() ?? "" : "";
+                var itPrice = mapped.TryGetValue("Price", out var itp) ? itp?.ToString()?.Trim() ?? "" : "";
+                return $"invtx:{itSym}:{itDate}:{itType}:{itQty}:{itPrice}";
+
+            case "Categories":
+                var catName = mapped.TryGetValue("Name", out var cn) ? cn?.ToString()?.Trim().ToLowerInvariant() ?? "" : "";
+                var cType = mapped.TryGetValue("Type", out var cty) ? cty?.ToString()?.Trim().ToLowerInvariant() ?? "" : "";
+                return $"cat:{catName}:{cType}";
+
+            default:
+                return string.Join("|", mapped.OrderBy(kv => kv.Key).Select(kv => $"{kv.Key}={kv.Value}"));
+        }
     }
 
     private static bool TryParseAmount(string input, out decimal result)
@@ -1405,23 +1498,70 @@ public class DataTransferService : IDataTransferService
         switch (normalized)
         {
             case "Transactions":
+                // 1. Check by ExternalId / ID
+                if (mapped.TryGetValue("ExternalId", out var extObj) && extObj != null)
+                {
+                    var extIdStr = extObj.ToString()!.Trim();
+                    if (Guid.TryParse(extIdStr, out var parsedGuid))
+                    {
+                        var existsById = await _context.Transactions.AnyAsync(t => t.Id == parsedGuid && t.UserId == userId, ct);
+                        if (existsById) return true;
+                    }
+                }
+
+                // 2. Check by Date + Amount + Type + (Category or Note)
                 if (mapped.TryGetValue("Amount", out var amtObj) && amtObj is decimal amt &&
                     mapped.TryGetValue("Date", out var dtObj) && dtObj is DateTime dt)
                 {
-                    var start = dt.Date;
-                    var end = dt.Date.AddDays(1);
-                    return await _context.Transactions.AnyAsync(t =>
+                    var start = DateTime.SpecifyKind(dt.Date, DateTimeKind.Utc);
+                    var end = start.AddDays(1);
+                    var query = _context.Transactions.Where(t =>
                         t.UserId == userId &&
                         t.Amount == amt &&
-                        t.TransactionDate >= start && t.TransactionDate < end, ct);
+                        t.TransactionDate >= start && t.TransactionDate < end);
+
+                    if (mapped.TryGetValue("Type", out var typeObj) && typeObj != null)
+                    {
+                        var typeStr = typeObj.ToString()!.Trim();
+                        if (Enum.TryParse<TransactionType>(typeStr, true, out var parsedType))
+                        {
+                            query = query.Where(t => t.Type == parsedType);
+                        }
+                    }
+
+                    if (mapped.TryGetValue("Note", out var noteObj) && noteObj != null && !string.IsNullOrWhiteSpace(noteObj.ToString()))
+                    {
+                        var note = noteObj.ToString()!.Trim();
+                        return await query.AnyAsync(t => t.Note == note, ct);
+                    }
+
+                    return await query.AnyAsync(ct);
                 }
                 break;
 
             case "LoanAccounts":
                 if (mapped.TryGetValue("Name", out var nameObj) && nameObj != null)
                 {
-                    var name = nameObj.ToString()!.Trim();
-                    return await _context.LoanAccounts.AnyAsync(l => l.UserId == userId && l.Name.ToLower() == name.ToLower(), ct);
+                    var name = nameObj.ToString()!.Trim().ToLower();
+                    return await _context.LoanAccounts.AnyAsync(l => l.UserId == userId && l.Name.ToLower() == name, ct);
+                }
+                break;
+
+            case "LoanTransactions":
+                if (mapped.TryGetValue("LoanAccount", out var laObj) && laObj != null &&
+                    mapped.TryGetValue("Amount", out var laAmtObj) && laAmtObj is decimal laAmt &&
+                    mapped.TryGetValue("Date", out var laDtObj) && laDtObj is DateTime laDt)
+                {
+                    var laName = laObj.ToString()!.Trim().ToLower();
+                    var laStart = DateTime.SpecifyKind(laDt.Date, DateTimeKind.Utc);
+                    var laEnd = laStart.AddDays(1);
+
+                    return await _context.LoanTransactions.AnyAsync(lt =>
+                        lt.LoanAccount != null &&
+                        lt.LoanAccount.UserId == userId &&
+                        lt.LoanAccount.Name.ToLower() == laName &&
+                        lt.Amount == laAmt &&
+                        lt.TransactionDate >= laStart && lt.TransactionDate < laEnd, ct);
                 }
                 break;
 
@@ -1436,13 +1576,210 @@ public class DataTransferService : IDataTransferService
             case "Holdings":
                 if (mapped.TryGetValue("Name", out var hNameObj) && hNameObj != null)
                 {
-                    var hName = hNameObj.ToString()!.Trim();
-                    return await _context.Holdings.AnyAsync(h => h.UserId == userId && h.Name.ToLower() == hName.ToLower(), ct);
+                    var hName = hNameObj.ToString()!.Trim().ToLower();
+                    return await _context.Holdings.AnyAsync(h => h.UserId == userId && h.Name.ToLower() == hName, ct);
+                }
+                break;
+
+            case "InvestmentTransactions":
+                if (mapped.TryGetValue("HoldingName", out var symObj) && symObj != null &&
+                    mapped.TryGetValue("Date", out var invDtObj) && invDtObj is DateTime invDt &&
+                    mapped.TryGetValue("Amount", out var prcObj) && prcObj is decimal prc)
+                {
+                    var sym = symObj.ToString()!.Trim().ToLower();
+                    var invStart = DateTime.SpecifyKind(invDt.Date, DateTimeKind.Utc);
+                    var invEnd = invStart.AddDays(1);
+
+                    return await _context.InvestmentTransactions.AnyAsync(it =>
+                        it.Holding != null &&
+                        it.Holding.UserId == userId &&
+                        it.Holding.Name.ToLower() == sym &&
+                        it.Amount == prc &&
+                        it.TransactionDate >= invStart && it.TransactionDate < invEnd, ct);
+                }
+                break;
+
+            case "Categories":
+                if (mapped.TryGetValue("Name", out var cNameObj) && cNameObj != null)
+                {
+                    var cName = cNameObj.ToString()!.Trim().ToLower();
+                    return await _context.Categories.AnyAsync(c =>
+                        (c.UserId == userId || c.IsSystem) &&
+                        c.Name.ToLower() == cName, ct);
                 }
                 break;
         }
 
         return false;
+    }
+
+    private async Task<bool> UpdateExistingEntityAsync(
+        string module,
+        Dictionary<string, object?> mapped,
+        Guid userId,
+        List<Category> categories,
+        List<LoanAccount> loans,
+        List<Holding> holdings,
+        CancellationToken ct)
+    {
+        var normalized = NormalizeModuleName(module);
+        switch (normalized)
+        {
+            case "Transactions":
+                Transaction? existing = null;
+                if (mapped.TryGetValue("ExternalId", out var extObj) && extObj != null && Guid.TryParse(extObj.ToString()!.Trim(), out var parsedGuid))
+                {
+                    existing = await _context.Transactions.FirstOrDefaultAsync(t => t.Id == parsedGuid && t.UserId == userId, ct);
+                }
+
+                if (existing == null && mapped.TryGetValue("Amount", out var amtObj) && amtObj is decimal amt &&
+                    mapped.TryGetValue("Date", out var dtObj) && dtObj is DateTime dt)
+                {
+                    var start = DateTime.SpecifyKind(dt.Date, DateTimeKind.Utc);
+                    var end = start.AddDays(1);
+                    existing = await _context.Transactions.FirstOrDefaultAsync(t =>
+                        t.UserId == userId &&
+                        t.Amount == amt &&
+                        t.TransactionDate >= start && t.TransactionDate < end, ct);
+                }
+
+                if (existing != null)
+                {
+                    if (mapped.TryGetValue("Note", out var noteObj) && noteObj != null)
+                    {
+                        existing.Note = noteObj.ToString()?.Trim();
+                    }
+                    if (mapped.TryGetValue("Category", out var catObj) && catObj != null)
+                    {
+                        var catName = catObj.ToString()!.Trim();
+                        var cat = categories.FirstOrDefault(c => c.Name.Equals(catName, StringComparison.OrdinalIgnoreCase));
+                        if (cat != null)
+                        {
+                            existing.CategoryId = cat.Id;
+                        }
+                    }
+                    if (mapped.TryGetValue("Amount", out var newAmtObj) && newAmtObj is decimal newAmt && newAmt > 0)
+                    {
+                        existing.Amount = newAmt;
+                    }
+                    return true;
+                }
+                break;
+
+            case "LoanAccounts":
+                if (mapped.TryGetValue("Name", out var nameObj) && nameObj != null)
+                {
+                    var name = nameObj.ToString()!.Trim();
+                    var loan = await _context.LoanAccounts.FirstOrDefaultAsync(l => l.UserId == userId && l.Name.ToLower() == name.ToLower(), ct);
+                    if (loan != null)
+                    {
+                        if (mapped.TryGetValue("Principal", out var totObj) && totObj is decimal tot) loan.Principal = tot;
+                        if (mapped.TryGetValue("InterestRate", out var irObj) && irObj is decimal ir) loan.InterestRate = ir;
+                        return true;
+                    }
+                }
+                break;
+        }
+
+        return false;
+    }
+
+    private async Task SaveExportArchiveAsync(
+        Guid userId,
+        string module,
+        string fileName,
+        string format,
+        byte[] content,
+        int recordCount,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var archiveId = Guid.NewGuid();
+            var userExportDir = Path.Combine(_exportDirectory, userId.ToString());
+            Directory.CreateDirectory(userExportDir);
+            var storedPath = Path.Combine(userExportDir, $"{archiveId}_{fileName}");
+            await File.WriteAllBytesAsync(storedPath, content, cancellationToken);
+
+            var archive = new ExportArchive
+            {
+                Id = archiveId,
+                UserId = userId,
+                Module = module,
+                FileName = fileName,
+                StorageKey = storedPath,
+                Format = format,
+                FileSizeBytes = content.Length,
+                RecordCount = recordCount,
+                CreatedAtUtc = DateTime.UtcNow
+            };
+
+            _context.ExportArchives.Add(archive);
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+        catch (Exception)
+        {
+            // Do not break the user's export download if saving to archive fails
+        }
+    }
+
+    public async Task<List<ExportArchiveDto>> GetExportArchivesAsync(Guid userId, CancellationToken cancellationToken = default)
+    {
+        return await _context.ExportArchives
+            .Where(a => a.UserId == userId)
+            .OrderByDescending(a => a.CreatedAtUtc)
+            .Take(50)
+            .Select(a => new ExportArchiveDto(
+                a.Id,
+                a.Module,
+                a.FileName,
+                a.Format,
+                a.FileSizeBytes,
+                a.RecordCount,
+                a.CreatedAtUtc
+            ))
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<(byte[] Content, string ContentType, string FileName)> GetExportArchiveFileAsync(
+        Guid archiveId,
+        Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        var archive = await _context.ExportArchives
+            .FirstOrDefaultAsync(a => a.Id == archiveId && a.UserId == userId, cancellationToken)
+            ?? throw new KeyNotFoundException($"Export archive '{archiveId}' not found.");
+
+        if (!File.Exists(archive.StorageKey))
+        {
+            throw new FileNotFoundException("Export archive file is no longer available on disk.");
+        }
+
+        var bytes = await File.ReadAllBytesAsync(archive.StorageKey, cancellationToken);
+        var contentType = archive.Format == "csv" ? "text/csv" : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+        return (bytes, contentType, archive.FileName);
+    }
+
+    public async Task<(byte[] Content, string ContentType, string FileName)> GetImportBatchOriginalFileAsync(
+        Guid batchId,
+        Guid userId,
+        CancellationToken cancellationToken = default)
+    {
+        var batch = await _context.ImportBatches
+            .FirstOrDefaultAsync(b => b.Id == batchId && b.UserId == userId, cancellationToken)
+            ?? throw new KeyNotFoundException($"Import batch '{batchId}' not found.");
+
+        if (!File.Exists(batch.StorageKey))
+        {
+            throw new FileNotFoundException("Original import file is no longer available on disk.");
+        }
+
+        var bytes = await File.ReadAllBytesAsync(batch.StorageKey, cancellationToken);
+        var ext = Path.GetExtension(batch.StorageKey).ToLowerInvariant();
+        var contentType = ext == ".csv" ? "text/csv" :
+                          ext == ".pdf" ? "application/pdf" :
+                          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+        return (bytes, contentType, batch.FileName);
     }
 
     internal static (string icon, string color) GetCategoryStyling(string name, TransactionType type)
