@@ -37,16 +37,33 @@ interface CommandItem {
       <!-- Desktop Side Navigation -->
       <aside class="desktop-sidebar no-print">
         <div class="sidebar-brand">
-          <div class="brand-logo">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
-              <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" fill="#0b57d0"/>
-              <path d="M12 6v12M16 9h-5.5a2.5 2.5 0 0 0 0 5h5a2.5 2.5 0 0 1 0 5H8" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round"/>
+          <a routerLink="/dashboard" class="brand-link" title="Hisaab Dashboard">
+            <div class="brand-logo">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+                <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" fill="#0b57d0"/>
+                <path d="M12 6v12M16 9h-5.5a2.5 2.5 0 0 0 0 5h5a2.5 2.5 0 0 1 0 5H8" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <div class="brand-info">
+              <span class="brand-title">Hisaab</span>
+              <span class="brand-tagline">Personal Finance</span>
+            </div>
+          </a>
+          <button
+            type="button"
+            class="btn-sidebar-toggle"
+            (click)="themeService.toggleSidebarCollapse()"
+            [title]="themeService.sidebarPosition() === 'collapsed' ? 'Expand Sidebar' : 'Collapse Sidebar'"
+            aria-label="Toggle Sidebar"
+          >
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              @if (themeService.sidebarPosition() === 'collapsed') {
+                <polyline points="9 18 15 12 9 6" />
+              } @else {
+                <polyline points="15 18 9 12 15 6" />
+              }
             </svg>
-          </div>
-          <div class="brand-info">
-            <span class="brand-title">Hisaab</span>
-            <span class="brand-tagline">Personal Finance</span>
-          </div>
+          </button>
         </div>
 
         <nav class="side-nav">
@@ -108,7 +125,7 @@ interface CommandItem {
 
           @if (roleRightsService.canView('MarketAi')) {
             <a routerLink="/market-ai" routerLinkActive="active" class="nav-item nav-item-market-ai" title="AI Stock Market Hub">
-              <span class="nav-ai-sparkle">✨</span>
+              <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'marketai' }" />
               <span class="nav-label">AI Stocks & Hub</span>
               <span class="nav-badge-ai">AI</span>
             </a>
@@ -155,7 +172,7 @@ interface CommandItem {
           }
         </nav>
 
-        <!-- User profile widget at bottom of sidebar -->
+        <!-- User profile widget at bottom of sidebar (Sign-out icon removed as requested) -->
         <div class="sidebar-user">
           @if (authService.isAuthenticated()) {
             <div class="user-chip" routerLink="/profile" title="View Profile">
@@ -167,19 +184,6 @@ interface CommandItem {
                 <span class="user-email">{{ authService.currentUser()?.email }}</span>
               </div>
             </div>
-            <button
-              type="button"
-              class="btn-logout"
-              (click)="authService.logout()"
-              title="Sign Out"
-              aria-label="Sign Out"
-            >
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-                <polyline points="16 17 21 12 16 7" />
-                <line x1="21" y1="12" x2="9" y2="12" />
-              </svg>
-            </button>
           } @else {
             <a routerLink="/auth/login" class="btn-signin-full">Sign In</a>
           }
@@ -203,6 +207,19 @@ interface CommandItem {
               </svg>
             </button>
 
+            <button
+              type="button"
+              class="desktop-sidebar-trigger desktop-only"
+              (click)="themeService.toggleSidebarCollapse()"
+              [title]="themeService.sidebarPosition() === 'collapsed' ? 'Expand Sidebar' : 'Collapse Sidebar'"
+              aria-label="Toggle Sidebar"
+            >
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                <line x1="9" y1="3" x2="9" y2="21"/>
+              </svg>
+            </button>
+
             <div class="header-brand-mobile">
               <div class="brand-logo sm">
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
@@ -217,14 +234,13 @@ interface CommandItem {
               type="button"
               class="btn-command-palette desktop-only"
               (click)="themeService.toggleCommandPalette()"
-              title="Search and run commands (Ctrl+K)"
+              title="Search and run commands"
             >
               <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
                 <circle cx="11" cy="11" r="8" />
                 <line x1="21" y1="21" x2="16.65" y2="16.65" />
               </svg>
               <span>Quick Search or Jump...</span>
-              <kbd class="key-shortcut">Ctrl+K</kbd>
             </button>
 
             <!-- Quick Add Global Button -->
@@ -233,7 +249,7 @@ interface CommandItem {
                 type="button"
                 class="btn-quick-add desktop-only"
                 (click)="themeService.openQuickAdd()"
-                title="Record transaction or entry from anywhere (Press 'c')"
+                title="Record transaction or entry"
               >
                 <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5">
                   <line x1="12" y1="5" x2="12" y2="19" />
@@ -281,21 +297,6 @@ interface CommandItem {
               }
             </button>
 
-            <!-- Keyboard Shortcuts Cheat Sheet Button -->
-            <button
-              type="button"
-              class="btn-icon btn-header-tool desktop-only"
-              (click)="themeService.toggleShortcuts()"
-              title="Keyboard Shortcuts Cheat Sheet (Press '?')"
-              aria-label="Keyboard Shortcuts"
-            >
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="12" cy="12" r="10" />
-                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-                <line x1="12" y1="17" x2="12.01" y2="17" />
-              </svg>
-            </button>
-
             <!-- Studio Customizer Drawer Trigger -->
             <button
               type="button"
@@ -341,19 +342,21 @@ interface CommandItem {
               }
             </button>
 
-            <!-- Quick Data Transfer Link on Desktop -->
-            <!-- Google Play Console Notifications Button (Screenshot Exact) -->
+            <!-- Notifications Button -->
             <button
               type="button"
-              class="btn-notifications-pill"
-              (click)="themeService.toggleShortcuts()"
+              class="btn-icon btn-header-tool"
+              (click)="onNotificationsClick()"
               title="Notifications & Alerts"
+              aria-label="Notifications & Alerts"
             >
               <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
                 <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                 <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
               </svg>
-              <span>Notifications</span>
+              @if (recycleBinService.moduleCounts().all > 0) {
+                <span class="notification-badge-dot"></span>
+              }
             </button>
 
             <!-- User Avatar or Sign In -->
@@ -509,56 +512,6 @@ interface CommandItem {
               <button type="button" class="btn-primary" (click)="themeService.closeCustomizer()">
                 Done & Apply
               </button>
-            </div>
-          </div>
-        </div>
-      }
-
-      <!-- Keyboard Shortcuts Cheat Sheet Modal ('?') -->
-      @if (themeService.isShortcutsOpen()) {
-        <div class="command-overlay no-print" (click)="themeService.closeShortcuts()">
-          <div class="shortcuts-modal" (click)="$event.stopPropagation()">
-            <div class="shortcuts-header">
-              <div class="shortcuts-title-row">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2">
-                  <rect width="18" height="12" x="3" y="6" rx="2" />
-                  <line x1="7" y1="10" x2="7" y2="10.01" />
-                  <line x1="12" y1="10" x2="12" y2="10.01" />
-                  <line x1="17" y1="10" x2="17" y2="10.01" />
-                  <line x1="7" y1="14" x2="17" y2="14" />
-                </svg>
-                <h3>Keyboard Shortcuts</h3>
-              </div>
-              <button type="button" class="btn-close-cmd" (click)="themeService.closeShortcuts()">
-                Esc
-              </button>
-            </div>
-
-            <div class="shortcuts-body">
-              <div class="shortcuts-grid">
-                <div class="shortcuts-col">
-                  <h4 class="shortcuts-category">Navigation (Press 'g' then key)</h4>
-                  <div class="shortcut-item"><span>Dashboard</span><kbd>g d</kbd></div>
-                  <div class="shortcut-item"><span>KPI Analytics</span><kbd>g a</kbd></div>
-                  <div class="shortcut-item"><span>Transactions</span><kbd>g t</kbd></div>
-                  <div class="shortcut-item"><span>Loans</span><kbd>g l</kbd></div>
-                  <div class="shortcut-item"><span>EPFO Passbook</span><kbd>g e</kbd></div>
-                  <div class="shortcut-item"><span>Investments</span><kbd>g i</kbd></div>
-                  <div class="shortcut-item"><span>Reports</span><kbd>g r</kbd></div>
-                  <div class="shortcut-item"><span>Settings</span><kbd>g s</kbd></div>
-                </div>
-
-                <div class="shortcuts-col">
-                  <h4 class="shortcuts-category">Actions & Studio</h4>
-                  <div class="shortcut-item"><span>Command Palette</span><kbd>Ctrl+K</kbd></div>
-                  <div class="shortcut-item"><span>Quick Add Entry</span><kbd>c / n</kbd></div>
-                  <div class="shortcut-item"><span>Privacy Eye Mask</span><kbd>Alt+P</kbd></div>
-                  <div class="shortcut-item"><span>Toggle Light/Dark</span><kbd>Alt+T</kbd></div>
-                  <div class="shortcut-item"><span>Compact Density</span><kbd>Alt+D</kbd></div>
-                  <div class="shortcut-item"><span>Shortcuts Help</span><kbd>?</kbd></div>
-                  <div class="shortcut-item"><span>Close Modal</span><kbd>Esc</kbd></div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -960,6 +913,9 @@ interface CommandItem {
                 @case ('recyclebin') {
                   <path d="M16 6V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2H3v2h2l1.2 13.2A2 2 0 0 0 8.2 23h7.6a2 2 0 0 0 2-1.8L19 8h2V6h-5zm-6-2h4v2h-4V4zm6 17H8l-1.1-13h10.2L16 21z" />
                 }
+                @case ('marketai') {
+                  <path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8L12 2z" />
+                }
                 @case ('settings') {
                   <path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8zm8.94 3a8.97 8.97 0 0 0-.46-1.74l2.1-1.63-2-3.46-2.52 1a8.96 8.96 0 0 0-1.52-.88L16.2 1.6h-4l-.44 2.69c-.54.24-1.05.54-1.52.88l-2.52-1-2 3.46 2.1 1.63A8.97 8.97 0 0 0 7.36 11l-2.69.44v4l2.69.44c.12.6.28 1.18.46 1.74l-2.1 1.63 2 3.46 2.52-1c.47.34.98.64 1.52.88l.44 2.69h4l.44-2.69c.54-.24 1.05-.54 1.52-.88l2.52 1 2-3.46-2.1-1.63c.18-.56.34-1.14.46-1.74l2.69-.44v-4l-2.69-.44z" />
                 }
@@ -1036,6 +992,10 @@ interface CommandItem {
                     <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
                     <line x1="10" y1="11" x2="10" y2="17" />
                     <line x1="14" y1="11" x2="14" y2="17" />
+                  }
+                  @case ('marketai') {
+                    <path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8L12 2z" fill="currentColor" fill-opacity="0.25" />
+                    <path d="M12 4l1.8 5.4L19 12l-5.2 2.6L12 20l-1.8-5.4L5 12l5.2-2.6L12 4z" />
                   }
                   @case ('settings') {
                     <circle cx="12" cy="12" r="8" fill="currentColor" fill-opacity="0.2" />
@@ -1114,6 +1074,9 @@ interface CommandItem {
                   <line x1="10" y1="11" x2="10" y2="17" />
                   <line x1="14" y1="11" x2="14" y2="17" />
                 }
+                @case ('marketai') {
+                  <path d="M12 3l2.2 6.8L21 12l-6.8 2.2L12 21l-2.2-6.8L3 12l6.8-2.2L12 3z" />
+                }
                 @case ('settings') {
                   <circle cx="12" cy="12" r="3" />
                   <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
@@ -1187,6 +1150,9 @@ interface CommandItem {
                   <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
                   <line x1="10" y1="11" x2="10" y2="17" />
                   <line x1="14" y1="11" x2="14" y2="17" />
+                }
+                @case ('marketai') {
+                  <path d="M12 3l2.2 6.8L21 12l-6.8 2.2L12 21l-2.2-6.8L3 12l6.8-2.2L12 3z" />
                 }
                 @case ('settings') {
                   <circle cx="12" cy="12" r="3" />
@@ -1262,30 +1228,80 @@ interface CommandItem {
         /* Sidebar Position: Collapsed Mini-Sidebar */
         &[data-sidebar='collapsed'] {
           .desktop-sidebar {
-            width: 68px;
-            padding: 1rem 0.35rem;
+            width: 70px;
+            padding: 0.75rem 0.25rem 0.5rem;
             align-items: center;
 
             .brand-info,
             .nav-label,
             .nav-section-label,
-            .user-details {
-              display: none;
+            .user-details,
+            .nav-badge-ai,
+            .btn-sidebar-toggle {
+              display: none !important;
             }
 
             .sidebar-brand {
-              padding: 0.5rem 0 1rem;
+              padding: 0.25rem 0 0.75rem;
+              justify-content: center;
+              width: 100%;
+              margin-bottom: 0.5rem;
+            }
+
+            .brand-link {
               justify-content: center;
             }
 
+            .side-nav {
+              width: 100%;
+              align-items: center;
+              gap: 4px;
+              padding: 0;
+            }
+
+            .sidebar-divider-line {
+              margin: 8px 10px;
+              width: calc(100% - 20px);
+            }
+
             .nav-item {
+              width: 44px;
+              height: 44px;
+              padding: 0;
+              margin: 2px auto;
               justify-content: center;
-              padding: 0.625rem 0.35rem;
+              border-radius: 10px;
+
+              &::before {
+                display: none;
+              }
+
+              .nav-icon {
+                margin: 0;
+              }
+
+              .nav-badge-pill {
+                position: absolute;
+                top: 4px;
+                right: 4px;
+                font-size: 9px;
+                padding: 1px 4px;
+              }
+            }
+
+            .sidebar-user {
+              width: 100%;
+              justify-content: center;
+              padding: 0.75rem 0 0.25rem;
             }
 
             .user-chip {
               padding: 0;
               justify-content: center;
+              width: 44px;
+              height: 44px;
+              border-radius: 10px;
+              margin: 0 auto;
             }
           }
         }
@@ -1296,14 +1312,14 @@ interface CommandItem {
         display: none;
         width: 256px;
         background: var(--color-sidebar-bg, var(--color-bg-card));
-        border-right: 1.5px solid var(--color-sidebar-border, var(--color-border));
+        border-right: 1px solid var(--color-sidebar-border, var(--color-border));
         flex-direction: column;
         position: sticky;
         top: 0;
         height: 100vh;
-        padding: 1rem 0;
+        padding: 0.75rem 0 0.5rem;
         z-index: 30;
-        transition: width 0.15s ease, background-color 0.2s ease, border-color 0.2s ease;
+        transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.2s ease, border-color 0.2s ease;
 
         @media (min-width: 900px) {
           display: flex;
@@ -1313,10 +1329,41 @@ interface CommandItem {
       .sidebar-brand {
         display: flex;
         align-items: center;
-        gap: 0.75rem;
-        padding: 0.25rem 1.25rem 1rem 1.5rem;
+        justify-content: space-between;
+        padding: 0.25rem 0.875rem 0.75rem 1rem;
         border-bottom: 1px solid var(--color-sidebar-border-inner, var(--color-sidebar-border, var(--color-border-subtle)));
-        margin-bottom: 0.75rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .brand-link {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        text-decoration: none;
+        color: inherit;
+        min-width: 0;
+        flex: 1;
+      }
+
+      .btn-sidebar-toggle {
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--color-sidebar-muted, var(--color-text-muted));
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.15s ease;
+        flex-shrink: 0;
+
+        &:hover {
+          background: var(--color-nav-hover-bg, var(--color-bg-hover));
+          color: var(--color-text-main);
+          border-color: var(--color-border);
+        }
       }
 
       .brand-logo {
@@ -1327,6 +1374,7 @@ interface CommandItem {
         display: flex;
         align-items: center;
         justify-content: center;
+        flex-shrink: 0;
 
         &.sm {
           width: 26px;
@@ -1337,11 +1385,12 @@ interface CommandItem {
       .brand-info {
         display: flex;
         flex-direction: column;
+        min-width: 0;
       }
 
       .brand-title {
         font-size: 1.15rem;
-        font-weight: 500;
+        font-weight: 600;
         font-family: var(--font-family-google);
         color: var(--color-sidebar-fg, var(--color-text-main));
         letter-spacing: -0.015em;
@@ -1360,28 +1409,34 @@ interface CommandItem {
         gap: 2px;
         flex: 1;
         overflow-y: auto;
+        overflow-x: hidden;
+        padding: 0 4px;
+        scrollbar-width: thin;
+        scrollbar-color: var(--color-border-subtle, transparent) transparent;
       }
 
       .sidebar-divider-line {
         height: 1px;
         background: var(--color-sidebar-border-inner, var(--color-sidebar-border, var(--color-border)));
-        margin: 10px 16px;
+        margin: 8px 12px;
       }
 
       .nav-item {
         display: flex;
         align-items: center;
-        gap: 1rem;
-        padding: 0 16px 0 24px;
-        height: 42px;
-        border-radius: 0 24px 24px 0;
-        margin-right: 12px;
+        gap: 0.85rem;
+        padding: 0 12px;
+        height: 38px;
+        border-radius: 9px;
+        margin: 1px 8px;
         color: var(--color-sidebar-nav-fg, var(--color-text-secondary));
         text-decoration: none;
-        font-size: 14px;
+        font-size: 13.5px;
         font-weight: 500;
         font-family: var(--font-family-google);
         transition: all 0.15s ease;
+        position: relative;
+        outline: none;
 
         &:hover {
           background: var(--color-nav-hover-bg, var(--color-bg-hover));
@@ -1393,14 +1448,29 @@ interface CommandItem {
         }
 
         &.active {
-          background: var(--color-nav-active-bg);
-          color: var(--color-nav-active-fg);
-          font-weight: 500;
+          background: var(--color-nav-active-bg, rgba(11, 87, 208, 0.09));
+          color: var(--color-nav-active-fg, var(--color-primary));
+          font-weight: 600;
+
+          &::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 7px;
+            bottom: 7px;
+            width: 3.5px;
+            background: var(--color-nav-active-icon, var(--color-primary));
+            border-radius: 0 3px 3px 0;
+          }
 
           .nav-icon {
-            color: var(--color-nav-active-icon);
-            stroke: var(--color-nav-active-icon);
+            color: var(--color-nav-active-icon, var(--color-primary));
+            stroke: var(--color-nav-active-icon, var(--color-primary));
           }
+        }
+
+        &:focus-visible {
+          box-shadow: 0 0 0 2px var(--color-primary);
         }
 
         .nav-badge-pill {
@@ -1433,8 +1503,8 @@ interface CommandItem {
       }
 
       .nav-icon {
-        width: 20px;
-        height: 20px;
+        width: 19px;
+        height: 19px;
         flex-shrink: 0;
         color: var(--color-sidebar-nav-icon, var(--color-text-muted));
         transition: all 0.12s ease;
@@ -1451,24 +1521,23 @@ interface CommandItem {
       }
 
       .sidebar-user {
-        padding-top: 0.75rem;
+        padding: 0.65rem 8px 0.25rem;
         border-top: 1px solid var(--color-sidebar-border-inner, var(--color-sidebar-border, var(--color-border)));
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        gap: 0.5rem;
+        justify-content: center;
       }
 
       .user-chip {
         display: flex;
         align-items: center;
-        gap: 0.6rem;
+        gap: 0.75rem;
         text-decoration: none;
-        flex: 1;
+        width: 100%;
         min-width: 0;
         cursor: pointer;
-        padding: 0.35rem;
-        border-radius: var(--radius-md);
+        padding: 0.45rem 0.6rem;
+        border-radius: 10px;
         transition: background-color 0.15s ease;
 
         &:hover {
@@ -1477,17 +1546,18 @@ interface CommandItem {
       }
 
       .user-avatar-sm {
-        width: 32px;
-        height: 32px;
+        width: 34px;
+        height: 34px;
         border-radius: 50%;
-        background: var(--color-primary);
+        background: linear-gradient(135deg, #0b57d0, #1976d2);
         color: #ffffff;
         font-weight: 700;
-        font-size: 0.8rem;
+        font-size: 0.85rem;
         display: flex;
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
+        box-shadow: 0 1px 3px rgba(11, 87, 208, 0.25);
       }
 
       .user-details {
@@ -1511,25 +1581,6 @@ interface CommandItem {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-      }
-
-      .btn-logout {
-        background: transparent;
-        border: none;
-        color: var(--color-sidebar-muted, var(--color-text-muted));
-        cursor: pointer;
-        width: 34px;
-        height: 34px;
-        border-radius: var(--radius-sm);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all 0.15s ease;
-
-        &:hover {
-          background: var(--color-expense-bg);
-          color: var(--color-expense);
-        }
       }
 
       .btn-signin-full {
@@ -1593,6 +1644,29 @@ interface CommandItem {
 
         @media (min-width: 900px) {
           display: none;
+        }
+      }
+
+      .desktop-sidebar-trigger {
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: 1px solid var(--color-border-subtle, transparent);
+        color: var(--color-header-fg, var(--color-text-main));
+        width: 36px;
+        height: 36px;
+        cursor: pointer;
+        border-radius: var(--radius-sm);
+        transition: all 0.15s ease;
+
+        &:hover {
+          background: var(--color-bg-hover);
+          border-color: var(--color-border);
+        }
+
+        @media (min-width: 900px) {
+          display: flex;
         }
       }
 
@@ -1708,6 +1782,7 @@ interface CommandItem {
         color: var(--color-header-tool-fg, var(--color-text-muted));
         cursor: pointer;
         transition: all 0.12s ease;
+        position: relative;
 
         &:hover {
           background: var(--color-header-tool-hover-bg, var(--color-canvas-subtle));
@@ -1720,6 +1795,17 @@ interface CommandItem {
           border-color: var(--color-accent-fg);
           color: var(--color-accent-fg);
         }
+      }
+
+      .notification-badge-dot {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        width: 7px;
+        height: 7px;
+        background: #ef4444;
+        border-radius: 50%;
+        border: 1.5px solid var(--color-bg-card, #ffffff);
       }
 
       .btn-customizer-trigger {
@@ -1743,29 +1829,6 @@ interface CommandItem {
         &:hover {
           background: var(--color-header-tool-hover-bg, var(--color-btn-hover-bg));
           border-color: var(--color-header-tool-hover-border, var(--color-accent-fg));
-        }
-      }
-
-      .btn-notifications-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 6px 14px;
-        background: #fce8e6;
-        color: #c5221f;
-        border: none;
-        border-radius: 9999px;
-        font-size: 13px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.15s ease;
-
-        svg {
-          color: #c5221f;
-        }
-
-        &:hover {
-          background: #fad2cf;
         }
       }
 
@@ -2517,10 +2580,6 @@ export class ShellComponent implements OnInit {
   readonly quickAddMessage = signal<string | null>(null);
   readonly isQuickAddError = signal<boolean>(false);
 
-  // Key navigation state machine
-  private gKeyPressed = false;
-  private gKeyTimeout: any = null;
-
   // Commands registry
   readonly allCommands: CommandItem[] = [
     {
@@ -2753,7 +2812,7 @@ export class ShellComponent implements OnInit {
 
   @HostListener('window:keydown', ['$event'])
   handleGlobalShortcuts(event: KeyboardEvent): void {
-    // If active element is an input, textarea, or select, don't trigger single-key navigation
+    // If active element is an input, textarea, or select, don't trigger navigation
     const target = event.target as HTMLElement | null;
     const isEditing = target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName);
 
@@ -2768,7 +2827,6 @@ export class ShellComponent implements OnInit {
     if (event.key === 'Escape') {
       this.themeService.closeCommandPalette();
       this.themeService.closeCustomizer();
-      this.themeService.closeShortcuts();
       this.themeService.closeQuickAdd();
       this.closeMobileMenu();
       return;
@@ -2794,68 +2852,13 @@ export class ShellComponent implements OnInit {
       this.themeService.toggleDensity();
       return;
     }
+  }
 
-    if (isEditing) return;
-
-    // '?' opens shortcuts modal
-    if (event.key === '?' || (event.shiftKey && event.key === '/')) {
-      event.preventDefault();
-      this.themeService.toggleShortcuts();
-      return;
-    }
-
-    // 'c' or 'n' opens Quick Add
-    if (event.key === 'c' || event.key === 'n') {
-      event.preventDefault();
-      this.themeService.openQuickAdd();
-      return;
-    }
-
-    // 'g' key sequence for two-key navigation (GitHub style)
-    if (event.key.toLowerCase() === 'g') {
-      this.gKeyPressed = true;
-      clearTimeout(this.gKeyTimeout);
-      this.gKeyTimeout = setTimeout(() => {
-        this.gKeyPressed = false;
-      }, 1000);
-      return;
-    }
-
-    if (this.gKeyPressed) {
-      this.gKeyPressed = false;
-      clearTimeout(this.gKeyTimeout);
-      switch (event.key.toLowerCase()) {
-        case 'd':
-          if (this.roleRightsService.canView('Dashboard')) this.router.navigate(['/dashboard']);
-          break;
-        case 'a':
-          if (this.roleRightsService.canView('Analytics')) this.router.navigate(['/analytics']);
-          break;
-        case 't':
-          if (this.roleRightsService.canView('Transactions')) this.router.navigate(['/transactions']);
-          break;
-        case 'l':
-          if (this.roleRightsService.canView('Loans')) this.router.navigate(['/loans']);
-          break;
-        case 'e':
-          if (this.roleRightsService.canView('Epfo')) this.router.navigate(['/epfo']);
-          break;
-        case 'i':
-          if (this.roleRightsService.canView('Investments')) this.router.navigate(['/investments']);
-          break;
-        case 'm':
-          if (this.roleRightsService.canView('MarketAi')) this.router.navigate(['/market-ai']);
-          break;
-        case 'b':
-          if (this.roleRightsService.canView('Business')) this.router.navigate(['/business']);
-          break;
-        case 'r':
-          if (this.roleRightsService.canView('Reports')) this.router.navigate(['/reports']);
-          break;
-        case 's':
-          if (this.roleRightsService.canView('Settings')) this.router.navigate(['/settings']);
-          break;
-      }
+  onNotificationsClick(): void {
+    if (this.recycleBinService.moduleCounts().all > 0) {
+      this.router.navigate(['/recycle-bin']);
+    } else {
+      this.router.navigate(['/dashboard']);
     }
   }
 

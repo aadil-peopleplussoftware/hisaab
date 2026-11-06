@@ -405,7 +405,11 @@ export class ThemeService {
     }
 
     const savedSidebar = localStorage.getItem('hisaab_sidebar_pos') as SidebarPosition | null;
-    if (savedSidebar) this.sidebarPosition.set(savedSidebar);
+    if (savedSidebar && savedSidebar !== 'collapsed') {
+      this.sidebarPosition.set(savedSidebar);
+    } else {
+      this.sidebarPosition.set('left');
+    }
 
     const savedDensity = localStorage.getItem('hisaab_density') as DensityMode | null;
     if (savedDensity) this.density.set(savedDensity);
@@ -447,6 +451,11 @@ export class ThemeService {
   setSidebarPosition(pos: SidebarPosition): void {
     this.sidebarPosition.set(pos);
     this.playClickSound();
+  }
+
+  toggleSidebarCollapse(): void {
+    const next: SidebarPosition = this.sidebarPosition() === 'collapsed' ? 'left' : 'collapsed';
+    this.setSidebarPosition(next);
   }
 
   toggleDensity(): void {
