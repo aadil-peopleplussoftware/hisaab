@@ -9,140 +9,174 @@ import { AuthService } from '../../../core/services/auth.service';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, RouterModule],
   template: `
-    <div class="auth-viewport">
-      <div class="auth-container">
-        <!-- Brand Logo Header -->
-        <div class="auth-brand-header">
-          <div class="brand-glyph">
-            <svg viewBox="0 0 24 24" width="28" height="28" fill="none">
-              <rect width="24" height="24" rx="6" fill="#1f883d" />
-              <path d="M12 5v14M16 8H9.5a2.5 2.5 0 0 0 0 5h5a2.5 2.5 0 0 1 0 5H7" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" />
-            </svg>
-          </div>
-          <h1 class="auth-title">Change your password</h1>
-          <p class="auth-subtitle">
-            Enter a new password for <strong>{{ targetEmail() }}</strong>
-          </p>
-        </div>
-
-        @if (successMessage()) {
-          <div class="auth-card success-card">
-            <div class="success-icon">
-              <svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#1f883d" stroke-width="2.5">
-                <polyline points="20 6 9 17 4 12" />
+    <div class="portal-viewport">
+      <!-- Top Header -->
+      <header class="portal-header">
+        <div class="portal-header-top">
+          <div class="portal-logo" routerLink="/">
+            <div class="logo-icon-wrap" aria-hidden="true">
+              <svg viewBox="0 0 32 32" width="28" height="28" fill="none">
+                <circle cx="16" cy="16" r="14" fill="#00a65a" />
+                <path d="M16 6L18 12L24 10L20 15L25 18L19 20L20 26L16 22L12 26L13 20L7 18L12 15L8 10L14 12Z" fill="#ffffff" />
+                <circle cx="16" cy="16" r="3.5" fill="#00a65a" />
               </svg>
             </div>
-            <h2>Password Changed!</h2>
-            <p>{{ successMessage() }}</p>
-            <a routerLink="/auth/login" class="btn-github-primary">Sign in with new password</a>
+            <span class="portal-brand-text">Hisaab Support</span>
           </div>
-        } @else {
-          <!-- Main Reset Card -->
-          <div class="auth-card">
+
+          <div class="portal-header-actions">
+            <span class="welcome-label">Welcome</span>
+            <div class="action-btn-group">
+              <a routerLink="/auth/login" class="btn-portal-login-nav">LOGIN</a>
+              <a routerLink="/auth/register" class="btn-portal-signup-nav">SIGN UP</a>
+            </div>
+          </div>
+        </div>
+
+        <nav class="portal-subnav" aria-label="Portal Navigation">
+          <a routerLink="/" class="subnav-link">Home</a>
+          <a href="#" (click)="$event.preventDefault()" class="subnav-link">Solutions</a>
+          <a href="#" (click)="$event.preventDefault()" class="subnav-link">Documentation</a>
+        </nav>
+      </header>
+
+      <!-- Main Content -->
+      <main class="portal-main">
+        <div class="portal-card">
+          <h1 class="card-title">Change your password</h1>
+
+          @if (successMessage()) {
+            <div class="alert-box success">
+              <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+              <div class="alert-text">
+                <strong>Password Changed Successfully!</strong>
+                <span>{{ successMessage() }}</span>
+              </div>
+            </div>
+
+            <hr class="card-divider" />
+
+            <div class="action-footer-row" style="margin-left: 0;">
+              <a routerLink="/auth/login" class="btn-solid-green">SIGN IN WITH NEW PASSWORD</a>
+            </div>
+          } @else {
             @if (errorMessage()) {
-              <div class="flash-alert" role="alert">
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                  <circle cx="12" cy="12" r="10" />
-                  <line x1="12" y1="8" x2="12" y2="12" />
-                  <line x1="12" y1="16" x2="12.01" y2="16" />
+              <div class="alert-box error" role="alert">
+                <svg viewBox="0 0 20 20" width="16" height="16" fill="currentColor">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
                 </svg>
                 <span>{{ errorMessage() }}</span>
               </div>
             }
 
-            <form [formGroup]="resetForm" (ngSubmit)="onSubmit()" class="auth-form" novalidate>
-              <!-- New Password -->
-              <div class="form-group">
-                <label for="password" class="field-label">New password</label>
-                <div class="input-wrap" [class.has-error]="isFieldInvalid('password')">
-                  <input
-                    id="password"
-                    [type]="showPassword() ? 'text' : 'password'"
-                    formControlName="password"
-                    placeholder="Min. 8 characters"
-                    autocomplete="new-password"
-                    class="primer-input"
-                    (input)="updatePasswordChecks()"
-                  />
-                  <button
-                    type="button"
-                    class="btn-toggle-eye"
-                    (click)="togglePasswordVisibility()"
-                    aria-label="Toggle password visibility"
-                  >
-                    @if (showPassword()) {
-                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-                        <line x1="1" y1="1" x2="23" y2="23" />
-                      </svg>
-                    } @else {
-                      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                        <circle cx="12" cy="12" r="3" />
-                      </svg>
-                    }
-                  </button>
-                </div>
-
-                <!-- Password Requirements Checklist -->
-                <div class="checklist-pills">
-                  <span class="chk-pill" [class.met]="hasMinLength()">8+ chars</span>
-                  <span class="chk-pill" [class.met]="hasUpper()">Uppercase</span>
-                  <span class="chk-pill" [class.met]="hasLower()">Lowercase</span>
-                  <span class="chk-pill" [class.met]="hasDigit()">Number</span>
-                  <span class="chk-pill" [class.met]="hasSpecial()">Symbol</span>
+            <form [formGroup]="resetForm" (ngSubmit)="onSubmit()" class="form-horizontal" novalidate>
+              <!-- New Password Row -->
+              <div class="field-row">
+                <label for="new-password" class="field-label">
+                  New password <span class="required">*</span>
+                </label>
+                <div class="field-control">
+                  <div class="password-input-wrap">
+                    <input
+                      id="new-password"
+                      [type]="showPassword() ? 'text' : 'password'"
+                      formControlName="password"
+                      autocomplete="new-password"
+                      placeholder="Min. 8 characters"
+                      class="clean-input password-input"
+                      [class.error-border]="isFieldInvalid('password')"
+                      (input)="updatePasswordChecks()"
+                    />
+                    <button
+                      type="button"
+                      class="toggle-eye-btn"
+                      (click)="togglePasswordVisibility()"
+                      [attr.aria-label]="showPassword() ? 'Hide password' : 'Show password'"
+                    >
+                      @if (showPassword()) {
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#6b7280" stroke-width="2">
+                          <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                          <line x1="1" y1="1" x2="23" y2="23" />
+                        </svg>
+                      } @else {
+                        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="#6b7280" stroke-width="2">
+                          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                          <circle cx="12" cy="12" r="3" />
+                        </svg>
+                      }
+                    </button>
+                  </div>
+                  @if (isFieldInvalid('password')) {
+                    <span class="field-error-msg">Password must be at least 8 characters.</span>
+                  }
                 </div>
               </div>
 
-              <!-- Confirm Password -->
-              <div class="form-group">
-                <label for="confirmPassword" class="field-label">Confirm new password</label>
-                <div class="input-wrap" [class.has-error]="isFieldInvalid('confirmPassword') || isMismatch()">
-                  <input
-                    id="confirmPassword"
-                    [type]="showPassword() ? 'text' : 'password'"
-                    formControlName="confirmPassword"
-                    placeholder="Re-type your new password"
-                    autocomplete="new-password"
-                    class="primer-input"
-                  />
+              <!-- Confirm Password Row -->
+              <div class="field-row">
+                <label for="confirm-password" class="field-label">
+                  Confirm password <span class="required">*</span>
+                </label>
+                <div class="field-control">
+                  <div class="password-input-wrap">
+                    <input
+                      id="confirm-password"
+                      [type]="showPassword() ? 'text' : 'password'"
+                      formControlName="confirmPassword"
+                      autocomplete="new-password"
+                      placeholder="Re-type password"
+                      class="clean-input password-input"
+                      [class.error-border]="isFieldInvalid('confirmPassword') || isMismatch()"
+                    />
+                  </div>
+                  @if (isMismatch()) {
+                    <span class="field-error-msg">Passwords do not match.</span>
+                  }
                 </div>
-                @if (isMismatch()) {
-                  <span class="error-inline">Passwords do not match.</span>
-                }
               </div>
 
-              <!-- Submit Button -->
-              <button
-                type="submit"
-                class="btn-github-primary"
-                [disabled]="resetForm.invalid || isMismatch() || isLoading()"
-              >
-                @if (isLoading()) {
-                  <span class="spinner-sm"></span>
-                  <span>Updating password...</span>
-                } @else {
-                  <span>Change password</span>
-                }
-              </button>
+              <hr class="card-divider" />
+
+              <div class="action-footer-row">
+                <button
+                  type="submit"
+                  class="btn-solid-green"
+                  [disabled]="resetForm.invalid || isMismatch() || isLoading()"
+                >
+                  @if (isLoading()) {
+                    <span>UPDATING...</span>
+                  } @else {
+                    <span>CHANGE PASSWORD</span>
+                  }
+                </button>
+                <a routerLink="/auth/login" class="btn-outline-cancel">
+                  CANCEL
+                </a>
+              </div>
             </form>
-          </div>
+          }
+        </div>
+      </main>
 
-          <!-- Secondary Callout Card -->
-          <div class="auth-callout-card">
-            <span>Remember your password?</span>
-            <a routerLink="/auth/login" class="primer-link">Sign in</a>
+      <!-- Footer -->
+      <footer class="portal-footer">
+        <div class="portal-footer-inner">
+          <div class="footer-links">
+            <a routerLink="/" class="footer-link">Home</a>
+            <span class="footer-sep">-</span>
+            <a href="#" (click)="$event.preventDefault()" class="footer-link">Solutions</a>
+            <span class="footer-sep">-</span>
+            <a href="#" (click)="$event.preventDefault()" class="footer-link">Privacy Policy</a>
+            <span class="footer-sep">-</span>
+            <a href="#" (click)="$event.preventDefault()" class="footer-link">Terms of Service</a>
           </div>
-        }
-
-        <!-- Footer -->
-        <footer class="auth-footer-nav">
-          <a href="#" (click)="$event.preventDefault()">Terms</a>
-          <a href="#" (click)="$event.preventDefault()">Privacy</a>
-          <a href="#" (click)="$event.preventDefault()">Docs</a>
-          <a href="#" (click)="$event.preventDefault()">Contact Hisaab Support</a>
-        </footer>
-      </div>
+          <div class="footer-copyright">
+            <span>&copy; 2026 Hisaab Support. All rights reserved.</span>
+          </div>
+        </div>
+      </footer>
     </div>
   `,
   styles: [`
@@ -150,333 +184,430 @@ import { AuthService } from '../../../core/services/auth.service';
       display: block;
       width: 100%;
       min-height: 100vh;
-      background: var(--color-bg-app);
-      font-family: var(--font-family-base);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background-color: #f1f5f8;
+      color: #333333;
     }
 
-    .auth-viewport {
+    .portal-viewport {
+      display: flex;
+      flex-direction: column;
       min-height: 100vh;
+      width: 100%;
+      background-color: #f1f5f8;
+    }
+
+    .portal-header {
+      background-color: #ffffff;
+      border-bottom: 1px solid #e2e8f0;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      padding: 14px 40px 10px;
+    }
+
+    .portal-header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .portal-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .logo-icon-wrap {
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 2.5rem 1rem;
+    }
+
+    .portal-brand-text {
+      font-size: 1.25rem;
+      font-weight: 500;
+      color: #4b5563;
+      letter-spacing: -0.2px;
+    }
+
+    .portal-header-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+
+    .welcome-label {
+      font-size: 0.72rem;
+      color: #6b7280;
+      margin-bottom: 4px;
+      padding-right: 2px;
+    }
+
+    .action-btn-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-portal-login-nav {
+      background-color: #ffffff;
+      color: #374151;
+      border: 1px solid #d1d5db;
+      padding: 6px 16px;
+      border-radius: 3px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .btn-portal-signup-nav {
+      background-color: #ffffff;
+      color: #374151;
+      border: 1px solid #d1d5db;
+      padding: 6px 16px;
+      border-radius: 3px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .portal-subnav {
+      max-width: 1200px;
+      margin: 12px auto 0;
+      display: flex;
+      gap: 28px;
+    }
+
+    .subnav-link {
+      font-size: 0.82rem;
+      color: #6b7280;
+      text-decoration: none;
+    }
+
+    .subnav-link:hover {
+      color: #00a65a;
+    }
+
+    .portal-main {
+      flex: 1 0 auto;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 40px 16px 60px;
+    }
+
+    .portal-card {
+      background-color: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+      width: 100%;
+      max-width: 620px;
+      padding: 36px 44px;
       box-sizing: border-box;
     }
 
-    .auth-container {
-      width: 100%;
-      max-width: 360px;
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #1f2937;
+      margin: 0 0 28px 0;
+      letter-spacing: -0.2px;
+    }
+
+    .alert-box {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 4px;
+      font-size: 0.82rem;
+      margin-bottom: 20px;
+    }
+
+    .alert-box.error {
+      background-color: #fef2f2;
+      color: #b91c1c;
+      border: 1px solid #fecaca;
+    }
+
+    .alert-box.success {
+      background-color: #f0fdf4;
+      color: #15803d;
+      border: 1px solid #bbf7d0;
+    }
+
+    .alert-text {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: 4px;
     }
 
-    .auth-brand-header {
-      text-align: center;
-      margin-bottom: 0.5rem;
-    }
-
-    .brand-glyph {
-      width: 44px;
-      height: 44px;
-      margin: 0 auto 0.75rem auto;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .auth-title {
-      font-size: 1.5rem;
-      font-weight: 300;
-      color: var(--color-fg-default);
-      margin: 0;
-      letter-spacing: -0.02em;
-    }
-
-    .auth-subtitle {
-      font-size: 0.85rem;
-      color: var(--color-fg-muted);
-      margin: 0.35rem 0 0 0;
-    }
-
-    .auth-card {
-      background: var(--color-canvas-default);
-      border: 1px solid var(--color-border-default);
-      border-radius: var(--radius-md);
-      padding: 1.25rem 1.25rem;
-      box-shadow: var(--shadow-sm);
-    }
-
-    .success-card {
-      text-align: center;
-      padding: 2rem 1.5rem;
-    }
-
-    .success-icon {
-      width: 52px;
-      height: 52px;
-      background: var(--color-income-bg);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin: 0 auto 1rem auto;
-    }
-
-    .success-card h2 {
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: var(--color-fg-default);
-      margin: 0 0 0.5rem 0;
-    }
-
-    .success-card p {
-      font-size: 0.875rem;
-      color: var(--color-fg-muted);
-      margin: 0 0 1.5rem 0;
-      line-height: 1.45;
-    }
-
-    .flash-alert {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      background: var(--color-expense-bg);
-      border: 1px solid var(--color-expense-border);
-      color: var(--color-expense);
-      padding: 0.65rem 0.85rem;
-      border-radius: var(--radius-md);
-      font-size: 0.825rem;
-      margin-bottom: 1rem;
-    }
-
-    .auth-form {
+    .form-horizontal {
       display: flex;
       flex-direction: column;
-      gap: 1rem;
+      gap: 16px;
     }
 
-    .form-group {
+    .field-row {
       display: flex;
-      flex-direction: column;
-      gap: 0.35rem;
+      align-items: flex-start;
+      gap: 16px;
     }
 
     .field-label {
-      font-size: 0.875rem;
-      font-weight: 500;
-      color: var(--color-fg-default);
+      width: 130px;
+      flex-shrink: 0;
+      font-size: 0.85rem;
+      color: #374151;
+      padding-top: 8px;
+      text-align: left;
     }
 
-    .input-wrap {
-      display: flex;
-      align-items: center;
-      background: var(--color-canvas-default);
-      border: 1px solid var(--color-border-default);
-      border-radius: var(--radius-md);
-      padding: 0 0.75rem;
-      transition: all 0.15s ease;
+    .required {
+      color: #dc2626;
+      font-weight: 700;
+      margin-left: 2px;
     }
 
-    .input-wrap:focus-within {
-      border-color: var(--color-accent-fg);
-      box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.2);
-    }
-
-    .input-wrap.has-error {
-      border-color: var(--color-expense);
-    }
-
-    .primer-input {
+    .field-control {
       flex: 1;
-      border: none;
-      background: transparent;
-      outline: none;
-      padding: 0.55rem 0;
-      font-size: 0.875rem;
-      color: var(--color-fg-default);
-      font-family: inherit;
-    }
-
-    .btn-toggle-eye {
-      background: transparent;
-      border: none;
-      color: var(--color-fg-muted);
-      cursor: pointer;
-      padding: 0.25rem;
+      max-width: 380px;
       display: flex;
-      align-items: center;
-      justify-content: center;
+      flex-direction: column;
     }
 
-    .checklist-pills {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.35rem;
-      margin-top: 0.35rem;
-    }
-
-    .chk-pill {
-      font-size: 0.7rem;
-      padding: 0.15rem 0.45rem;
-      border-radius: var(--radius-sm);
-      background: var(--color-canvas-subtle);
-      color: var(--color-fg-subtle);
-      border: 1px solid var(--color-border-muted);
-      transition: all 0.15s ease;
-    }
-
-    .chk-pill.met {
-      background: var(--color-income-bg);
-      color: var(--color-income);
-      border-color: var(--color-income-border);
-      font-weight: 600;
-    }
-
-    .error-inline {
-      font-size: 0.75rem;
-      color: var(--color-expense);
-      margin-top: 0.2rem;
-    }
-
-    .btn-github-primary {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
+    .clean-input {
       width: 100%;
-      padding: 0.55rem 1rem;
-      background: var(--color-btn-primary-bg);
-      color: var(--color-btn-primary-text);
-      border: 1px solid var(--color-btn-primary-border);
-      border-radius: var(--radius-md);
-      font-size: 0.875rem;
-      font-weight: 500;
-      cursor: pointer;
-      box-shadow: var(--shadow-sm);
-      transition: background-color 0.15s ease;
-      text-decoration: none;
+      height: 38px;
+      padding: 0 12px;
+      font-size: 0.88rem;
+      color: #1f2937;
+      background-color: #ffffff;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
       box-sizing: border-box;
-      margin-top: 0.25rem;
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
     }
 
-    .btn-github-primary:hover:not(:disabled) {
-      background: var(--color-btn-primary-hover-bg);
+    .clean-input:focus {
+      border-color: #34d399;
+      outline: none;
+      box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.25);
     }
 
-    .btn-github-primary:disabled {
+    .clean-input.error-border {
+      border-color: #ef4444;
+      box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.15);
+    }
+
+    .field-error-msg {
+      font-size: 0.75rem;
+      color: #dc2626;
+      margin-top: 4px;
+    }
+
+    .password-input-wrap {
+      position: relative;
+      width: 100%;
+    }
+
+    .password-input {
+      padding-right: 38px;
+    }
+
+    .toggle-eye-btn {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      padding: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card-divider {
+      border: 0;
+      border-top: 1px solid #e5e7eb;
+      margin: 22px 0 18px 0;
+    }
+
+    .action-footer-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-left: 146px;
+    }
+
+    .btn-solid-green {
+      background-color: #00a65a;
+      color: #ffffff;
+      border: none;
+      padding: 9px 24px;
+      border-radius: 3px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      text-decoration: none;
+      cursor: pointer;
+      transition: background-color 0.15s ease, opacity 0.15s ease;
+      display: inline-block;
+    }
+
+    .btn-solid-green:hover:not(:disabled) {
+      background-color: #008d4c;
+    }
+
+    .btn-solid-green:disabled {
       opacity: 0.6;
       cursor: not-allowed;
     }
 
-    .spinner-sm {
-      width: 14px;
-      height: 14px;
-      border: 2px solid rgba(255, 255, 255, 0.4);
-      border-top-color: #ffffff;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .auth-callout-card {
-      background: var(--color-canvas-subtle);
-      border: 1px solid var(--color-border-default);
-      border-radius: var(--radius-md);
-      padding: 0.85rem 1rem;
-      text-align: center;
-      font-size: 0.875rem;
-      color: var(--color-fg-default);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.4rem;
-    }
-
-    .primer-link {
-      color: var(--color-accent-fg);
+    .btn-outline-cancel {
+      background-color: #ffffff;
+      color: #4b5563;
+      border: 1px solid #d1d5db;
+      padding: 8px 18px;
+      border-radius: 3px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
       text-decoration: none;
-      font-weight: 500;
+      cursor: pointer;
     }
 
-    .primer-link:hover {
-      text-decoration: underline;
+    .btn-outline-cancel:hover {
+      background-color: #f9fafb;
+      border-color: #9ca3af;
+      color: #111827;
     }
 
-    .auth-footer-nav {
+    .portal-footer {
+      background-color: #102a43;
+      color: #cbd5e1;
+      padding: 16px 40px;
+      flex-shrink: 0;
+    }
+
+    .portal-footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 1rem;
-      margin-top: 1rem;
-      font-size: 0.75rem;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
     }
 
-    .auth-footer-nav a {
-      color: var(--color-fg-muted);
+    .footer-links {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.8rem;
+    }
+
+    .footer-link {
+      color: #cbd5e1;
       text-decoration: none;
     }
 
-    .auth-footer-nav a:hover {
-      color: var(--color-accent-fg);
+    .footer-link:hover {
+      color: #ffffff;
       text-decoration: underline;
+    }
+
+    .footer-sep {
+      color: #64748b;
+    }
+
+    .footer-copyright {
+      font-size: 0.78rem;
+      color: #94a3b8;
+    }
+
+    @media (max-width: 768px) {
+      .portal-header {
+        padding: 12px 16px 8px;
+      }
+
+      .portal-card {
+        padding: 24px 20px;
+      }
+
+      .field-row {
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .field-label {
+        width: 100%;
+        padding-top: 0;
+      }
+
+      .field-control {
+        max-width: 100%;
+      }
+
+      .action-footer-row {
+        margin-left: 0;
+      }
+
+      .portal-footer {
+        padding: 16px;
+      }
+
+      .portal-footer-inner {
+        flex-direction: column;
+        align-items: flex-start;
+      }
     }
   `]
 })
 export class ResetPasswordComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
-  private readonly route = inject(ActivatedRoute);
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   readonly resetForm = this.fb.group({
     password: ['', [Validators.required, Validators.minLength(8)]],
     confirmPassword: ['', [Validators.required]]
   });
 
-  readonly targetEmail = signal<string>('');
-  readonly resetToken = signal<string>('');
   readonly showPassword = signal<boolean>(false);
   readonly isLoading = signal<boolean>(false);
   readonly errorMessage = signal<string | null>(null);
   readonly successMessage = signal<string | null>(null);
+  readonly targetEmail = signal<string>('your account');
 
-  // Password Checklist
-  readonly hasMinLength = signal<boolean>(false);
-  readonly hasUpper = signal<boolean>(false);
-  readonly hasLower = signal<boolean>(false);
-  readonly hasDigit = signal<boolean>(false);
-  readonly hasSpecial = signal<boolean>(false);
+  private resetToken: string = '';
 
   ngOnInit(): void {
-    this.route.queryParams.subscribe(params => {
-      const email = params['email'] || '';
-      const token = params['token'] || '';
-
-      this.targetEmail.set(email);
-      this.resetToken.set(token);
-
-      if (!token) {
-        this.errorMessage.set('Reset link is missing a valid token. Please request a new link from the Sign In page.');
-      }
-    });
+    this.resetToken = this.route.snapshot.queryParams['token'] || '';
+    const emailParam = this.route.snapshot.queryParams['email'];
+    if (emailParam) this.targetEmail.set(emailParam);
   }
 
   togglePasswordVisibility(): void {
     this.showPassword.update(v => !v);
   }
 
-  updatePasswordChecks(): void {
-    const pw = this.resetForm.get('password')?.value || '';
-    this.hasMinLength.set(pw.length >= 8);
-    this.hasUpper.set(/[A-Z]/.test(pw));
-    this.hasLower.set(/[a-z]/.test(pw));
-    this.hasDigit.set(/[0-9]/.test(pw));
-    this.hasSpecial.set(/[\W_]/.test(pw));
-  }
+  updatePasswordChecks(): void {}
 
   isFieldInvalid(fieldName: 'password' | 'confirmPassword'): boolean {
     const field = this.resetForm.get(fieldName);
@@ -485,12 +616,12 @@ export class ResetPasswordComponent implements OnInit {
 
   isMismatch(): boolean {
     const pw = this.resetForm.get('password')?.value;
-    const confirm = this.resetForm.get('confirmPassword')?.value;
-    return !!(confirm && pw !== confirm);
+    const cpw = this.resetForm.get('confirmPassword')?.value;
+    return !!(pw && cpw && pw !== cpw);
   }
 
   onSubmit(): void {
-    if (this.resetForm.invalid || this.isMismatch() || !this.resetToken()) {
+    if (this.resetForm.invalid || this.isMismatch()) {
       this.resetForm.markAllAsTouched();
       return;
     }
@@ -502,19 +633,18 @@ export class ResetPasswordComponent implements OnInit {
 
     this.authService.resetPassword({
       email: this.targetEmail(),
-      token: this.resetToken(),
-      newPassword
+      token: this.resetToken,
+      newPassword: newPassword
     }).subscribe({
-      next: (res) => {
+      next: () => {
         this.isLoading.set(false);
-        this.successMessage.set(res.message || 'Your password has been reset successfully.');
+        this.successMessage.set('Your password has been reset successfully. You can now log in.');
       },
       error: (err) => {
         this.isLoading.set(false);
-        const detail = err.error?.errors?.[0] || err.error?.message || 'Invalid or expired password reset link. Please request a new one.';
+        const detail = err.error?.errors?.[0] || err.error?.detail || err.error?.message || 'Invalid or expired password reset link.';
         this.errorMessage.set(detail);
       }
     });
   }
 }
-
