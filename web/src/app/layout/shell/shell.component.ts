@@ -39,14 +39,15 @@ interface CommandItem {
         <div class="sidebar-brand">
           <a routerLink="/dashboard" class="brand-link" title="Hisaab Dashboard">
             <div class="brand-logo">
-              <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
-                <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" fill="#0b57d0"/>
-                <path d="M12 6v12M16 9h-5.5a2.5 2.5 0 0 0 0 5h5a2.5 2.5 0 0 1 0 5H8" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round"/>
+              <svg viewBox="0 0 32 32" width="26" height="26" fill="none">
+                <circle cx="16" cy="16" r="14" fill="#00a65a" />
+                <path d="M16 6L18 12L24 10L20 15L25 18L19 20L20 26L16 22L12 26L13 20L7 18L12 15L8 10L14 12Z" fill="#ffffff" />
+                <circle cx="16" cy="16" r="3.5" fill="#00a65a" />
               </svg>
             </div>
             <div class="brand-info">
               <span class="brand-title">Hisaab</span>
-              <span class="brand-tagline">Personal Finance</span>
+              <span class="brand-tagline">Enterprise Suite</span>
             </div>
           </a>
           <button
@@ -222,8 +223,10 @@ interface CommandItem {
 
             <div class="header-brand-mobile">
               <div class="brand-logo sm">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                <svg viewBox="0 0 32 32" width="22" height="22" fill="none">
+                  <circle cx="16" cy="16" r="14" fill="#00a65a" />
+                  <path d="M16 6L18 12L24 10L20 15L25 18L19 20L20 26L16 22L12 26L13 20L7 18L12 15L8 10L14 12Z" fill="#ffffff" />
+                  <circle cx="16" cy="16" r="3.5" fill="#00a65a" />
                 </svg>
               </div>
               <span class="mobile-app-name">Hisaab</span>
@@ -1448,8 +1451,8 @@ interface CommandItem {
         }
 
         &.active {
-          background: var(--color-nav-active-bg, rgba(11, 87, 208, 0.09));
-          color: var(--color-nav-active-fg, var(--color-primary));
+          background: var(--color-nav-active-bg, #ecfdf5);
+          color: var(--color-nav-active-fg, #00a65a);
           font-weight: 600;
 
           &::before {
@@ -1459,13 +1462,13 @@ interface CommandItem {
             top: 7px;
             bottom: 7px;
             width: 3.5px;
-            background: var(--color-nav-active-icon, var(--color-primary));
+            background: var(--color-nav-active-icon, #00a65a);
             border-radius: 0 3px 3px 0;
           }
 
           .nav-icon {
-            color: var(--color-nav-active-icon, var(--color-primary));
-            stroke: var(--color-nav-active-icon, var(--color-primary));
+            color: var(--color-nav-active-icon, #00a65a);
+            stroke: var(--color-nav-active-icon, #00a65a);
           }
         }
 

@@ -4,115 +4,115 @@
    ========================================================================== */
 
 :root {
-  /* Typography - Google Sans & Roboto Font Stack */
-  --font-family-base: 'Plus Jakarta Sans', 'Google Sans', 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
-  --font-family-google: 'Plus Jakarta Sans', 'Google Sans', 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  /* Typography - Modern Crisp Sans & Monospace Font Stack */
+  --font-family-base: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-family-google: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-family-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 
-  /* Google Play Console Light Palette */
+  /* Modern Clean Enterprise Palette (Matches Login Portal) */
   --color-canvas-default: #ffffff;
-  --color-canvas-subtle: #f8fafd;
-  --color-canvas-surface: #f0f4f9;
-  --color-border-default: #e0e2e5;
-  --color-border-muted: #e7eaed;
-  --color-border-subtle: #f1f3f4;
-  --color-fg-default: #1f1f1f;
-  --color-fg-muted: #444746;
-  --color-fg-subtle: #5f6368;
-  --color-fg-disabled: #8e918f;
+  --color-canvas-subtle: #f1f5f8;
+  --color-canvas-surface: #f8fafc;
+  --color-border-default: #e2e8f0;
+  --color-border-muted: #e5e7eb;
+  --color-border-subtle: #f1f5f9;
+  --color-fg-default: #1f2937;
+  --color-fg-muted: #4b5563;
+  --color-fg-subtle: #6b7280;
+  --color-fg-disabled: #9ca3af;
 
-  /* Google Brand Blue & Accent Tokens */
-  --color-accent-fg: #0b57d0;
-  --color-accent-emphasis: #0b57d0;
-  --color-accent-subtle: #d3e3fd;
-  --color-accent-hover: #0842a0;
+  /* Brand Emerald Green & Accent Tokens */
+  --color-accent-fg: #00a65a;
+  --color-accent-emphasis: #008d4c;
+  --color-accent-subtle: #ecfdf5;
+  --color-accent-hover: #008d4c;
 
-  /* Google Play Console Nav Active State (Material 3 Soft Pill) */
-  --color-nav-active-bg: #d3e3fd;
-  --color-nav-active-fg: #041e49;
-  --color-nav-active-icon: #0b57d0;
-  --color-nav-hover-bg: #f1f3f4;
-  --color-nav-hover-fg: #1f1f1f;
+  /* Nav Active State (Compact Clean Pill) */
+  --color-nav-active-bg: #ecfdf5;
+  --color-nav-active-fg: #00a65a;
+  --color-nav-active-icon: #00a65a;
+  --color-nav-hover-bg: #f1f5f9;
+  --color-nav-hover-fg: #111827;
   --color-sidebar-bg: #ffffff;
-  --color-sidebar-border: #e0e2e5;
+  --color-sidebar-border: #e2e8f0;
 
-  /* Google Button System Tokens (Light) */
-  --color-btn-text: #0b57d0;
+  /* Button System Tokens */
+  --color-btn-text: #374151;
   --color-btn-bg: #ffffff;
-  --color-btn-border: #747775;
-  --color-btn-hover-bg: #f1f3f4;
-  --color-btn-hover-border: #747775;
-  --color-btn-active-bg: #e1e3e1;
+  --color-btn-border: #d1d5db;
+  --color-btn-hover-bg: #f9fafb;
+  --color-btn-hover-border: #9ca3af;
+  --color-btn-active-bg: #f3f4f6;
 
   --color-btn-primary-text: #ffffff;
-  --color-btn-primary-bg: #0b57d0;
-  --color-btn-primary-border: #0b57d0;
-  --color-btn-primary-hover-bg: #0842a0;
+  --color-btn-primary-bg: #00a65a;
+  --color-btn-primary-border: #00a65a;
+  --color-btn-primary-hover-bg: #008d4c;
 
-  --color-btn-danger-text: #c5221f;
-  --color-btn-danger-bg: #fce8e6;
-  --color-btn-danger-border: #fad2cf;
-  --color-btn-danger-hover-bg: #c5221f;
+  --color-btn-danger-text: #dc2626;
+  --color-btn-danger-bg: #fef2f2;
+  --color-btn-danger-border: #fecaca;
+  --color-btn-danger-hover-bg: #dc2626;
   --color-btn-danger-hover-text: #ffffff;
 
-  /* Notifications Salmon Pill */
-  --color-notif-bg: #fce8e6;
-  --color-notif-fg: #c5221f;
+  /* Notifications Pill */
+  --color-notif-bg: #fef2f2;
+  --color-notif-fg: #dc2626;
 
-  /* Semantic Financial Colors (Google Play Material Standards) */
-  --color-income: #137333;
-  --color-income-bg: #e6f4ea;
-  --color-income-border: #ceead6;
-  --color-expense: #c5221f;
-  --color-expense-bg: #fce8e6;
-  --color-expense-border: #fad2cf;
-  --color-loan: #b06000;
-  --color-loan-bg: #fef7e0;
-  --color-loan-border: #feefc3;
-  --color-investment: #0b57d0;
-  --color-investment-bg: #d3e3fd;
-  --color-investment-border: #a8c7fa;
-  --color-epf: #007b83;
-  --color-epf-bg: #e0f2f1;
-  --color-epf-border: #b2dfdb;
+  /* Semantic Financial Colors */
+  --color-income: #00a65a;
+  --color-income-bg: #ecfdf5;
+  --color-income-border: #a7f3d0;
+  --color-expense: #dc2626;
+  --color-expense-bg: #fef2f2;
+  --color-expense-border: #fecaca;
+  --color-loan: #d97706;
+  --color-loan-bg: #fffbeb;
+  --color-loan-border: #fde68a;
+  --color-investment: #2563eb;
+  --color-investment-bg: #eff6ff;
+  --color-investment-border: #bfdbfe;
+  --color-epf: #0d9488;
+  --color-epf-bg: #f0fdfa;
+  --color-epf-border: #99f6e4;
 
   /* Universal App Surface Tokens */
-  --color-bg-app: #ffffff;
+  --color-bg-app: #f1f5f8;
   --color-bg-card: #ffffff;
-  --color-bg-subtle: #f8fafd;
-  --color-bg-hover: #f1f3f4;
-  --color-border: #e0e2e5;
-  --color-border-subtle: #f1f3f4;
-  --color-text-main: #1f1f1f;
-  --color-text-secondary: #444746;
-  --color-text-muted: #5f6368;
-  --color-text-subtle: #747775;
-  --color-primary: #0b57d0;
-  --color-primary-hover: #0842a0;
-  --color-primary-active: #041e49;
-  --color-primary-light: #d3e3fd;
+  --color-bg-subtle: #f1f5f8;
+  --color-bg-hover: #f1f5f9;
+  --color-border: #e2e8f0;
+  --color-border-subtle: #f1f5f9;
+  --color-text-main: #1f2937;
+  --color-text-secondary: #4b5563;
+  --color-text-muted: #6b7280;
+  --color-text-subtle: #9ca3af;
+  --color-primary: #00a65a;
+  --color-primary-hover: #008d4c;
+  --color-primary-active: #00733e;
+  --color-primary-light: #ecfdf5;
   --color-primary-contrast: #ffffff;
 
-  /* Google Play Console Shadows & Pill Radii */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
-  --radius-xs: 4px;
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-pill: 9999px;
+  /* Compact Clean Shadows & Corner Radii */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 1px 4px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.08);
+  --radius-xs: 3px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-pill: 6px;
   --radius-full: 9999px;
-  --min-touch-target: 40px;
+  --min-touch-target: 36px;
 
   /* Legacy Aliases */
   --bg-surface: #ffffff;
-  --color-bg-main: #ffffff;
-  --text-primary: #1f1f1f;
-  --text-secondary: #444746;
-  --border-color: #e0e2e5;
-  --primary: #0b57d0;
-  --primary-hover: #0842a0;
+  --color-bg-main: #f1f5f8;
+  --text-primary: #1f2937;
+  --text-secondary: #4b5563;
+  --border-color: #e2e8f0;
+  --primary: #00a65a;
+  --primary-hover: #008d4c;
 }
 
 /* Theme 1: Light / GitHub Primer Light (Default) */
@@ -1517,7 +1517,7 @@ button.btn-retry {
 
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 3px rgba(11, 87, 208, 0.25);
+    box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.35);
   }
 
   &:disabled, &[disabled] {
@@ -1535,12 +1535,12 @@ button.btn-retry {
   color: #ffffff !important;
   background-color: var(--color-btn-primary-bg) !important;
   border-color: var(--color-btn-primary-border) !important;
-  box-shadow: 0 1px 2px rgba(11, 87, 208, 0.2);
+  box-shadow: 0 1px 2px rgba(0, 166, 90, 0.2);
 
   &:hover:not(:disabled) {
     background-color: var(--color-btn-primary-hover-bg) !important;
     border-color: var(--color-btn-primary-hover-bg) !important;
-    box-shadow: 0 2px 4px rgba(11, 87, 208, 0.3);
+    box-shadow: 0 2px 4px rgba(0, 166, 90, 0.3);
   }
 }
 
@@ -1643,8 +1643,8 @@ button.btn-retry {
 
   &:focus {
     outline: none;
-    border-color: var(--color-accent-fg);
-    box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.3);
+    border-color: #34d399;
+    box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.25);
   }
 
   &:disabled {
@@ -1692,7 +1692,7 @@ button.btn-retry {
   background-color: var(--color-bg-card);
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-md);
-  box-shadow: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 /* Primer Labels & Badges */
@@ -1802,32 +1802,33 @@ table.txn-table {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
-  font-size: 13px;
+  font-size: 12.5px;
 
   thead th {
-    background-color: var(--color-canvas-default);
-    color: var(--color-fg-muted);
-    font-size: 12px;
-    font-weight: 500;
-    padding: 12px 16px;
-    border-bottom: 1px solid var(--color-border-default);
+    background-color: var(--color-canvas-surface, #f8fafc);
+    color: var(--color-fg-muted, #4b5563);
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--color-border-default, #e2e8f0);
     white-space: nowrap;
-    text-transform: capitalize;
+    text-transform: uppercase;
   }
 
   tbody tr {
     transition: background-color 0.12s ease;
 
     &:hover {
-      background-color: var(--color-canvas-subtle);
+      background-color: var(--color-bg-hover, #f1f5f9);
     }
 
     td {
-      padding: 14px 16px;
-      color: var(--color-fg-default);
-      border-bottom: 1px solid var(--color-border-subtle);
+      padding: 8px 12px;
+      color: var(--color-fg-default, #1f2937);
+      border-bottom: 1px solid var(--color-border-subtle, #edf2f7);
       vertical-align: middle;
-      font-size: 13px;
+      font-size: 12.5px;
     }
   }
 }

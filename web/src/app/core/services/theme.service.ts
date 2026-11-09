@@ -84,8 +84,8 @@ export class ThemeService {
   // Sidebar position state
   readonly sidebarPosition = signal<SidebarPosition>('left');
 
-  // Data density state
-  readonly density = signal<DensityMode>('comfortable');
+  // Data density state (Default: Compact picture-perfect enterprise layout)
+  readonly density = signal<DensityMode>('compact');
 
   // Privacy Eye mode state (Mask amounts in public)
   readonly privacyMode = signal<boolean>(false);
