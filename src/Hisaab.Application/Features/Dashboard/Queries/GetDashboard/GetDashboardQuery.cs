@@ -44,6 +44,7 @@ public class GetDashboardQueryHandler : IRequestHandler<GetDashboardQuery, Resul
         DateTime selectedStartUtc;
         DateTime selectedEndUtc;
         string targetPeriodLabel;
+        string targetMonthCode = "";
 
         switch (period)
         {
@@ -109,6 +110,7 @@ public class GetDashboardQueryHandler : IRequestHandler<GetDashboardQuery, Resul
                 }
                 selectedEndUtc = selectedStartUtc.AddMonths(1);
                 targetPeriodLabel = selectedStartUtc.ToString("MMMM yyyy", CultureInfo.InvariantCulture);
+                targetMonthCode = targetMonthStr;
                 break;
         }
 
@@ -125,7 +127,7 @@ public class GetDashboardQueryHandler : IRequestHandler<GetDashboardQuery, Resul
         var savingsRate = periodIncome > 0 ? Math.Round((netSavings / periodIncome) * 100m, 2) : 0m;
 
         var monthlyOverview = new MonthlyOverviewDto(
-            targetPeriodLabel,
+            !string.IsNullOrEmpty(targetMonthCode) ? targetMonthCode : targetPeriodLabel,
             periodIncome,
             new Money(periodIncome).ToIndianFormat(),
             periodExpense,

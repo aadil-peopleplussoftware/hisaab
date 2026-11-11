@@ -36,7 +36,6 @@ public class GetEpfEntriesQueryHandler : IRequestHandler<GetEpfEntriesQuery, Epf
         var allEntries = await _context.EpfEntries
             .Where(e => e.UserId == currentUserId)
             .OrderBy(e => e.Month)
-            .ThenByDescending(e => e.EmployeeShare)
             .ThenBy(e => e.CreatedAtUtc)
             .ToListAsync(cancellationToken);
 

@@ -103,6 +103,11 @@ interface CommandItem {
             </a>
           }
 
+          <a routerLink="/khata" routerLinkActive="active" class="nav-item" title="Local Khata (लेन-देन)">
+            <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'khata' }" />
+            <span class="nav-label">Local Khata</span>
+          </a>
+
           @if (roleRightsService.canView('Goals')) {
             <a routerLink="/goals" routerLinkActive="active" class="nav-item" title="Dreams & Goals">
               <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'goals' }" />
@@ -730,6 +735,11 @@ interface CommandItem {
                 </a>
               }
 
+              <a routerLink="/khata" (click)="closeMobileMenu()" class="drawer-link">
+                <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'khata' }" />
+                <span>Local Khata (लेन-देन)</span>
+              </a>
+
               @if (roleRightsService.canView('Goals')) {
                 <a routerLink="/goals" (click)="closeMobileMenu()" class="drawer-link">
                   <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'goals' }" />
@@ -892,6 +902,9 @@ interface CommandItem {
                 @case ('loans') {
                   <path d="M12 2a1 1 0 0 1 1 1v1.07A7.002 7.002 0 0 1 19 11v1h2a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1h-2.14A7.003 7.003 0 0 1 13 20.93V22a1 1 0 1 1-2 0v-1.07A7.002 7.002 0 0 1 5 16H3a1 1 0 0 1-1-1v-2a1 1 0 0 1 1-1h2v-1a7.002 7.002 0 0 1 6-6.93V3a1 1 0 0 1 1-1zm0 4a5 5 0 1 0 0 10 5 5 0 0 0 0-10z" />
                 }
+                @case ('khata') {
+                  <path d="M4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm16-4H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12z" />
+                }
                 @case ('goals') {
                   <path d="M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2zm0 16a6 6 0 1 1 6-6 6.006 6.006 0 0 1-6 6zm0-8a2 2 0 1 0 2 2 2 2 0 0 0-2-2z" />
                 }
@@ -950,6 +963,10 @@ interface CommandItem {
                   @case ('loans') {
                     <circle cx="12" cy="12" r="9" fill="currentColor" fill-opacity="0.2" />
                     <path d="M12 7v10M9 9h6" />
+                  }
+                  @case ('khata') {
+                    <rect width="16" height="20" x="4" y="2" rx="2" fill="currentColor" fill-opacity="0.2" />
+                    <path d="M8 7h8M8 12h8M8 17h5" />
                   }
                   @case ('goals') {
                     <circle cx="12" cy="12" r="9" fill="currentColor" fill-opacity="0.2" />
@@ -1034,6 +1051,12 @@ interface CommandItem {
                   <line x1="12" y1="8" x2="12" y2="16" />
                   <line x1="9" y1="10" x2="15" y2="10" />
                 }
+                @case ('khata') {
+                  <rect width="16" height="20" x="4" y="2" rx="2" />
+                  <line x1="8" y1="7" x2="16" y2="7" />
+                  <line x1="8" y1="12" x2="16" y2="12" />
+                  <line x1="8" y1="17" x2="13" y2="17" />
+                }
                 @case ('goals') {
                   <circle cx="12" cy="12" r="9" />
                   <circle cx="12" cy="12" r="5" />
@@ -1110,6 +1133,12 @@ interface CommandItem {
                   <path d="M7 21h10" />
                   <path d="M12 3v18" />
                   <path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2" />
+                }
+                @case ('khata') {
+                  <path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H20v20H6.5a2.5 2.5 0 0 1-2.5-2.5Z" />
+                  <path d="M6 6h10" />
+                  <path d="M6 10h10" />
+                  <path d="M6 14h6" />
                 }
                 @case ('goals') {
                   <circle cx="12" cy="12" r="9" />
@@ -1869,10 +1898,10 @@ interface CommandItem {
 
       .page-content {
         flex: 1;
-        padding: 1.5rem;
-        max-width: 1400px;
+        padding: 1.25rem 1.5rem;
+        max-width: 100%;
         width: 100%;
-        margin: 0 auto;
+        box-sizing: border-box;
       }
 
       /* Customizer Drawer Slide-Over */
@@ -2608,6 +2637,12 @@ export class ShellComponent implements OnInit {
       title: 'Go to Loans Given & Taken',
       category: 'Navigation',
       action: () => this.router.navigate(['/loans'])
+    },
+    {
+      id: 'goto-khata',
+      title: 'Go to Local Khata (कच्चा/पक्का लेन-देन व शॉपिंग)',
+      category: 'Navigation',
+      action: () => this.router.navigate(['/khata'])
     },
     {
       id: 'goto-epfo',

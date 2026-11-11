@@ -463,6 +463,147 @@ using (var scope = app.Services.CreateScope())
 
             CREATE INDEX IF NOT EXISTS ""IX_export_archives_UserId_CreatedAtUtc"" ON export_archives (""UserId"", ""CreatedAtUtc"");
             CREATE INDEX IF NOT EXISTS ""IX_export_archives_UserId_Module"" ON export_archives (""UserId"", ""Module"");
+
+            -- Local Khata Parties Table
+            CREATE TABLE IF NOT EXISTS local_khata_parties (
+                ""Id"" uuid NOT NULL,
+                ""UserId"" uuid NOT NULL,
+                ""Name"" character varying(200) NOT NULL,
+                ""Phone"" character varying(50),
+                ""Type"" character varying(50) NOT NULL DEFAULT 'Payable',
+                ""Category"" character varying(100),
+                ""Notes"" character varying(1000),
+                ""IsSettled"" boolean NOT NULL DEFAULT false,
+                ""IsArchived"" boolean NOT NULL DEFAULT false,
+                ""CreatedAtUtc"" timestamp with time zone NOT NULL,
+                ""UpdatedAtUtc"" timestamp with time zone,
+                ""CreatedBy"" uuid,
+                ""UpdatedBy"" uuid,
+                ""RowVersion"" bigint NOT NULL DEFAULT 0,
+                ""IsDeleted"" boolean NOT NULL DEFAULT false,
+                ""DeletedAtUtc"" timestamp with time zone,
+                ""DeletedBy"" uuid,
+                ""ImportBatchId"" uuid,
+                CONSTRAINT ""PK_local_khata_parties"" PRIMARY KEY (""Id"")
+            );
+            CREATE INDEX IF NOT EXISTS ""IX_local_khata_parties_UserId_Name"" ON local_khata_parties (""UserId"", ""Name"");
+            CREATE INDEX IF NOT EXISTS ""IX_local_khata_parties_UserId_IsSettled"" ON local_khata_parties (""UserId"", ""IsSettled"");
+
+            -- Local Khata Entries Table
+            CREATE TABLE IF NOT EXISTS local_khata_entries (
+                ""Id"" uuid NOT NULL,
+                ""UserId"" uuid NOT NULL,
+                ""PartyId"" uuid NOT NULL,
+                ""EntryType"" character varying(20) NOT NULL DEFAULT 'OUT',
+                ""Amount"" numeric(18,2) NOT NULL,
+                ""Date"" timestamp with time zone NOT NULL,
+                ""Category"" character varying(100),
+                ""Remark"" character varying(500),
+                ""PaymentMode"" character varying(50),
+                ""CreatedAtUtc"" timestamp with time zone NOT NULL,
+                ""UpdatedAtUtc"" timestamp with time zone,
+                ""CreatedBy"" uuid,
+                ""UpdatedBy"" uuid,
+                ""RowVersion"" bigint NOT NULL DEFAULT 0,
+                ""IsDeleted"" boolean NOT NULL DEFAULT false,
+                ""DeletedAtUtc"" timestamp with time zone,
+                ""DeletedBy"" uuid,
+                ""ImportBatchId"" uuid,
+                CONSTRAINT ""PK_local_khata_entries"" PRIMARY KEY (""Id""),
+                CONSTRAINT ""FK_local_khata_entries_parties"" FOREIGN KEY (""PartyId"") REFERENCES local_khata_parties (""Id"") ON DELETE CASCADE
+            );
+            CREATE INDEX IF NOT EXISTS ""IX_local_khata_entries_UserId_PartyId"" ON local_khata_entries (""UserId"", ""PartyId"");
+            CREATE INDEX IF NOT EXISTS ""IX_local_khata_entries_UserId_Date"" ON local_khata_entries (""UserId"", ""Date"");
+
+            -- Khata Liquidity Accounts Table
+            CREATE TABLE IF NOT EXISTS khata_liquidity_accounts (
+                ""Id"" uuid NOT NULL,
+                ""UserId"" uuid NOT NULL,
+                ""AccountName"" character varying(150) NOT NULL,
+                ""AccountType"" character varying(50) NOT NULL DEFAULT 'Bank',
+                ""Balance"" numeric(18,2) NOT NULL DEFAULT 0,
+                ""Notes"" character varying(500),
+                ""SortOrder"" integer NOT NULL DEFAULT 0,
+                ""CreatedAtUtc"" timestamp with time zone NOT NULL,
+                ""UpdatedAtUtc"" timestamp with time zone,
+                ""CreatedBy"" uuid,
+                ""UpdatedBy"" uuid,
+                ""RowVersion"" bigint NOT NULL DEFAULT 0,
+                ""IsDeleted"" boolean NOT NULL DEFAULT false,
+                ""DeletedAtUtc"" timestamp with time zone,
+                ""DeletedBy"" uuid,
+                ""ImportBatchId"" uuid,
+                CONSTRAINT ""PK_khata_liquidity_accounts"" PRIMARY KEY (""Id"")
+            );
+            CREATE INDEX IF NOT EXISTS ""IX_khata_liquidity_accounts_UserId"" ON khata_liquidity_accounts (""UserId"");
+
+            -- Khata Events Table (Group Kharcha / Shopping)
+            CREATE TABLE IF NOT EXISTS khata_events (
+                ""Id"" uuid NOT NULL,
+                ""UserId"" uuid NOT NULL,
+                ""Title"" character varying(200) NOT NULL,
+                ""Date"" timestamp with time zone NOT NULL,
+                ""Notes"" character varying(1000),
+                ""Status"" character varying(50) NOT NULL DEFAULT 'Active',
+                ""CreatedAtUtc"" timestamp with time zone NOT NULL,
+                ""UpdatedAtUtc"" timestamp with time zone,
+                ""CreatedBy"" uuid,
+                ""UpdatedBy"" uuid,
+                ""RowVersion"" bigint NOT NULL DEFAULT 0,
+                ""IsDeleted"" boolean NOT NULL DEFAULT false,
+                ""DeletedAtUtc"" timestamp with time zone,
+                ""DeletedBy"" uuid,
+                ""ImportBatchId"" uuid,
+                CONSTRAINT ""PK_khata_events"" PRIMARY KEY (""Id"")
+            );
+            CREATE INDEX IF NOT EXISTS ""IX_khata_events_UserId_Date"" ON khata_events (""UserId"", ""Date"");
+
+            -- Khata Event Funds Table
+            CREATE TABLE IF NOT EXISTS khata_event_funds (
+                ""Id"" uuid NOT NULL,
+                ""UserId"" uuid NOT NULL,
+                ""EventId"" uuid NOT NULL,
+                ""ContributorName"" character varying(150) NOT NULL,
+                ""Amount"" numeric(18,2) NOT NULL,
+                ""Date"" timestamp with time zone NOT NULL,
+                ""Notes"" character varying(500),
+                ""CreatedAtUtc"" timestamp with time zone NOT NULL,
+                ""UpdatedAtUtc"" timestamp with time zone,
+                ""CreatedBy"" uuid,
+                ""UpdatedBy"" uuid,
+                ""RowVersion"" bigint NOT NULL DEFAULT 0,
+                ""IsDeleted"" boolean NOT NULL DEFAULT false,
+                ""DeletedAtUtc"" timestamp with time zone,
+                ""DeletedBy"" uuid,
+                ""ImportBatchId"" uuid,
+                CONSTRAINT ""PK_khata_event_funds"" PRIMARY KEY (""Id""),
+                CONSTRAINT ""FK_khata_event_funds_events"" FOREIGN KEY (""EventId"") REFERENCES khata_events (""Id"") ON DELETE CASCADE
+            );
+            CREATE INDEX IF NOT EXISTS ""IX_khata_event_funds_UserId_EventId"" ON khata_event_funds (""UserId"", ""EventId"");
+
+            -- Khata Event Items Table
+            CREATE TABLE IF NOT EXISTS khata_event_items (
+                ""Id"" uuid NOT NULL,
+                ""UserId"" uuid NOT NULL,
+                ""EventId"" uuid NOT NULL,
+                ""ItemType"" character varying(50) NOT NULL DEFAULT 'Shopping',
+                ""Description"" character varying(250) NOT NULL,
+                ""Amount"" numeric(18,2) NOT NULL,
+                ""Beneficiary"" character varying(150),
+                ""Date"" timestamp with time zone NOT NULL,
+                ""CreatedAtUtc"" timestamp with time zone NOT NULL,
+                ""UpdatedAtUtc"" timestamp with time zone,
+                ""CreatedBy"" uuid,
+                ""UpdatedBy"" uuid,
+                ""RowVersion"" bigint NOT NULL DEFAULT 0,
+                ""IsDeleted"" boolean NOT NULL DEFAULT false,
+                ""DeletedAtUtc"" timestamp with time zone,
+                ""DeletedBy"" uuid,
+                ""ImportBatchId"" uuid,
+                CONSTRAINT ""PK_khata_event_items"" PRIMARY KEY (""Id""),
+                CONSTRAINT ""FK_khata_event_items_events"" FOREIGN KEY (""EventId"") REFERENCES khata_events (""Id"") ON DELETE CASCADE
+            );
+            CREATE INDEX IF NOT EXISTS ""IX_khata_event_items_UserId_EventId"" ON khata_event_items (""UserId"", ""EventId"");
         ");
     }
     catch

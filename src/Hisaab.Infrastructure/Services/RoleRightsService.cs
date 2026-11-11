@@ -18,6 +18,7 @@ public class RoleRightsService : IRoleRightsService
         ("Dashboard", "Dashboard", "Overview dashboard, quick balance stats, and financial health summary"),
         ("Analytics", "KPI Analytics", "Visual financial charts, net worth trends, and KPI analytics"),
         ("Transactions", "Transactions", "Manage daily income, expense entries, and account balances"),
+        ("Khata", "Local Khata (लेन-देन)", "Manage local borrower/lender ledgers, IN/OUT passbooks, and group shopping expenses"),
         ("Business", "Business", "Manage client invoices, tax rates, GST, and counterparty ledgers"),
         ("Loans", "Loans", "Track lent/borrowed balances, interest, and EMI payment schedules"),
         ("Goals", "Dreams & Goals", "Track savings targets, life milestones, and recurring contributions"),

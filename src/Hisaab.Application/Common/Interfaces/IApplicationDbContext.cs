@@ -30,6 +30,12 @@ public interface IApplicationDbContext
     DbSet<RoleRight> RoleRights { get; }
     DbSet<TradeOrder> TradeOrders { get; }
     DbSet<IpoApplication> IpoApplications { get; }
+    DbSet<LocalKhataParty> LocalKhataParties { get; }
+    DbSet<LocalKhataEntry> LocalKhataEntries { get; }
+    DbSet<KhataLiquidityAccount> KhataLiquidityAccounts { get; }
+    DbSet<KhataEvent> KhataEvents { get; }
+    DbSet<KhataEventFund> KhataEventFunds { get; }
+    DbSet<KhataEventItem> KhataEventItems { get; }
 
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

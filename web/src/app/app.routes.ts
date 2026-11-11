@@ -59,6 +59,12 @@ export const routes: Routes = [
         loadComponent: () => import('./features/loans/loans.component').then(m => m.LoansComponent)
       },
       {
+        path: 'khata',
+        canActivate: [authGuard],
+        data: { module: 'Khata' },
+        loadComponent: () => import('./features/khata/khata.component').then(m => m.KhataComponent)
+      },
+      {
         path: 'loans/:id',
         canActivate: [authGuard, roleRightsGuard],
         data: { module: 'Loans' },

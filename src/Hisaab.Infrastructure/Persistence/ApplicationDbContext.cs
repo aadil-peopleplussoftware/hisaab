@@ -40,6 +40,12 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
     public DbSet<RoleRight> RoleRights => Set<RoleRight>();
     public DbSet<TradeOrder> TradeOrders => Set<TradeOrder>();
     public DbSet<IpoApplication> IpoApplications => Set<IpoApplication>();
+    public DbSet<LocalKhataParty> LocalKhataParties => Set<LocalKhataParty>();
+    public DbSet<LocalKhataEntry> LocalKhataEntries => Set<LocalKhataEntry>();
+    public DbSet<KhataLiquidityAccount> KhataLiquidityAccounts => Set<KhataLiquidityAccount>();
+    public DbSet<KhataEvent> KhataEvents => Set<KhataEvent>();
+    public DbSet<KhataEventFund> KhataEventFunds => Set<KhataEventFund>();
+    public DbSet<KhataEventItem> KhataEventItems => Set<KhataEventItem>();
 
     public ApplicationDbContext(
         DbContextOptions<ApplicationDbContext> options,
@@ -112,6 +118,53 @@ public class ApplicationDbContext : IdentityDbContext<ApplicationUser, Applicati
             b.HasKey(x => x.Id);
             b.HasIndex(x => new { x.UserId, x.Status });
             b.HasIndex(x => new { x.UserId, x.ApplicationDate });
+        });
+
+        builder.Entity<LocalKhataParty>(b =>
+        {
+            b.ToTable("local_khata_parties");
+            b.HasKey(x => x.Id);
+            b.HasIndex(x => new { x.UserId, x.Name });
+            b.HasIndex(x => new { x.UserId, x.IsSettled });
+            b.HasMany(x => x.Entries).WithOne(x => x.Party).HasForeignKey(x => x.PartyId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<LocalKhataEntry>(b =>
+        {
+            b.ToTable("local_khata_entries");
+            b.HasKey(x => x.Id);
+            b.HasIndex(x => new { x.UserId, x.PartyId });
+            b.HasIndex(x => new { x.UserId, x.Date });
+        });
+
+        builder.Entity<KhataLiquidityAccount>(b =>
+        {
+            b.ToTable("khata_liquidity_accounts");
+            b.HasKey(x => x.Id);
+            b.HasIndex(x => new { x.UserId, x.AccountType });
+        });
+
+        builder.Entity<KhataEvent>(b =>
+        {
+            b.ToTable("khata_events");
+            b.HasKey(x => x.Id);
+            b.HasIndex(x => new { x.UserId, x.Date });
+            b.HasMany(x => x.Funds).WithOne(x => x.Event).HasForeignKey(x => x.EventId).OnDelete(DeleteBehavior.Cascade);
+            b.HasMany(x => x.Items).WithOne(x => x.Event).HasForeignKey(x => x.EventId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        builder.Entity<KhataEventFund>(b =>
+        {
+            b.ToTable("khata_event_funds");
+            b.HasKey(x => x.Id);
+            b.HasIndex(x => new { x.UserId, x.EventId });
+        });
+
+        builder.Entity<KhataEventItem>(b =>
+        {
+            b.ToTable("khata_event_items");
+            b.HasKey(x => x.Id);
+            b.HasIndex(x => new { x.UserId, x.EventId, x.ItemType });
         });
 
         // Global conventions & filters
