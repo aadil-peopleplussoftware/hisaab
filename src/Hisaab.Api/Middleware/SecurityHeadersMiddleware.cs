@@ -17,7 +17,7 @@ public class SecurityHeadersMiddleware
         headers["X-Frame-Options"] = "DENY";
         headers["X-Content-Type-Options"] = "nosniff";
         headers["Referrer-Policy"] = "strict-origin-when-cross-origin";
-        headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; font-src 'self'; object-src 'none'; frame-ancestors 'none';";
+        headers["Content-Security-Policy"] = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; img-src 'self' data: https:; connect-src 'self'; font-src 'self' https://fonts.gstatic.com data:; object-src 'none'; frame-ancestors 'none';";
         headers["X-XSS-Protection"] = "0"; // Modern browsers prefer CSP over old audit heuristics
         headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=(), payment=()";
 

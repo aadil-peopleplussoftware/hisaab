@@ -28,6 +28,7 @@ if (Test-Path $PublishDir) {
     Write-Host "`nGracefully detaching IIS via app_offline.htm..." -ForegroundColor Yellow
     Set-Content -Path $OfflineFile -Value "<html><body><h2>Deploying updates... Please refresh in a moment.</h2></body></html>" -Force
     Start-Sleep -Seconds 3
+    Get-Process -Name "Hisaab.Api" -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
 }
 
 try {
