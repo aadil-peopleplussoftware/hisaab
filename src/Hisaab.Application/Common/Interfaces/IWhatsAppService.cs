@@ -10,7 +10,15 @@ public record WhatsAppSendResult(
 
 public interface IWhatsAppService
 {
-    Task<WhatsAppSendResult> SendWhatsAppMessageAsync(string phoneNumber, string message, CancellationToken ct = default);
+    Task<WhatsAppSendResult> SendWhatsAppMessageAsync(
+        string phoneNumber,
+        string message,
+        string? provider = null,
+        string? apiKey = null,
+        string? instanceId = null,
+        string? webhookUrl = null,
+        CancellationToken ct = default);
+
     string GenerateWhatsAppClickUrl(string phoneNumber, string message);
 }
 

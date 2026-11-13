@@ -1,0 +1,1048 @@
+<div class="assistant-page">
+  <!-- Toast Notification -->
+  <div *ngIf="toastMessage()" class="toast-banner" [ngClass]="toastType()">
+    <span>{{ toastMessage() }}</span>
+    <button type="button" class="close-btn" (click)="toastMessage.set(null)">✕</button>
+  </div>
+
+  <!-- Hero Header -->
+  <div class="header-card">
+    <div class="header-main">
+      <div class="title-section">
+        <div class="title-badge-row">
+          <h1 class="main-title">
+            <span class="bot-icon">🤖</span> My Assistant
+          </h1>
+          <span class="market-pill" [class.live]="overview()?.isMarketOpen">
+            <span class="pulse-dot"></span>
+            <span>{{ overview()?.marketStatusText || 'Indian Market Session' }}</span>
+          </span>
+        </div>
+        <p class="subtitle">
+          Autonomous Stock Market Agent & WhatsApp/Email Bot • Live Target & Stop-Loss Sentinel • 09:15 AM Market Open & 03:30 PM Close Alerts
+        </p>
+      </div>
+
+      <!-- Live Heartbeat & Session Info -->
+      <div class="agent-info-card" *ngIf="overview() as ov">
+        <div class="info-row">
+          <span class="label">⏰ Local Time:</span>
+          <span class="val">{{ ov.currentTimeIst }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">🎯 Next Event:</span>
+          <span class="val highlight">{{ ov.nextScheduledEventIst }}</span>
+        </div>
+        <div class="info-row">
+          <span class="label">📲 Alerts Sent:</span>
+          <span class="val">{{ ov.alertsDispatchedToday }} dispatched</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Toolbar Buttons -->
+    <div class="action-toolbar">
+      <button type="button" class="btn btn-primary" (click)="openAddModal()">
+        <span>➕ Add Stock</span>
+      </button>
+      <button type="button" class="btn btn-amber" [disabled]="isActionBusy()" (click)="triggerTargetAndStopLossCheck()">
+        <span>🔔 Check Target / SL Now</span>
+      </button>
+      <button type="button" class="btn btn-blue" [disabled]="isActionBusy()" (click)="triggerMarketOpenScan()">
+        <span>🌅 Run 09:15 AM Open Scan</span>
+      </button>
+      <button type="button" class="btn btn-purple" [disabled]="isActionBusy()" (click)="triggerMarketCloseScan()">
+        <span>🌆 Run 03:30 PM Close Scan</span>
+      </button>
+      <button type="button" class="btn btn-emerald" [disabled]="isActionBusy()" (click)="triggerTestAlert()">
+        <span>📡 Test Multi-Channel Bot (TG / Discord / ntfy)</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- KPI Metric Summary Cards -->
+  <div class="metrics-grid" *ngIf="overview() as ov">
+    <div class="metric-card">
+      <span class="metric-label">Portfolio Value (Tracked)</span>
+      <div class="metric-value">{{ ov.totalCurrentValue | inrCurrency }}</div>
+      <span class="metric-sub">Invested: {{ ov.totalInvested | inrCurrency }}</span>
+    </div>
+
+    <div class="metric-card" [class.profit]="ov.totalUnrealizedProfit >= 0" [class.loss]="ov.totalUnrealizedProfit < 0">
+      <span class="metric-label">Total Unrealized P&L</span>
+      <div class="metric-value">
+        {{ ov.totalUnrealizedProfit >= 0 ? '+' : '' }}{{ ov.totalUnrealizedProfit | inrCurrency }}
+      </div>
+      <span class="metric-sub">
+        {{ ov.totalInvested > 0 ? ((ov.totalUnrealizedProfit / ov.totalInvested) * 100 | number:'1.2-2') : '0.00' }}% overall return
+      </span>
+    </div>
+
+    <div class="metric-card" [class.profit]="ov.totalDayGainLoss >= 0" [class.loss]="ov.totalDayGainLoss < 0">
+      <span class="metric-label">Today's Day Gain / Loss</span>
+      <div class="metric-value">
+        {{ ov.totalDayGainLoss >= 0 ? '+' : '' }}{{ ov.totalDayGainLoss | inrCurrency }}
+      </div>
+      <span class="metric-sub">Intraday movement</span>
+    </div>
+
+    <div class="metric-card">
+      <span class="metric-label">Sentinel Triggers</span>
+      <div class="metric-value targets-count">
+        <span class="hit-target" title="Target Hit">🎯 {{ ov.targetsHitCount }}</span>
+        <span class="hit-sl" title="Stop-Loss Breached">⚠️ {{ ov.stopLossHitCount }}</span>
+      </div>
+      <span class="metric-sub">{{ ov.totalStocksTracked }} Active Stocks Monitored</span>
+    </div>
+  </div>
+
+  <!-- Navigation Tabs -->
+  <div class="tabs-container">
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'stocks'" (click)="activeTab.set('stocks')">
+      📊 Tracked Shares ({{ overview()?.totalStocksTracked || 0 }})
+    </button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'alerts'" (click)="activeTab.set('alerts')">
+      🔔 Live Alert Feed & WhatsApp Logs ({{ overview()?.recentLogs?.length || 0 }})
+    </button>
+    <button type="button" class="tab-btn" [class.active]="activeTab() === 'settings'" (click)="activeTab.set('settings')">
+      ⚙️ Bot & Notification Settings
+    </button>
+  </div>
+
+  <!-- TAB 1: Tracked Shares -->
+  <div *ngIf="activeTab() === 'stocks'" class="tab-content">
+    <div *ngIf="isLoading()" class="loading-state">
+      <div class="spinner"></div>
+      <p>Fetching real-time stock prices & sentinel signals...</p>
+    </div>
+
+    <div *ngIf="!isLoading() && (!overview()?.holdings || overview()?.holdings?.length === 0)" class="empty-state">
+      <div class="empty-icon">📈</div>
+      <h3>No Stocks Added to My Assistant</h3>
+      <p>Aapne abhi tak koi share add nahi kiya hai. Naya share add karein jiska Target aur Stop Loss monitor karna ho.</p>
+      <button type="button" class="btn btn-primary" (click)="openAddModal()">
+        <span>➕ Add Your First Stock</span>
+      </button>
+    </div>
+
+    <!-- Stock Cards Grid -->
+    <div *ngIf="!isLoading() && overview()?.holdings && overview()!.holdings.length > 0" class="stocks-grid">
+      <div *ngFor="let s of overview()!.holdings" class="stock-card" [ngClass]="s.status.toLowerCase()">
+        <div class="card-header">
+          <div>
+            <div class="ticker-row">
+              <span class="ticker">{{ s.ticker.replace('.NS', '') }}</span>
+              <span class="exchange-badge">{{ s.exchange }}</span>
+              <span class="status-badge" [ngClass]="s.status.toLowerCase()">
+                {{ s.status === 'TARGET_HIT' ? '🎯 TARGET HIT!' : (s.status === 'STOP_LOSS_BREACHED' ? '⚠️ STOP-LOSS BREACHED' : (s.status === 'NEAR_TARGET' ? '⚡ NEAR TARGET' : '🛡️ SAFE')) }}
+              </span>
+            </div>
+            <div class="company-name">{{ s.companyName }}</div>
+          </div>
+          <div class="cmp-box" [class.up]="s.dayChange >= 0" [class.down]="s.dayChange < 0">
+            <span class="cmp-label">Live CMP</span>
+            <span class="cmp-val">{{ s.currentPrice | inrCurrency }}</span>
+            <span class="cmp-change">{{ s.dayChange >= 0 ? '+' : '' }}{{ s.dayChangePercent | number:'1.2-2' }}%</span>
+          </div>
+        </div>
+
+        <!-- Open & Close Snapshot Row -->
+        <div class="open-close-strip">
+          <div class="oc-item">
+            <span class="oc-lbl">🌅 09:15 AM Open:</span>
+            <span class="oc-val">₹{{ s.openPrice | number:'1.2-2' }}</span>
+          </div>
+          <div class="oc-item">
+            <span class="oc-lbl">⏮️ Prev Close:</span>
+            <span class="oc-val">₹{{ s.previousClose | number:'1.2-2' }}</span>
+          </div>
+          <div class="oc-item">
+            <span class="oc-lbl">↕️ Day High/Low:</span>
+            <span class="oc-val">₹{{ s.dayHigh | number:'1.0-0' }} / ₹{{ s.dayLow | number:'1.0-0' }}</span>
+          </div>
+        </div>
+
+        <!-- Position & P&L Info -->
+        <div class="position-stats">
+          <div class="stat-col">
+            <span class="stat-lbl">Buy Price</span>
+            <span class="stat-num">{{ s.buyPrice | inrCurrency }}</span>
+          </div>
+          <div class="stat-col">
+            <span class="stat-lbl">Quantity</span>
+            <span class="stat-num">{{ s.quantity }} shares</span>
+          </div>
+          <div class="stat-col">
+            <span class="stat-lbl">Total Net P&L</span>
+            <span class="stat-num" [class.pnl-green]="s.totalProfitLoss >= 0" [class.pnl-red]="s.totalProfitLoss < 0">
+              {{ s.totalProfitLoss >= 0 ? '+' : '' }}{{ s.totalProfitLoss | inrCurrency }} ({{ s.profitPercentage | number:'1.2-2' }}%)
+            </span>
+          </div>
+        </div>
+
+        <!-- Target & Stop-Loss Levels -->
+        <div class="levels-container">
+          <div class="level-box target">
+            <span class="lvl-title">🎯 Target Price</span>
+            <span class="lvl-val">
+              {{ s.targetPrice ? (s.targetPrice | inrCurrency) : (s.targetProfitPerShare ? ('+₹' + s.targetProfitPerShare + '/sh') : 'Not Set') }}
+            </span>
+            <span class="lvl-sub" *ngIf="s.targetPrice">
+              {{ s.distanceToTarget > 0 ? ('₹' + s.distanceToTarget + ' away (' + s.distanceToTargetPct + '%)') : 'TARGET HIT!' }}
+            </span>
+          </div>
+
+          <div class="level-box stoploss">
+            <span class="lvl-title">🛡️ Stop Loss</span>
+            <span class="lvl-val">
+              {{ s.stopLossPrice ? (s.stopLossPrice | inrCurrency) : 'Not Set' }}
+            </span>
+            <span class="lvl-sub" *ngIf="s.stopLossPrice">
+              {{ s.distanceToStopLoss > 0 ? ('₹' + s.distanceToStopLoss + ' buffer (' + s.distanceToStopLossPct + '%)') : 'BREACHED!' }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Notes if any -->
+        <div *ngIf="s.notes" class="stock-notes">
+          📝 <em>{{ s.notes }}</em>
+        </div>
+
+        <!-- Card Action Buttons -->
+        <div class="card-footer-actions">
+          <button type="button" class="btn-sm btn-outline" (click)="openEditModal(s)">
+            ✏️ Edit Targets
+          </button>
+          <button type="button" class="btn-sm btn-outline-whatsapp" (click)="shareStockToWhatsApp(s)">
+            📲 WhatsApp Share
+          </button>
+          <button type="button" class="btn-sm btn-outline-danger" (click)="deleteStock(s)">
+            🗑️ Remove
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 2: Live Alert Feed & WhatsApp Logs -->
+  <div *ngIf="activeTab() === 'alerts'" class="tab-content">
+    <div class="feed-header">
+      <h3>Live Sentinel & Bot Notifications</h3>
+      <button type="button" class="btn-sm btn-outline" (click)="loadOverview()">🔄 Refresh Logs</button>
+    </div>
+
+    <div *ngIf="!overview()?.recentLogs || overview()?.recentLogs?.length === 0" class="empty-state">
+      <p>Abhi tak koi alert generate nahi hua hai. Upar diye gaye buttons se instant check trigger karein!</p>
+    </div>
+
+    <div *ngIf="overview()?.recentLogs && overview()!.recentLogs.length > 0" class="alerts-list">
+      <div *ngFor="let log of overview()!.recentLogs" class="alert-item" [ngClass]="log.alertType.toLowerCase()">
+        <div class="alert-top">
+          <div class="alert-title-row">
+            <span class="alert-type-badge">{{ log.alertType }}</span>
+            <strong class="alert-heading">{{ log.title }}</strong>
+            <span class="alert-ticker" *ngIf="log.ticker !== 'PORTFOLIO/OPEN' && log.ticker !== 'PORTFOLIO/CLOSE'">{{ log.ticker }}</span>
+          </div>
+          <span class="alert-time">{{ log.createdAtIst }}</span>
+        </div>
+
+        <div class="alert-body">
+          <p class="alert-message">{{ log.message }}</p>
+        </div>
+
+        <div class="alert-footer">
+          <div class="dispatch-badges">
+            <span class="status-pill tg" [class.sent]="log.telegramStatus === 'Sent'" [class.disabled]="!log.telegramStatus || log.telegramStatus === 'Disabled'">
+              🤖 Telegram: {{ log.telegramStatus || 'Disabled' }}
+            </span>
+            <span class="status-pill discord" [class.sent]="log.discordStatus === 'Sent'" [class.disabled]="!log.discordStatus || log.discordStatus === 'Disabled'">
+              🎮 Discord: {{ log.discordStatus || 'Disabled' }}
+            </span>
+            <span class="status-pill ntfy" [class.sent]="log.ntfyStatus === 'Sent'" [class.disabled]="!log.ntfyStatus || log.ntfyStatus === 'Disabled'">
+              🔔 ntfy: {{ log.ntfyStatus || 'Disabled' }}
+            </span>
+            <span class="status-pill wa" [class.sent]="log.whatsAppStatus === 'Sent' || log.whatsAppStatus === 'Ready'">
+              💬 WA: {{ log.whatsAppStatus }}
+            </span>
+            <span class="status-pill email" [class.sent]="log.emailStatus === 'Sent'">
+              📧 Email: {{ log.emailStatus }}
+            </span>
+          </div>
+
+          <div class="footer-actions">
+            <button
+              *ngIf="log.whatsAppClickUrl"
+              type="button"
+              class="btn-sm btn-whatsapp"
+              (click)="openWhatsAppDeepLink(log.whatsAppClickUrl)">
+              📲 Open in WhatsApp
+            </button>
+            <button
+              type="button"
+              class="btn-sm btn-outline"
+              (click)="copyToClipboard(log.message)">
+              📋 Copy Text
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 3: Bot & Notification Settings -->
+  <div *ngIf="activeTab() === 'settings'" class="tab-content">
+    <div class="settings-card">
+      <div class="settings-header-banner">
+        <span class="bot-icon">🤖</span>
+        <div>
+          <h3>Multi-Channel Automated Alert Bot (Telegram, Discord, ntfy.sh, WhatsApp)</h3>
+          <p class="settings-desc">
+            Apne pasandeeda 100% Free & Secure automated channels configure karein. Live market me Target Hit, Stop-Loss breach, aur 09:15 AM Open / 03:30 PM Close summaries turant bina email ke push notifications ke roop me milenge!
+          </p>
+        </div>
+      </div>
+
+      <form [formGroup]="settingsForm" (ngSubmit)="saveSettings()" class="settings-form">
+        <!-- Modern Multi-Channel Gateway Cards -->
+        <div class="channels-section">
+          <!-- CHANNEL 1: Telegram Bot (Recommended) -->
+          <div class="channel-card telegram-theme">
+            <div class="channel-card-header">
+              <div class="header-left">
+                <span class="channel-icon">🤖</span>
+                <div>
+                  <h4 class="channel-title">Plan A: Telegram Bot (100% Free Forever — Highly Recommended)</h4>
+                  <p class="channel-subtitle">Instant push alerts with loud notification chime directly on Android, iPhone & Desktop via official Telegram Bot API.</p>
+                </div>
+              </div>
+              <span class="badge-recommended">Recommended</span>
+            </div>
+
+            <div class="channel-card-body">
+              <div class="guide-box">
+                <div class="guide-title">⚡ 30-Second Setup Guide:</div>
+                <ol class="guide-list">
+                  <li>
+                    Telegram par <strong>@BotFather</strong> ko open karein:
+                    <a href="https://t.me/BotFather" target="_blank" rel="noopener noreferrer" class="link-btn">
+                      👉 Open @BotFather on Telegram
+                    </a>
+                  </li>
+                  <li>Type karein <code>/newbot</code>, apna bot name aur username choose karein. BotFather aapko ek <strong>HTTP API Token</strong> dega.</li>
+                  <li>
+                    Apne bot ko <code>/start</code> message bhejkar activate karein, aur apna <strong>Chat ID</strong> nikalne ke liye 
+                    <a href="https://t.me/userinfobot" target="_blank" rel="noopener noreferrer" class="link-btn">
+                      @userinfobot
+                    </a> ko <code>/start</code> karein.
+                  </li>
+                </ol>
+              </div>
+
+              <div class="form-row mt-3">
+                <div class="form-group flex-2">
+                  <label for="tgToken">🔑 Telegram Bot Token:</label>
+                  <input
+                    type="text"
+                    id="tgToken"
+                    formControlName="telegramBotToken"
+                    placeholder="e.g. 7123456789:AAFlmQ..."
+                    class="form-control font-mono" />
+                </div>
+                <div class="form-group flex-1">
+                  <label for="tgChatId">💬 Your Chat ID:</label>
+                  <input
+                    type="text"
+                    id="tgChatId"
+                    formControlName="telegramChatId"
+                    placeholder="e.g. 987654321"
+                    class="form-control font-mono" />
+                </div>
+              </div>
+
+              <div class="channel-card-actions">
+                <button type="button" class="btn-channel-test btn-telegram" [disabled]="isActionBusy()" (click)="testTelegram()">
+                  🧪 Test Telegram Bot Now
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- CHANNEL 2: Discord Webhook -->
+          <div class="channel-card discord-theme">
+            <div class="channel-card-header">
+              <div class="header-left">
+                <span class="channel-icon">🎮</span>
+                <div>
+                  <h4 class="channel-title">Plan B: Discord Webhook (Zero Token / 1-Click Setup)</h4>
+                  <p class="channel-subtitle">Create a private server/channel for your stock portfolio. Live alerts arrive as rich color embeds (Green = Target, Red = Stop-Loss).</p>
+                </div>
+              </div>
+              <span class="badge-free">100% Free</span>
+            </div>
+
+            <div class="channel-card-body">
+              <div class="guide-box">
+                <div class="guide-title">⚡ 2-Click Setup:</div>
+                <ol class="guide-list">
+                  <li>Discord me apna private server ya channel banayein (e.g. <code>#my-stock-alerts</code>).</li>
+                  <li>Channel Settings (⚙️) ➔ <strong>Integrations</strong> ➔ <strong>Webhooks</strong> ➔ <strong>Create Webhook</strong> ➔ <strong>Copy Webhook URL</strong>.</li>
+                </ol>
+              </div>
+
+              <div class="form-group mt-3">
+                <label for="dcWebhook">🔗 Discord Webhook URL:</label>
+                <input
+                  type="url"
+                  id="dcWebhook"
+                  formControlName="discordWebhookUrl"
+                  placeholder="https://discord.com/api/webhooks/123456789/token..."
+                  class="form-control font-mono" />
+              </div>
+
+              <div class="channel-card-actions">
+                <button type="button" class="btn-channel-test btn-discord" [disabled]="isActionBusy()" (click)="testDiscord()">
+                  🧪 Test Discord Webhook Now
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- CHANNEL 3: ntfy.sh Mobile Push -->
+          <div class="channel-card ntfy-theme">
+            <div class="channel-card-header">
+              <div class="header-left">
+                <span class="channel-icon">🔔</span>
+                <div>
+                  <h4 class="channel-title">Plan C: ntfy.sh Mobile Push (Zero Account / No Registration)</h4>
+                  <p class="channel-subtitle">Lightweight open-source mobile push notifications. Native banner alerts on Android & iOS without signing up.</p>
+                </div>
+              </div>
+              <span class="badge-free">Zero Signup</span>
+            </div>
+
+            <div class="channel-card-body">
+              <div class="guide-box">
+                <div class="guide-title">⚡ 1-Minute Setup:</div>
+                <ol class="guide-list">
+                  <li>Google Play Store ya iOS App Store se <strong>ntfy</strong> app download karein (ya visit karein <a href="https://ntfy.sh" target="_blank" rel="noopener noreferrer" class="link-btn">ntfy.sh</a>).</li>
+                  <li>App me <strong>+ Subscribe to topic</strong> karein aur koi unique secret topic name daalein (e.g. <code>aadil_market_alerts_8081</code>).</li>
+                </ol>
+              </div>
+
+              <div class="form-row mt-3">
+                <div class="form-group flex-2">
+                  <label for="ntTopic">🏷️ ntfy Topic Name:</label>
+                  <input
+                    type="text"
+                    id="ntTopic"
+                    formControlName="ntfyTopic"
+                    placeholder="e.g. aadil_market_alerts_8081"
+                    class="form-control font-mono" />
+                </div>
+                <div class="form-group flex-1">
+                  <label for="ntServer">🌐 Server URL (Default: ntfy.sh):</label>
+                  <input
+                    type="url"
+                    id="ntServer"
+                    formControlName="ntfyServerUrl"
+                    placeholder="https://ntfy.sh"
+                    class="form-control font-mono" />
+                </div>
+              </div>
+
+              <div class="channel-card-actions">
+                <button type="button" class="btn-channel-test btn-ntfy" [disabled]="isActionBusy()" (click)="testNtfy()">
+                  🧪 Test ntfy Mobile Push Now
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- CHANNEL 4: WhatsApp Gateway (Optional / Backup) -->
+          <div class="channel-card wa-theme">
+            <div class="channel-card-header">
+              <div class="header-left">
+                <span class="channel-icon">💬</span>
+                <div>
+                  <h4 class="channel-title">Plan D: WhatsApp Gateway & Direct Links (Optional / Backup)</h4>
+                  <p class="channel-subtitle">CallMeBot gateway, UltraMsg API, or 1-Click WhatsApp deep links for web/mobile.</p>
+                </div>
+              </div>
+              <span class="badge-optional">Optional</span>
+            </div>
+
+            <div class="channel-card-body">
+              <div class="form-row">
+                <div class="form-group flex-1">
+                  <label for="waPhone">📱 WhatsApp Phone Number:</label>
+                  <input
+                    type="text"
+                    id="waPhone"
+                    formControlName="whatsAppPhoneNumber"
+                    placeholder="+91 98765 43210"
+                    class="form-control" />
+                </div>
+                <div class="form-group flex-1">
+                  <label for="waProvider">WhatsApp Provider:</label>
+                  <select id="waProvider" formControlName="whatsAppProvider" class="form-control">
+                    <option value="CallMeBot">CallMeBot (Free Personal Bot)</option>
+                    <option value="UltraMsg">UltraMsg API Gateway</option>
+                    <option value="Webhook">Custom Webhook</option>
+                    <option value="DirectLink">1-Click WhatsApp Links Only</option>
+                  </select>
+                </div>
+              </div>
+
+              <!-- CallMeBot Setup Instructions & API Key -->
+              <div *ngIf="settingsForm.get('whatsAppProvider')?.value === 'CallMeBot'" class="callmebot-guide mt-2">
+                <div class="guide-steps">
+                  <p class="mb-1"><strong>CallMeBot activation:</strong> Message <code>"I allow callmebot to send me messages"</code> to <strong>+34 644 44 96 1</strong></p>
+                  <a
+                    href="https://wa.me/34644444961?text=I%20allow%20callmebot%20to%20send%20me%20messages"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="btn-sm btn-whatsapp-direct">
+                    👉 Click to Activate CallMeBot on WhatsApp
+                  </a>
+                </div>
+
+                <div class="form-group mt-3">
+                  <label for="callmebotKey">🔑 CallMeBot API Key:</label>
+                  <input
+                    type="text"
+                    id="callmebotKey"
+                    formControlName="whatsAppApiKey"
+                    placeholder="e.g. 849201"
+                    class="form-control font-mono" />
+                </div>
+              </div>
+
+              <!-- UltraMsg Fields -->
+              <div *ngIf="settingsForm.get('whatsAppProvider')?.value === 'UltraMsg'" class="provider-fields mt-2">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="ultraInstance">UltraMsg Instance ID:</label>
+                    <input
+                      type="text"
+                      id="ultraInstance"
+                      formControlName="whatsAppInstanceId"
+                      placeholder="instance12345"
+                      class="form-control" />
+                  </div>
+                  <div class="form-group">
+                    <label for="ultraToken">UltraMsg Token / API Key:</label>
+                    <input
+                      type="password"
+                      id="ultraToken"
+                      formControlName="whatsAppApiKey"
+                      placeholder="token_secret"
+                      class="form-control" />
+                  </div>
+                </div>
+              </div>
+
+              <!-- Webhook Fields -->
+              <div *ngIf="settingsForm.get('whatsAppProvider')?.value === 'Webhook'" class="provider-fields mt-2">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label for="webhookUrl">Webhook URL:</label>
+                    <input
+                      type="url"
+                      id="webhookUrl"
+                      formControlName="whatsAppWebhookUrl"
+                      placeholder="https://api.mygateway.com/send"
+                      class="form-control" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- CHANNEL 5: Email Notifications (Backup) -->
+          <div class="channel-card email-theme">
+            <div class="channel-card-header">
+              <div class="header-left">
+                <span class="channel-icon">📧</span>
+                <div>
+                  <h4 class="channel-title">Email Backup Alerts</h4>
+                  <p class="channel-subtitle">HTML formatted email notifications for reports and alerts.</p>
+                </div>
+              </div>
+              <span class="badge-optional">Optional</span>
+            </div>
+
+            <div class="channel-card-body">
+              <div class="form-group">
+                <label for="emailAddr">📧 Notification Email Address:</label>
+                <input
+                  type="email"
+                  id="emailAddr"
+                  formControlName="emailAddress"
+                  placeholder="investor@example.com"
+                  class="form-control" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h4 class="section-title mt-4">Active Notification Dispatch Channels</h4>
+        <div class="switches-grid">
+          <label class="switch-card highlight-card">
+            <input type="checkbox" formControlName="enableTelegramDispatch" />
+            <div class="switch-content">
+              <strong>🤖 Telegram Bot Alerts (Instant Sound Push)</strong>
+              <span>Target & SL alerts, 09:15 AM Open aur 03:30 PM summaries Telegram par receive karein</span>
+            </div>
+          </label>
+
+          <label class="switch-card highlight-card">
+            <input type="checkbox" formControlName="enableDiscordDispatch" />
+            <div class="switch-content">
+              <strong>🎮 Discord Webhook Alerts (Color Rich Embeds)</strong>
+              <span>Discord private channel me green/red embeds aur smart guidance send karein</span>
+            </div>
+          </label>
+
+          <label class="switch-card highlight-card">
+            <input type="checkbox" formControlName="enableNtfyDispatch" />
+            <div class="switch-content">
+              <strong>🔔 ntfy Mobile Push Alerts (Zero Account)</strong>
+              <span>Mobile status bar push notifications bina kisi phone number ya token ke receive karein</span>
+            </div>
+          </label>
+
+          <label class="switch-card">
+            <input type="checkbox" formControlName="enableWhatsAppDispatch" />
+            <div class="switch-content">
+              <strong>💬 WhatsApp Dispatch</strong>
+              <span>WhatsApp automated messages aur 1-click notification links</span>
+            </div>
+          </label>
+
+          <label class="switch-card">
+            <input type="checkbox" formControlName="enableEmailDispatch" />
+            <div class="switch-content">
+              <strong>📧 Email Dispatch</strong>
+              <span>Styled HTML email notifications deliver karein</span>
+            </div>
+          </label>
+        </div>
+
+        <h4 class="section-title mt-4">Market Routine Triggers</h4>
+        <div class="switches-grid">
+          <label class="switch-card">
+            <input type="checkbox" formControlName="enableMarketOpenAlerts" />
+            <div class="switch-content">
+              <strong>🌅 09:15 AM Market Open Notification</strong>
+              <span>Market shuru hote hi aapke sabhi shares ka real Open Price aur gap alert bhejega</span>
+            </div>
+          </label>
+
+          <label class="switch-card">
+            <input type="checkbox" formControlName="enableMarketCloseAlerts" />
+            <div class="switch-content">
+              <strong>🌆 03:30 PM Market Close Summary</strong>
+              <span>Market band hone par din ka total profit/loss aur closing prices ka summary aayega</span>
+            </div>
+          </label>
+
+          <label class="switch-card">
+            <input type="checkbox" formControlName="enableTargetHitAlerts" />
+            <div class="switch-content">
+              <strong>🎯 Target Hit Instant Alert</strong>
+              <span>Share ka target hit hone par turant push alert bhejega</span>
+            </div>
+          </label>
+
+          <label class="switch-card">
+            <input type="checkbox" formControlName="enableStopLossAlerts" />
+            <div class="switch-content">
+              <strong>⚠️ Stop-Loss Breach Warning</strong>
+              <span>Share stop-loss se neeche girte hi instant risk warning bhejega</span>
+            </div>
+          </label>
+        </div>
+
+        <div class="settings-actions">
+          <button type="submit" class="btn btn-primary" [disabled]="isLoading()">
+            💾 Save All Settings
+          </button>
+          <button type="button" class="btn btn-emerald" (click)="triggerTestAlert()" [disabled]="isLoading()">
+            🧪 Test All Active Channels Now
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Add / Edit Stock -->
+  <div *ngIf="isAddStockModalOpen()" class="modal-overlay">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>{{ isEditingStock() ? '✏️ Edit Targets & Stop-Loss' : '➕ Add Stock to My Assistant' }}</h3>
+        <button type="button" class="close-btn" (click)="closeModal()">✕</button>
+      </div>
+
+      <!-- Quick Picks (Only on Add) -->
+      <div *ngIf="!isEditingStock()" class="quick-picks-section">
+        <label>Popular Indian Blue-Chips:</label>
+        <div class="pills-scroll">
+          <button
+            *ngFor="let p of popularStocks"
+            type="button"
+            class="popular-pill"
+            (click)="selectPopularStock(p)">
+            {{ p.name }} (₹{{ p.price }})
+          </button>
+        </div>
+      </div>
+
+      <form [formGroup]="stockForm" (ngSubmit)="saveStock()" class="modal-form">
+        <div class="form-row">
+          <!-- Ticker with Auto-Suggestions & Tooltips for NSE/BSE -->
+          <div class="form-group flex-2 ticker-autocomplete-group">
+            <div class="label-with-badge">
+              <label for="ticker">Stock Ticker or Company Name: *</label>
+              <span class="exchange-tag-hint">🏛️ NSE & BSE Live</span>
+            </div>
+
+            <div class="input-autocomplete-wrapper">
+              <input
+                type="text"
+                id="ticker"
+                formControlName="ticker"
+                (input)="onTickerInput($event)"
+                (focus)="onTickerFocus()"
+                placeholder="Type Reliance, Tata, Dixon, TCS, 500325..."
+                class="form-control font-mono"
+                autocomplete="off"
+                [readonly]="!!isEditingStock()" />
+
+              <!-- Searching Spinner -->
+              <div *ngIf="isSearchingStocks()" class="autocomplete-spinner" title="Searching NSE & BSE stocks...">
+                <span class="spinner-dot"></span>
+              </div>
+
+              <!-- Clear button -->
+              <button
+                *ngIf="stockForm.get('ticker')?.value && !isEditingStock()"
+                type="button"
+                class="btn-clear-ticker"
+                title="Clear input"
+                (click)="clearTickerInput()">
+                ✕
+              </button>
+            </div>
+
+            <!-- Auto-Suggestion Dropdown Menu (NSE & BSE) -->
+            <div
+              *ngIf="showStockSuggestions() && !isEditingStock()"
+              class="stock-suggestions-dropdown">
+              <div class="dropdown-header">
+                <span>🔍 Search Results (NSE & BSE)</span>
+                <span class="count-badge" *ngIf="stockSearchResults().length > 0">
+                  {{ stockSearchResults().length }} shares found
+                </span>
+                <button type="button" class="btn-close-dropdown" (click)="showStockSuggestions.set(false)">✕</button>
+              </div>
+
+              <!-- Loading Indicator -->
+              <div *ngIf="isSearchingStocks()" class="dropdown-loading">
+                <span class="mini-spinner"></span>
+                <span>Searching Indian Stock Exchanges (NSE & BSE)...</span>
+              </div>
+
+              <!-- Empty state -->
+              <div *ngIf="!isSearchingStocks() && stockSearchResults().length === 0" class="no-results-msg">
+                <span>Koi stock match nahi mila.</span>
+                <small>Aap direct apna symbol (jaise <code>RELIANCE.NS</code> ya <code>500325.BO</code>) enter kar sakte hain.</small>
+              </div>
+
+              <!-- Suggestions List -->
+              <div class="suggestions-scroll" *ngIf="!isSearchingStocks() && stockSearchResults().length > 0">
+                <div
+                  *ngFor="let item of stockSearchResults()"
+                  class="suggestion-item"
+                  (mouseenter)="hoveredStock.set(item)"
+                  (mouseleave)="hoveredStock.set(null)"
+                  (mousedown)="selectSearchResult(item)">
+                  
+                  <div class="item-left">
+                    <div class="item-ticker-row">
+                      <strong class="ticker-code">{{ item.ticker }}</strong>
+                      <span
+                        class="exchange-pill"
+                        [class.bse]="item.exchange === 'BSE' || item.exchange === 'Bombay' || item.ticker.endsWith('.BO')">
+                        {{ (item.exchange === 'BSE' || item.exchange === 'Bombay' || item.ticker.endsWith('.BO')) ? 'BSE' : 'NSE' }}
+                      </span>
+                      <span class="sector-chip" *ngIf="item.sector">{{ item.sector }}</span>
+                    </div>
+                    <span class="item-company-name">{{ item.companyName }}</span>
+                  </div>
+
+                  <div class="item-right">
+                    <span class="item-cmp" *ngIf="item.currentPrice > 0">
+                      ₹{{ item.currentPrice | number:'1.2-2' }}
+                    </span>
+                    <span class="select-btn-hint">Select ➔</span>
+                  </div>
+
+                  <!-- INTERACTIVE HOVER TOOLTIP / PREVIEW POPOVER -->
+                  <div
+                    *ngIf="hoveredStock()?.ticker === item.ticker"
+                    class="stock-tooltip-popover">
+                    <div class="tooltip-header">
+                      <span class="tooltip-exchange">
+                        {{ (item.exchange === 'BSE' || item.exchange === 'Bombay' || item.ticker.endsWith('.BO')) ? '🏛️ Bombay Stock Exchange (BSE)' : '🏛️ National Stock Exchange (NSE)' }}
+                      </span>
+                      <strong *ngIf="item.currentPrice > 0" class="tooltip-cmp">
+                        Live CMP: ₹{{ item.currentPrice | number:'1.2-2' }}
+                      </strong>
+                    </div>
+
+                    <div class="tooltip-body">
+                      <div class="tooltip-name"><strong>{{ item.companyName }}</strong></div>
+                      <div class="tooltip-symbol">Ticker: <code>{{ item.ticker }}</code></div>
+                      
+                      <div class="tooltip-levels-grid" *ngIf="item.currentPrice > 0">
+                        <div class="t-level target">
+                          <span class="lbl">🎯 Suggested Target (+10%):</span>
+                          <span class="val">₹{{ (item.currentPrice * 1.1) | number:'1.2-2' }}</span>
+                        </div>
+                        <div class="t-level sl">
+                          <span class="lbl">🛡️ Suggested SL (-5%):</span>
+                          <span class="val">₹{{ (item.currentPrice * 0.95) | number:'1.2-2' }}</span>
+                        </div>
+                      </div>
+
+                      <div class="tooltip-action-prompt">
+                        💡 <em>Click karein — Ticker, Company Name, aur Buy Price automatically fill ho jayenge!</em>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group flex-3">
+            <label for="cname">Company Name (Auto-resolved):</label>
+            <input
+              type="text"
+              id="cname"
+              formControlName="companyName"
+              placeholder="Auto-filled on stock selection"
+              class="form-control" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="buyPrice">Buy Price (₹): *</label>
+            <input
+              type="number"
+              id="buyPrice"
+              step="0.05"
+              formControlName="buyPrice"
+              placeholder="e.g. 2950"
+              class="form-control" />
+          </div>
+
+          <div class="form-group">
+            <label for="qty">Quantity: *</label>
+            <input
+              type="number"
+              id="qty"
+              step="1"
+              formControlName="quantity"
+              placeholder="e.g. 10"
+              class="form-control" />
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="tgt">🎯 Target Price (₹):</label>
+            <input
+              type="number"
+              id="tgt"
+              step="0.05"
+              formControlName="targetPrice"
+              placeholder="e.g. 3200"
+              class="form-control" />
+            <small class="helper-text">Trigger alert when CMP reaches this level</small>
+          </div>
+
+          <div class="form-group">
+            <label for="tgtProfit">Target Profit Per Share (₹):</label>
+            <input
+              type="number"
+              id="tgtProfit"
+              step="1"
+              formControlName="targetProfitPerShare"
+              placeholder="e.g. 250"
+              class="form-control" />
+            <small class="helper-text">Alternative: alert when profit reaches ₹X/share</small>
+          </div>
+
+          <div class="form-group">
+            <label for="sl">🛡️ Stop Loss Price (₹):</label>
+            <input
+              type="number"
+              id="sl"
+              step="0.05"
+              formControlName="stopLossPrice"
+              placeholder="e.g. 2800"
+              class="form-control" />
+            <small class="helper-text">Trigger alert when CMP breaches this downside level</small>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="notes">Notes / Strategy:</label>
+          <input
+            type="text"
+            id="notes"
+            formControlName="notes"
+            placeholder="e.g. Swing trade 15 days, 50% exit on target"
+            class="form-control" />
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="btn btn-outline" (click)="closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">{{ isEditingStock() ? 'Update Targets' : 'Add to Assistant' }}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Market Open Report -->
+  <div *ngIf="isMarketOpenModalOpen() && openReportData() as rep" class="modal-overlay">
+    <div class="modal-card wide">
+      <div class="modal-header">
+        <h3>🔔 Market Opening Bell (09:15 AM) Report</h3>
+        <button type="button" class="close-btn" (click)="isMarketOpenModalOpen.set(false)">✕</button>
+      </div>
+
+      <div class="modal-body-scroll">
+        <div class="report-meta">
+          <span>📅 Date: {{ rep.reportDate }}</span>
+          <span>⏰ Time: {{ rep.scanTimeIst }} IST</span>
+          <span>📊 Tracked Shares: {{ rep.totalHoldingsTracked }}</span>
+        </div>
+
+        <div class="brief-box">
+          {{ rep.actionableBriefHindi }}
+        </div>
+
+        <!-- Open Prices Table -->
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Share</th>
+              <th>Buy Price</th>
+              <th>🌅 Open Price</th>
+              <th>Previous Close</th>
+              <th>Gap %</th>
+              <th>🎯 Target</th>
+              <th>🛡️ Stop Loss</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let s of rep.stocks">
+              <td><strong>{{ s.companyName }}</strong><br><small>{{ s.ticker }}</small></td>
+              <td>{{ s.buyPrice | inrCurrency }}</td>
+              <td class="bold-open">₹{{ s.openPrice | number:'1.2-2' }}</td>
+              <td>₹{{ s.previousClose | number:'1.2-2' }}</td>
+              <td [class.up]="s.gapPercentage >= 0" [class.down]="s.gapPercentage < 0">
+                {{ s.gapPercentage >= 0 ? '+' : '' }}{{ s.gapPercentage | number:'1.2-2' }}%
+              </td>
+              <td>{{ s.targetPrice ? (s.targetPrice | inrCurrency) : '-' }}</td>
+              <td>{{ s.stopLossPrice ? (s.stopLossPrice | inrCurrency) : '-' }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Formatted WhatsApp Message Preview -->
+        <div class="wa-preview-card">
+          <h4>📱 WhatsApp Message Format:</h4>
+          <pre class="wa-code">{{ rep.formattedWhatsAppMessage }}</pre>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline" (click)="copyToClipboard(rep.formattedWhatsAppMessage)">
+          📋 Copy WhatsApp Text
+        </button>
+        <button type="button" class="btn btn-whatsapp" (click)="openWhatsAppDeepLink('https://wa.me/?text=' + rep.formattedWhatsAppMessage)">
+          📲 Send via WhatsApp
+        </button>
+        <button type="button" class="btn btn-primary" (click)="isMarketOpenModalOpen.set(false)">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Market Close Report -->
+  <div *ngIf="isMarketCloseModalOpen() && closeReportData() as rep" class="modal-overlay">
+    <div class="modal-card wide">
+      <div class="modal-header">
+        <h3>🌆 Market Closing Bell (03:30 PM) Summary</h3>
+        <button type="button" class="close-btn" (click)="isMarketCloseModalOpen.set(false)">✕</button>
+      </div>
+
+      <div class="modal-body-scroll">
+        <div class="report-meta">
+          <span>📅 Date: {{ rep.reportDate }}</span>
+          <span>⏰ Time: {{ rep.scanTimeIst }} IST</span>
+          <span>📊 Day P&L: <strong>{{ rep.dayTotalGainLoss >= 0 ? '+' : '' }}{{ rep.dayTotalGainLoss | inrCurrency }}</strong></span>
+        </div>
+
+        <div class="brief-box">
+          {{ rep.actionableBriefHindi }}
+        </div>
+
+        <!-- Close Prices Table -->
+        <table class="report-table">
+          <thead>
+            <tr>
+              <th>Share</th>
+              <th>Buy Price</th>
+              <th>🌆 Close Price</th>
+              <th>Day Change</th>
+              <th>Total Net P&L</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let s of rep.stocks">
+              <td><strong>{{ s.companyName }}</strong><br><small>{{ s.ticker }}</small></td>
+              <td>{{ s.buyPrice | inrCurrency }}</td>
+              <td class="bold-open">₹{{ s.closePrice | number:'1.2-2' }}</td>
+              <td [class.up]="s.dayChange >= 0" [class.down]="s.dayChange < 0">
+                {{ s.dayChange >= 0 ? '+' : '' }}{{ s.dayChangePercent | number:'1.2-2' }}%
+              </td>
+              <td [class.up]="s.totalProfitLoss >= 0" [class.down]="s.totalProfitLoss < 0">
+                {{ s.totalProfitLoss >= 0 ? '+' : '' }}{{ s.totalProfitLoss | inrCurrency }} ({{ s.totalProfitLossPct | number:'1.2-2' }}%)
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Formatted WhatsApp Message Preview -->
+        <div class="wa-preview-card">
+          <h4>📱 WhatsApp Message Format:</h4>
+          <pre class="wa-code">{{ rep.formattedWhatsAppMessage }}</pre>
+        </div>
+      </div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-outline" (click)="copyToClipboard(rep.formattedWhatsAppMessage)">
+          📋 Copy WhatsApp Text
+        </button>
+        <button type="button" class="btn btn-whatsapp" (click)="openWhatsAppDeepLink('https://wa.me/?text=' + rep.formattedWhatsAppMessage)">
+          📲 Send via WhatsApp
+        </button>
+        <button type="button" class="btn btn-primary" (click)="isMarketCloseModalOpen.set(false)">Close</button>
+      </div>
+    </div>
+  </div>
+</div>

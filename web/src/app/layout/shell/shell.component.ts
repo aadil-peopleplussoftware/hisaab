@@ -129,6 +129,14 @@ interface CommandItem {
             </a>
           }
 
+          @if (roleRightsService.canView('MyAssistant')) {
+            <a routerLink="/my-assistant" routerLinkActive="active" class="nav-item nav-item-my-assistant" title="My Assistant">
+              <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'myassistant' }" />
+              <span class="nav-label">My Assistant</span>
+              <span class="nav-badge-ai" style="background: linear-gradient(135deg, #0284c7, #25D366); color: #fff;">BOT</span>
+            </a>
+          }
+
           @if (roleRightsService.canView('MarketAi')) {
             <a routerLink="/market-ai" routerLinkActive="active" class="nav-item nav-item-market-ai" title="AI Stock Market Hub">
               <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'marketai' }" />
@@ -769,6 +777,14 @@ interface CommandItem {
                 </a>
               }
 
+              @if (roleRightsService.canView('MyAssistant')) {
+                <a routerLink="/my-assistant" (click)="closeMobileMenu()" class="drawer-link">
+                  <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'myassistant' }" />
+                  <span>My Assistant</span>
+                  <span class="nav-badge-pill" style="background: rgba(37, 211, 102, 0.15); color: #128c7e; font-weight: 700; font-size: 10px;">BOT</span>
+                </a>
+              }
+
               @if (roleRightsService.canView('MarketAi')) {
                 <a routerLink="/market-ai" (click)="closeMobileMenu()" class="drawer-link drawer-market-ai">
                   <span class="drawer-ai-icon">✨</span>
@@ -917,6 +933,9 @@ interface CommandItem {
                 @case ('tradedesk') {
                   <path d="M5 3a1 1 0 0 1 1 1v1h2a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1H6v7a1 1 0 1 1-2 0v-7H2a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h2V4a1 1 0 0 1 1-1zm12 5a1 1 0 0 1 1 1v1h2a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1h-2v2a1 1 0 1 1-2 0v-2h-2a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1h2v-1a1 1 0 0 1 1-1z" />
                 }
+                @case ('myassistant') {
+                  <path d="M12 2a2 2 0 0 1 2 2c0 .74-.4 1.39-1 1.73V7h1a7 7 0 0 1 7 7h1a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1h-1v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-1H2a1 1 0 0 1-1-1v-3a1 1 0 0 1 1-1h1a7 7 0 0 1 7-7h1V5.73c-.6-.34-1-.99-1-1.73a2 2 0 0 1 2-2zM7.5 13a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm9 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM8 18h8v-1.5H8V18z" />
+                }
                 @case ('business') {
                   <path d="M20 6h-4V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2zm-10-2h4v2h-4V4zm10 16H4V8h16v12z" />
                 }
@@ -989,6 +1008,13 @@ interface CommandItem {
                     <rect x="15" y="10" width="6" height="8" rx="1" fill="currentColor" fill-opacity="0.25" />
                     <line x1="18" y1="5" x2="18" y2="10" />
                     <line x1="18" y1="18" x2="18" y2="21" />
+                  }
+                  @case ('myassistant') {
+                    <rect x="4" y="6" width="16" height="14" rx="3" fill="currentColor" fill-opacity="0.25" />
+                    <line x1="12" y1="2" x2="12" y2="6" />
+                    <circle cx="9" cy="11" r="1.5" />
+                    <circle cx="15" cy="11" r="1.5" />
+                    <line x1="9" y1="16" x2="15" y2="16" />
                   }
                   @case ('business') {
                     <rect width="20" height="14" x="2" y="7" rx="2" fill="currentColor" fill-opacity="0.2" />
@@ -1078,6 +1104,13 @@ interface CommandItem {
                   <line x1="18" y1="5" x2="18" y2="10" />
                   <line x1="18" y1="18" x2="18" y2="21" />
                 }
+                @case ('myassistant') {
+                  <rect x="4" y="6" width="16" height="14" rx="2" />
+                  <line x1="12" y1="2" x2="12" y2="6" />
+                  <circle cx="9" cy="11" r="1.5" />
+                  <circle cx="15" cy="11" r="1.5" />
+                  <line x1="9" y1="16" x2="15" y2="16" />
+                }
                 @case ('business') {
                   <rect width="20" height="14" x="2" y="7" rx="1.5" />
                   <path d="M16 7V4a1 1 0 0 0-1-1H9a1 1 0 0 0-1 1v3" />
@@ -1160,6 +1193,13 @@ interface CommandItem {
                   <rect x="15.5" y="10" width="5" height="8" rx="0.5" />
                   <line x1="18" y1="5" x2="18" y2="10" />
                   <line x1="18" y1="18" x2="18" y2="21" />
+                }
+                @case ('myassistant') {
+                  <rect x="4" y="6" width="16" height="14" rx="2" />
+                  <line x1="12" y1="2" x2="12" y2="6" />
+                  <circle cx="9" cy="11" r="1.5" />
+                  <circle cx="15" cy="11" r="1.5" />
+                  <line x1="9" y1="16" x2="15" y2="16" />
                 }
                 @case ('business') {
                   <rect width="20" height="14" x="2" y="7" rx="2" />
@@ -2657,6 +2697,12 @@ export class ShellComponent implements OnInit {
       action: () => this.router.navigate(['/investments'])
     },
     {
+      id: 'goto-my-assistant',
+      title: 'Go to My Assistant (Stock Market Agent & Bot)',
+      category: 'Navigation',
+      action: () => this.router.navigate(['/my-assistant'])
+    },
+    {
       id: 'goto-business',
       title: 'Go to Business & Ventures',
       category: 'Navigation',
@@ -2909,6 +2955,7 @@ export class ShellComponent implements OnInit {
       if (c.id === 'goto-loans' && !this.roleRightsService.canView('Loans')) return false;
       if (c.id === 'goto-epfo' && !this.roleRightsService.canView('Epfo')) return false;
       if (c.id === 'goto-investments' && !this.roleRightsService.canView('Investments')) return false;
+      if (c.id === 'goto-my-assistant' && !this.roleRightsService.canView('MyAssistant')) return false;
       if (c.id === 'goto-market-ai' && !this.roleRightsService.canView('MarketAi')) return false;
       if (c.id === 'goto-business' && !this.roleRightsService.canView('Business')) return false;
       if (c.id === 'goto-goals' && !this.roleRightsService.canView('Goals')) return false;

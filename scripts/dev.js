@@ -1,8 +1,15 @@
-const { spawn } = require('child_process');
+const { spawn, execSync } = require('child_process');
 const path = require('path');
 
 const rootDir = path.resolve(__dirname, '..');
 const webDir = path.resolve(rootDir, 'web');
+
+// Automatically clean up any stale Hisaab.Api or lingering processes on ports 5000 / 4200
+if (process.platform === 'win32') {
+  try {
+    execSync('powershell -NoProfile -Command "Get-Process -Name \'Hisaab.Api\' -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue; (Get-NetTCPConnection -LocalPort 5000, 4200 -ErrorAction SilentlyContinue) | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }"', { stdio: 'ignore' });
+  } catch (_) {}
+}
 
 console.log('\x1b[35m%s\x1b[0m', '=====================================================');
 console.log('\x1b[36m%s\x1b[0m', ' 🚀 Hisaab Enterprise Personal Finance Web App');

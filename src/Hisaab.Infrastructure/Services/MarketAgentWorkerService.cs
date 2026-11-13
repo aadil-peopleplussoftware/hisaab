@@ -15,6 +15,8 @@ public class MarketAgentWorkerService : BackgroundService
 
     public static DateTime LastHeartbeatUtc { get; private set; } = DateTime.UtcNow;
     public static DateTime? LastPreMarketRunUtc { get; private set; }
+    public static DateTime? LastMarketOpenRunUtc { get; private set; }
+    public static DateTime? LastMarketCloseRunUtc { get; private set; }
     public static DateTime? LastSentinelRunUtc { get; private set; }
     public static int TotalAlertsDispatchedSession { get; private set; } = 0;
 
@@ -51,11 +53,25 @@ public class MarketAgentWorkerService : BackgroundService
                     await CheckAndRunPreMarketBriefingAsync(todayStr, stoppingToken);
                 }
 
-                // 2. Active Trading Hours Check (9:15 AM to 3:30 PM IST)
+                // 2. Market Open Routine (09:15 AM to 09:25 AM IST)
+                bool isMarketOpenWindow = (hour == 9 && minute >= 15 && minute <= 25) && isWeekday;
+                if (isMarketOpenWindow)
+                {
+                    await CheckAndRunMarketOpenBriefingAsync(todayStr, stoppingToken);
+                }
+
+                // 3. Active Trading Hours Check (9:15 AM to 3:30 PM IST)
                 bool isMarketHours = ((hour == 9 && minute >= 15) || (hour > 9 && hour < 15) || (hour == 15 && minute <= 30)) && isWeekday;
                 if (isMarketHours)
                 {
                     await CheckPortfolioSentinelAsync(stoppingToken);
+                }
+
+                // 4. Market Close Routine (03:30 PM to 03:45 PM IST)
+                bool isMarketCloseWindow = (hour == 15 && minute >= 30 && minute <= 45) && isWeekday;
+                if (isMarketCloseWindow)
+                {
+                    await CheckAndRunMarketCloseSummaryAsync(todayStr, stoppingToken);
                 }
             }
             catch (Exception ex)
@@ -93,6 +109,68 @@ public class MarketAgentWorkerService : BackgroundService
             if (success)
             {
                 TotalAlertsDispatchedSession++;
+            }
+        }
+    }
+
+    private async Task CheckAndRunMarketOpenBriefingAsync(string todayStr, CancellationToken ct)
+    {
+        using var scope = _scopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<IApplicationDbContext>();
+        var assistantAgent = scope.ServiceProvider.GetRequiredService<IMyAssistantAgent>();
+        var dispatcher = scope.ServiceProvider.GetRequiredService<IAlertDispatcherAgent>();
+
+        var settingsToRun = await context.MarketAgentUserSettings
+            .IgnoreQueryFilters()
+            .Where(s => s.EnableMarketOpenAlerts && (s.LastMarketOpenReportDate == null || s.LastMarketOpenReportDate != todayStr))
+            .ToListAsync(ct);
+
+        if (settingsToRun.Count == 0) return;
+
+        _logger.LogInformation("🔔 [MY ASSISTANT WORKER] Generating 09:15 AM Market Open reports for {Count} users...", settingsToRun.Count);
+        LastMarketOpenRunUtc = DateTime.UtcNow;
+
+        foreach (var setting in settingsToRun)
+        {
+            var report = await assistantAgent.GenerateMarketOpenReportAsync(setting.UserId, ct);
+            if (report.TotalHoldingsTracked > 0)
+            {
+                var success = await dispatcher.DispatchMarketOpenReportAsync(report, setting, ct);
+                if (success)
+                {
+                    TotalAlertsDispatchedSession++;
+                }
+            }
+        }
+    }
+
+    private async Task CheckAndRunMarketCloseSummaryAsync(string todayStr, CancellationToken ct)
+    {
+        using var scope = _scopeFactory.CreateScope();
+        var context = scope.ServiceProvider.GetRequiredService<IApplicationDbContext>();
+        var assistantAgent = scope.ServiceProvider.GetRequiredService<IMyAssistantAgent>();
+        var dispatcher = scope.ServiceProvider.GetRequiredService<IAlertDispatcherAgent>();
+
+        var settingsToRun = await context.MarketAgentUserSettings
+            .IgnoreQueryFilters()
+            .Where(s => s.EnableMarketCloseAlerts && (s.LastMarketCloseReportDate == null || s.LastMarketCloseReportDate != todayStr))
+            .ToListAsync(ct);
+
+        if (settingsToRun.Count == 0) return;
+
+        _logger.LogInformation("🌆 [MY ASSISTANT WORKER] Generating 03:30 PM Market Close summaries for {Count} users...", settingsToRun.Count);
+        LastMarketCloseRunUtc = DateTime.UtcNow;
+
+        foreach (var setting in settingsToRun)
+        {
+            var report = await assistantAgent.GenerateMarketCloseReportAsync(setting.UserId, ct);
+            if (report.TotalHoldingsTracked > 0)
+            {
+                var success = await dispatcher.DispatchMarketCloseReportAsync(report, setting, ct);
+                if (success)
+                {
+                    TotalAlertsDispatchedSession++;
+                }
             }
         }
     }

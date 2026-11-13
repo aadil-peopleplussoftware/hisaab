@@ -491,6 +491,26 @@ public class StockMarketService : IStockMarketService
             dayChangePct = prevClose > 0 ? (dayChange / prevClose) * 100m : 0m;
         }
 
+        // Extract regularMarketOpen
+        decimal openPrice = SafeGetDecimal(meta, "regularMarketOpen", 0m);
+        if (openPrice <= 0m && result.TryGetProperty("indicators", out var ind2) &&
+            ind2.TryGetProperty("quote", out var qArr) && qArr.GetArrayLength() > 0 &&
+            qArr[0].TryGetProperty("open", out var oArr) && oArr.GetArrayLength() > 0)
+        {
+            foreach (var elem in oArr.EnumerateArray())
+            {
+                if (elem.ValueKind == JsonValueKind.Number && elem.TryGetDecimal(out var ov) && ov > 0)
+                {
+                    openPrice = ov;
+                    break;
+                }
+            }
+        }
+        if (openPrice <= 0m)
+        {
+            openPrice = prevClose > 0 ? prevClose : currentPrice;
+        }
+
         string companyName = symbol;
         if (meta.TryGetProperty("longName", out var lnElem) && !string.IsNullOrWhiteSpace(lnElem.GetString()))
         {
@@ -526,7 +546,9 @@ public class StockMarketService : IStockMarketService
             Low52Week: Math.Round(low52, 2),
             Volume: volume,
             LastUpdatedUtc: DateTime.UtcNow,
-            IsMarketOpen: IsMarketHoursNow()
+            IsMarketOpen: IsMarketHoursNow(),
+            OpenPrice: Math.Round(openPrice, 2),
+            PreviousClose: Math.Round(prevClose, 2)
         );
     }
 
@@ -567,6 +589,10 @@ public class StockMarketService : IStockMarketService
         decimal dayChange = Math.Round(currentPrice - basePrice, 2);
         decimal dayChangePercent = Math.Round((dayChange / basePrice) * 100m, 2);
 
+        decimal openGapVariation = (decimal)((rand.NextDouble() * 1.6) - 0.7); // between -0.7% and +0.9%
+        decimal openPrice = Math.Round(basePrice * (1m + openGapVariation / 100m), 2);
+        decimal prevClose = basePrice;
+
         decimal dayHigh = Math.Round(Math.Max(currentPrice * 1.012m, basePrice * 1.018m), 2);
         decimal dayLow = Math.Round(Math.Min(currentPrice * 0.988m, basePrice * 0.982m), 2);
         long volume = 850000 + rand.Next(100000, 2500000);
@@ -584,7 +610,9 @@ public class StockMarketService : IStockMarketService
             Low52Week: low52,
             Volume: volume,
             LastUpdatedUtc: DateTime.UtcNow,
-            IsMarketOpen: IsMarketHoursNow()
+            IsMarketOpen: IsMarketHoursNow(),
+            OpenPrice: openPrice,
+            PreviousClose: prevClose
         );
     }
 

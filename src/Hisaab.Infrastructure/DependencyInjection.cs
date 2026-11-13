@@ -37,12 +37,20 @@ public static class DependencyInjection
         services.AddScoped<IStockAiEngine, StockAiEngine>();
         services.AddScoped<IIpoMarketService, IpoMarketService>();
 
-        // WhatsApp & Multi-Agent Market AI Services
+        // Multi-Channel Alert & Bot Services (WhatsApp, Telegram, Discord, ntfy.sh)
         services.AddHttpClient("WhatsAppClient");
         services.AddScoped<IWhatsAppService, WhatsAppService>();
+        services.AddHttpClient("TelegramClient");
+        services.AddScoped<ITelegramBotService, TelegramBotService>();
+        services.AddHttpClient("DiscordClient");
+        services.AddScoped<IDiscordWebhookService, DiscordWebhookService>();
+        services.AddHttpClient("NtfyClient");
+        services.AddScoped<INtfyService, NtfyService>();
+
         services.AddScoped<IPreMarketIntelligenceAgent, PreMarketIntelligenceAgent>();
         services.AddScoped<IPortfolioSentinelAgent, PortfolioSentinelAgent>();
         services.AddScoped<IAlertDispatcherAgent, AlertDispatcherAgent>();
+        services.AddScoped<IMyAssistantAgent, MyAssistantAgent>();
         services.AddHostedService<MarketAgentWorkerService>();
 
         // QuestPDF Community License for non-commercial/enterprise open use

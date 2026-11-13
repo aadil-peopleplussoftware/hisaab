@@ -13,7 +13,9 @@ public record MarketQuoteDto(
     decimal Low52Week,
     long Volume,
     DateTime LastUpdatedUtc,
-    bool IsMarketOpen
+    bool IsMarketOpen,
+    decimal OpenPrice = 0m,
+    decimal PreviousClose = 0m
 );
 
 public record StockHistoricalDataDto(

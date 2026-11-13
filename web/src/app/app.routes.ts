@@ -107,6 +107,12 @@ export const routes: Routes = [
         loadComponent: () => import('./features/trade-desk/trade-desk.component').then(m => m.TradeDeskComponent)
       },
       {
+        path: 'my-assistant',
+        canActivate: [authGuard, roleRightsGuard],
+        data: { module: 'MyAssistant' },
+        loadComponent: () => import('./features/my-assistant/my-assistant.component').then(m => m.MyAssistantComponent)
+      },
+      {
         path: 'market-ai',
         canActivate: [authGuard, roleRightsGuard],
         data: { module: 'MarketAi' },

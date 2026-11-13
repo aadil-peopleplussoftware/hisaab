@@ -24,6 +24,10 @@ public class WhatsAppService : IWhatsAppService
     public async Task<WhatsAppSendResult> SendWhatsAppMessageAsync(
         string phoneNumber,
         string message,
+        string? customProvider = null,
+        string? customApiKey = null,
+        string? customInstanceId = null,
+        string? customWebhookUrl = null,
         CancellationToken ct = default)
     {
         if (string.IsNullOrWhiteSpace(phoneNumber))
@@ -34,11 +38,59 @@ public class WhatsAppService : IWhatsAppService
         var cleanPhone = CleanPhoneNumber(phoneNumber);
         var clickUrl = GenerateWhatsAppClickUrl(cleanPhone, message);
 
-        var webhookUrl = _configuration["WhatsApp:WebhookUrl"];
-        var apiKey = _configuration["WhatsApp:ApiKey"];
-        var provider = _configuration["WhatsApp:Provider"]?.ToLowerInvariant() ?? "simulated";
+        var provider = (!string.IsNullOrWhiteSpace(customProvider) ? customProvider : (_configuration["WhatsApp:Provider"] ?? "CallMeBot")).Trim();
+        var apiKey = !string.IsNullOrWhiteSpace(customApiKey) ? customApiKey.Trim() : _configuration["WhatsApp:ApiKey"]?.Trim();
+        var instanceId = !string.IsNullOrWhiteSpace(customInstanceId) ? customInstanceId.Trim() : _configuration["WhatsApp:InstanceId"]?.Trim();
+        var webhookUrl = !string.IsNullOrWhiteSpace(customWebhookUrl) ? customWebhookUrl.Trim() : _configuration["WhatsApp:WebhookUrl"]?.Trim();
 
-        // If Webhook or API is configured, attempt direct delivery
+        // 1. CallMeBot Integration (100% Free & Zero-Setup Personal Bot)
+        if (provider.Equals("CallMeBot", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(apiKey))
+        {
+            try
+            {
+                var encoded = Uri.EscapeDataString(message);
+                var callMeBotUrl = $"https://api.callmebot.com/whatsapp.php?phone={cleanPhone}&text={encoded}&apikey={apiKey}";
+                var res = await _httpClient.GetAsync(callMeBotUrl, ct);
+                if (res.IsSuccessStatusCode)
+                {
+                    _logger.LogInformation("✅ [WHATSAPP CALLMEBOT SENT] Bot message sent successfully to +{Phone}", cleanPhone);
+                    return new WhatsAppSendResult(true, "Sent", Guid.NewGuid().ToString("N"), clickUrl, null);
+                }
+                var errContent = await res.Content.ReadAsStringAsync(ct);
+                _logger.LogWarning("⚠️ [WHATSAPP CALLMEBOT ERROR] Status: {Status}, Content: {Err}", res.StatusCode, errContent);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "⚠️ [WHATSAPP CALLMEBOT EXCEPTION] {Message}", ex.Message);
+            }
+        }
+
+        // 2. UltraMsg Integration (QR code scan linked bot)
+        if (provider.Equals("UltraMsg", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(instanceId) && !string.IsNullOrWhiteSpace(apiKey))
+        {
+            try
+            {
+                var ultraMsgUrl = $"https://api.ultramsg.com/{instanceId}/messages/chat";
+                var formValues = new Dictionary<string, string>
+                {
+                    ["token"] = apiKey,
+                    ["to"] = cleanPhone,
+                    ["body"] = message
+                };
+                var res = await _httpClient.PostAsync(ultraMsgUrl, new FormUrlEncodedContent(formValues), ct);
+                if (res.IsSuccessStatusCode)
+                {
+                    _logger.LogInformation("✅ [WHATSAPP ULTRAMSG SENT] Bot message dispatched to +{Phone}", cleanPhone);
+                    return new WhatsAppSendResult(true, "Sent", Guid.NewGuid().ToString("N"), clickUrl, null);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "⚠️ [WHATSAPP ULTRAMSG EXCEPTION] {Message}", ex.Message);
+            }
+        }
+
+        // 3. Webhook / Cloud API Delivery
         if (!string.IsNullOrWhiteSpace(webhookUrl))
         {
             try
@@ -72,7 +124,7 @@ public class WhatsAppService : IWhatsAppService
             }
         }
 
-        // Development / Fallback mode: generate verified 1-click WhatsApp deep link
+        // 4. Default / 1-Click Link Mode: Generates verified 1-click WhatsApp deep link
         _logger.LogInformation(
             "📲 [WHATSAPP ALERT READY]\nRecipient: +{Phone}\nMessage Preview:\n{Msg}\nWhatsApp Click-to-Send Link: {Url}",
             cleanPhone, message, clickUrl);

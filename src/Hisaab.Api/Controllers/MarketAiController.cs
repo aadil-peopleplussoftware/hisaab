@@ -346,7 +346,7 @@ public class MarketAiController : ApiControllerBase
             userId,
             req?.WhatsAppPhoneNumber,
             req?.EmailAddress,
-            cancellationToken);
+            ct: cancellationToken);
 
         return Ok(log);
     }

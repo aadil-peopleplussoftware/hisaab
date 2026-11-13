@@ -281,6 +281,25 @@ using (var scope = app.Services.CreateScope())
 
             CREATE INDEX IF NOT EXISTS ""IX_market_agent_user_settings_UserId"" ON market_agent_user_settings (""UserId"");
 
+            ALTER TABLE market_agent_user_settings ADD COLUMN IF NOT EXISTS ""EnableMarketOpenAlerts"" boolean NOT NULL DEFAULT true;
+            ALTER TABLE market_agent_user_settings ADD COLUMN IF NOT EXISTS ""EnableMarketCloseAlerts"" boolean NOT NULL DEFAULT true;
+            ALTER TABLE market_agent_user_settings ADD COLUMN IF NOT EXISTS ""MarketOpenScanTime"" character varying(10) NOT NULL DEFAULT '09:15';
+            ALTER TABLE market_agent_user_settings ADD COLUMN IF NOT EXISTS ""MarketCloseScanTime"" character varying(10) NOT NULL DEFAULT '15:30';
+            ALTER TABLE market_agent_user_settings ADD COLUMN IF NOT EXISTS ""LastMarketOpenReportDate"" character varying(20);
+            ALTER TABLE market_agent_user_settings ADD COLUMN IF NOT EXISTS ""LastMarketCloseReportDate"" character varying(20);
+            ALTER TABLE market_agent_user_settings ADD COLUMN IF NOT EXISTS ""WhatsAppProvider"" character varying(50) DEFAULT 'CallMeBot';
+            ALTER TABLE market_agent_user_settings ADD COLUMN IF NOT EXISTS ""WhatsAppApiKey"" character varying(200);
+            ALTER TABLE market_agent_user_settings ADD COLUMN IF NOT EXISTS ""WhatsAppInstanceId"" character varying(100);
+            ALTER TABLE market_agent_user_settings ADD COLUMN IF NOT EXISTS ""WhatsAppWebhookUrl"" character varying(500);
+            ALTER TABLE market_agent_user_settings ADD COLUMN IF NOT EXISTS ""EnableTelegramDispatch"" boolean NOT NULL DEFAULT false;
+            ALTER TABLE market_agent_user_settings ADD COLUMN IF NOT EXISTS ""TelegramBotToken"" character varying(200);
+            ALTER TABLE market_agent_user_settings ADD COLUMN IF NOT EXISTS ""TelegramChatId"" character varying(100);
+            ALTER TABLE market_agent_user_settings ADD COLUMN IF NOT EXISTS ""EnableDiscordDispatch"" boolean NOT NULL DEFAULT false;
+            ALTER TABLE market_agent_user_settings ADD COLUMN IF NOT EXISTS ""DiscordWebhookUrl"" character varying(500);
+            ALTER TABLE market_agent_user_settings ADD COLUMN IF NOT EXISTS ""EnableNtfyDispatch"" boolean NOT NULL DEFAULT false;
+            ALTER TABLE market_agent_user_settings ADD COLUMN IF NOT EXISTS ""NtfyTopic"" character varying(150);
+            ALTER TABLE market_agent_user_settings ADD COLUMN IF NOT EXISTS ""NtfyServerUrl"" character varying(250) DEFAULT 'https://ntfy.sh';
+
             CREATE TABLE IF NOT EXISTS market_agent_alert_logs (
                 ""Id"" uuid NOT NULL,
                 ""UserId"" uuid NOT NULL,
@@ -294,6 +313,9 @@ using (var scope = app.Services.CreateScope())
                 ""ProfitOrLossAmount"" numeric(18,2),
                 ""WhatsAppStatus"" character varying(50) NOT NULL DEFAULT 'Pending',
                 ""EmailStatus"" character varying(50) NOT NULL DEFAULT 'Pending',
+                ""TelegramStatus"" character varying(50) NOT NULL DEFAULT 'Disabled',
+                ""DiscordStatus"" character varying(50) NOT NULL DEFAULT 'Disabled',
+                ""NtfyStatus"" character varying(50) NOT NULL DEFAULT 'Disabled',
                 ""WhatsAppClickUrl"" text,
                 ""CreatedAtUtc"" timestamp with time zone NOT NULL,
                 ""UpdatedAtUtc"" timestamp with time zone,
@@ -306,6 +328,10 @@ using (var scope = app.Services.CreateScope())
                 ""ImportBatchId"" uuid,
                 CONSTRAINT ""PK_market_agent_alert_logs"" PRIMARY KEY (""Id"")
             );
+
+            ALTER TABLE market_agent_alert_logs ADD COLUMN IF NOT EXISTS ""TelegramStatus"" character varying(50) DEFAULT 'Disabled';
+            ALTER TABLE market_agent_alert_logs ADD COLUMN IF NOT EXISTS ""DiscordStatus"" character varying(50) DEFAULT 'Disabled';
+            ALTER TABLE market_agent_alert_logs ADD COLUMN IF NOT EXISTS ""NtfyStatus"" character varying(50) DEFAULT 'Disabled';
 
             CREATE INDEX IF NOT EXISTS ""IX_market_agent_alert_logs_UserId_CreatedAtUtc"" ON market_agent_alert_logs (""UserId"", ""CreatedAtUtc"");
             CREATE INDEX IF NOT EXISTS ""IX_market_agent_alert_logs_UserId_Ticker"" ON market_agent_alert_logs (""UserId"", ""Ticker"");

@@ -14,6 +14,9 @@ public class MarketAgentAlertLog : UserOwnedEntity
     public decimal? ProfitOrLossAmount { get; set; }
     public string WhatsAppStatus { get; set; } = "Pending"; // Sent, Simulated, Ready, Failed, Disabled
     public string EmailStatus { get; set; } = "Pending"; // Sent, Simulated, Failed, Disabled
+    public string TelegramStatus { get; set; } = "Disabled"; // Sent, Failed, Disabled
+    public string DiscordStatus { get; set; } = "Disabled"; // Sent, Failed, Disabled
+    public string NtfyStatus { get; set; } = "Disabled"; // Sent, Failed, Disabled
     public string? WhatsAppClickUrl { get; set; }
 }
 
