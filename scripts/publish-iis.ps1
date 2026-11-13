@@ -79,6 +79,27 @@ if (Test-Path $WebConfigFile) {
             }
         }
 
+        if (-not $systemWebServer.staticContent) {
+            $staticContent = $xml.CreateElement("staticContent")
+            $rem1 = $xml.CreateElement("remove")
+            $rem1.SetAttribute("fileExtension", ".woff2")
+            $m1 = $xml.CreateElement("mimeMap")
+            $m1.SetAttribute("fileExtension", ".woff2")
+            $m1.SetAttribute("mimeType", "font/woff2")
+
+            $rem2 = $xml.CreateElement("remove")
+            $rem2.SetAttribute("fileExtension", ".woff")
+            $m2 = $xml.CreateElement("mimeMap")
+            $m2.SetAttribute("fileExtension", ".woff")
+            $m2.SetAttribute("mimeType", "font/woff")
+
+            $staticContent.AppendChild($rem1) | Out-Null
+            $staticContent.AppendChild($m1) | Out-Null
+            $staticContent.AppendChild($rem2) | Out-Null
+            $staticContent.AppendChild($m2) | Out-Null
+            $systemWebServer.AppendChild($staticContent) | Out-Null
+        }
+
         if (-not $systemWebServer.httpProtocol) {
             $httpProtocol = $xml.CreateElement("httpProtocol")
             $customHeaders = $xml.CreateElement("customHeaders")
