@@ -14,82 +14,110 @@ import {
   LiquiditySummary
 } from './models/khata.model';
 import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
+import { StatCardComponent } from '../../shared/components/stat-card/stat-card.component';
 
 @Component({
   selector: 'app-khata',
   standalone: true,
-  imports: [CommonModule, FormsModule, InrCurrencyPipe],
+  imports: [CommonModule, FormsModule, InrCurrencyPipe, StatCardComponent],
   template: `
-    <div class="khata-container">
-      <!-- Page Header -->
-      <header class="page-header">
+    <div class="goals-page khata-page">
+      <!-- Header & Top Actions (Matching Dreams & Goals / Transactions) -->
+      <div class="page-header no-print">
         <div class="header-titles">
-          <div class="title-row">
-            <div class="header-icon-box">📖</div>
-            <div>
-              <h1 class="page-title">Local Khata & Len-Den (कच्चा-पक्का हिसाब)</h1>
-              <p class="subtitle">Complete Passbooks, Net Balance vs Accounts, and Shopping/Trip Expense Reconciliation</p>
-            </div>
+          <div class="title-with-badge">
+            <h1 class="page-title">Local Khata & Len-Den</h1>
+            <span class="header-badge">कच्चा-पक्का हिसाब</span>
           </div>
+          <p class="subtitle">Complete Passbooks, Net Balance vs Accounts, and Shopping/Trip Expense Reconciliation</p>
         </div>
 
         <div class="header-actions">
-          <button type="button" class="btn-sheet-import" (click)="importSampleSheetData()" [disabled]="loading()">
-            <span class="btn-emoji">⚡</span>
-            <span>Import My Sheet Data</span>
+          <button type="button" class="btn-console-pill" (click)="importSampleSheetData()" [disabled]="loading()" title="Import pre-configured data">
+            ⚡ Import Sheet
           </button>
-          <button type="button" class="btn-danger-outline" (click)="confirmClearAllData()" [disabled]="loading()" title="Clear all local khata data to start fresh">
-            <span class="btn-emoji">🗑️</span>
-            <span>Reset All</span>
+          <button type="button" class="btn-console-pill danger-outline" (click)="confirmClearAllData()" [disabled]="loading()" title="Clear all local khata data">
+            🗑️ Reset All
           </button>
           @if (activeTab() === 'parties') {
             <button type="button" class="btn-primary" (click)="openNewPartyModal()">
-              <span class="btn-plus">+</span> New Person Khata
+              <span class="btn-icon">＋</span> New Person Khata
             </button>
           } @else if (activeTab() === 'liquidity') {
             <button type="button" class="btn-primary" (click)="openAddAccountModal()">
-              <span class="btn-plus">+</span> Add Bank/Share A/c
+              <span class="btn-icon">＋</span> Add Bank/Share A/c
             </button>
           } @else if (activeTab() === 'events') {
             <button type="button" class="btn-primary" (click)="openNewEventModal()">
-              <span class="btn-plus">+</span> New Shopping Trip
+              <span class="btn-icon">＋</span> New Shopping Trip
             </button>
           }
         </div>
-      </header>
+      </div>
 
-      <!-- Main Navigation Tabs -->
-      <nav class="nav-tabs">
+      <!-- KPI Summary Stat Cards (Clean 4-Card Row matching Goals / Transactions) -->
+      <div class="summary-grid">
+        <app-stat-card
+          title="Total Dena Hai (Payable)"
+          [amount]="summary()?.totalDenaHai || 0"
+          subtitle="Lenders & family debts to repay"
+          variant="expense"
+        />
+        <app-stat-card
+          title="Total Lena Hai (Receivable)"
+          [amount]="summary()?.totalLenaHai || 0"
+          subtitle="Money lent to others to collect"
+          variant="income"
+        />
+        <app-stat-card
+          title="Net Balance Position"
+          [amount]="summary()?.netBalance || 0"
+          subtitle="Surplus or Net Debt to clear"
+          variant="neutral"
+        />
+        <div class="stat-card settled-kpi-card" (click)="setPartyStatusFilter('SETTLED')" style="cursor: pointer;" title="Click to view all closed/settled accounts">
+          <div class="stat-header">
+            <span class="stat-title">Closed / Settled (हिसाब चुकता)</span>
+          </div>
+          <div class="stat-amount text-success">
+            {{ summary()?.settledCount || 0 }} Accounts
+          </div>
+          <div class="stat-subtitle">Click to view settled history</div>
+        </div>
+      </div>
+
+      <!-- Section Navigation Tabs -->
+      <nav class="main-nav-tabs no-print">
         <button
           type="button"
-          class="tab-btn"
+          class="nav-tab-btn"
           [class.active]="activeTab() === 'parties'"
           (click)="setActiveTab('parties')">
-          <span class="tab-icon">👥</span>
-          <span class="tab-label">Party Ledgers (व्यक्तिगत खाते)</span>
-          <span class="tab-badge">{{ parties().length }}</span>
+          <span class="nav-tab-icon">👥</span>
+          <span>Party Ledgers (व्यक्तिगत खाते)</span>
+          <span class="nav-tab-badge">{{ parties().length }}</span>
         </button>
 
         <button
           type="button"
-          class="tab-btn"
+          class="nav-tab-btn"
           [class.active]="activeTab() === 'liquidity'"
           (click)="setActiveTab('liquidity')">
-          <span class="tab-icon">🏦</span>
-          <span class="tab-label">Settlement & Liquidity (Image 1 Engine)</span>
+          <span class="nav-tab-icon">🏦</span>
+          <span>Settlement & Liquidity (Image 1 Engine)</span>
           @if (liquidityData(); as liq) {
-            <span class="tab-badge warning">In-Hand ₹{{ liq.finalInHand | number:'1.0-0' }}</span>
+            <span class="nav-tab-badge warning">In-Hand ₹{{ liq.finalInHand | number:'1.0-0' }}</span>
           }
         </button>
 
         <button
           type="button"
-          class="tab-btn"
+          class="nav-tab-btn"
           [class.active]="activeTab() === 'events'"
           (click)="setActiveTab('events')">
-          <span class="tab-icon">🛍️</span>
-          <span class="tab-label">Shopping & Local Kharcha (Image 2)</span>
-          <span class="tab-badge">{{ events().length }}</span>
+          <span class="nav-tab-icon">🛍️</span>
+          <span>Shopping & Local Kharcha (Image 2)</span>
+          <span class="nav-tab-badge">{{ events().length }}</span>
         </button>
       </nav>
 
@@ -107,116 +135,75 @@ import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
       <!-- TAB 1: PARTIES & PASSBOOKS -->
       @if (activeTab() === 'parties') {
         <section class="tab-content">
-          <!-- Summary Cards Row -->
-          <div class="summary-cards">
-            <div class="card stat-card payable-card">
-              <div class="card-icon icon-red">🔴</div>
-              <div class="card-info">
-                <span class="card-label">Total Dena Hai (Payable)</span>
-                <span class="card-amount text-danger">{{ summary()?.totalDenaHai || 0 | inrCurrency }}</span>
-                <span class="card-sub">Lenders & family debts to repay</span>
-              </div>
-            </div>
-
-            <div class="card stat-card receivable-card">
-              <div class="card-icon icon-green">🟢</div>
-              <div class="card-info">
-                <span class="card-label">Total Lena Hai (Receivable)</span>
-                <span class="card-amount text-success">{{ summary()?.totalLenaHai || 0 | inrCurrency }}</span>
-                <span class="card-sub">Money lent to others to collect</span>
-              </div>
-            </div>
-
-            <div class="card stat-card net-card">
-              <div class="card-icon icon-blue">⚖️</div>
-              <div class="card-info">
-                <span class="card-label">Net Balance Position</span>
-                <span class="card-amount" [class.text-success]="(summary()?.netBalance || 0) >= 0" [class.text-danger]="(summary()?.netBalance || 0) < 0">
-                  {{ summary()?.netBalance || 0 | inrCurrency }}
-                </span>
-                <span class="card-sub">{{ (summary()?.netBalance || 0) >= 0 ? 'Surplus (Net Receivable)' : 'Net Debt to Clear' }}</span>
-              </div>
-            </div>
-
-            <div class="card stat-card settled-kpi-card" (click)="setPartyStatusFilter('SETTLED')" style="cursor: pointer;" title="Click to view all closed/settled accounts">
-              <div class="card-icon icon-emerald">🏁</div>
-              <div class="card-info">
-                <span class="card-label">Closed / Settled (हिसाब चुकता)</span>
-                <span class="card-amount text-success">{{ summary()?.settledCount || 0 }} Accounts</span>
-                <span class="card-sub">Click to view settled history</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Status Segmented Filter Bar: Active vs Settled/Closed (Default: Active) -->
-          <div class="status-segmented-container">
-            <div class="status-segmented-bar">
+          <!-- Unified Filters & Toolbar (Matches Image 2 Goals Toolbar Structure) -->
+          <div class="toolbar card no-print">
+            <!-- Status Tabs (Top Row) -->
+            <div class="status-tabs">
               <button
                 type="button"
-                class="status-tab-btn"
+                class="tab-btn"
                 [class.active]="partyStatusFilter() === 'ACTIVE'"
                 (click)="setPartyStatusFilter('ACTIVE')">
-                <span class="status-indicator active-dot"></span>
-                <span class="status-tab-label">🟢 Active Accounts (चलते खाते)</span>
-                <span class="status-tab-pill">{{ summary()?.activeCount ?? 0 }}</span>
+                Active Accounts ({{ summary()?.activeCount ?? 0 }})
               </button>
-
               <button
                 type="button"
-                class="status-tab-btn"
+                class="tab-btn"
                 [class.active]="partyStatusFilter() === 'SETTLED'"
                 (click)="setPartyStatusFilter('SETTLED')">
-                <span class="status-indicator settled-dot"></span>
-                <span class="status-tab-label">🏁 Closed / Settled (हिसाब चुकता)</span>
-                <span class="status-tab-pill settled-pill">{{ summary()?.settledCount ?? 0 }}</span>
+                Closed / Settled ({{ summary()?.settledCount ?? 0 }})
               </button>
-
               <button
                 type="button"
-                class="status-tab-btn"
+                class="tab-btn"
                 [class.active]="partyStatusFilter() === 'ALL'"
                 (click)="setPartyStatusFilter('ALL')">
-                <span class="status-indicator all-dot"></span>
-                <span class="status-tab-label">📋 All Ledgers (कुल खाते)</span>
-                <span class="status-tab-pill all-pill">{{ summary()?.totalParties ?? 0 }}</span>
+                All ({{ summary()?.totalParties ?? 0 }})
               </button>
             </div>
-          </div>
 
-          <!-- Filter & Search Toolbar -->
-          <div class="toolbar-card card">
-            <div class="search-box">
-              <span class="search-icon">🔍</span>
-              <input
-                type="text"
-                class="search-input"
-                placeholder="Search person by name, phone, or remark..."
-                [ngModel]="searchQuery()"
-                (ngModelChange)="onSearchChange($event)" />
-            </div>
+            <!-- Filter Controls (Bottom Row) -->
+            <div class="filter-controls">
+              <div class="search-wrap">
+                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="11" cy="11" r="8"></circle>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                </svg>
+                <input
+                  type="text"
+                  class="search-input"
+                  placeholder="Search person by name, phone, or remark..."
+                  [ngModel]="searchQuery()"
+                  (ngModelChange)="onSearchChange($event)"
+                />
+                @if (searchQuery()) {
+                  <button type="button" class="clear-search" (click)="onSearchChange('')">✕</button>
+                }
+              </div>
 
-            <div class="filter-pills">
-              <button
-                type="button"
-                class="pill-btn"
-                [class.active]="partyFilter() === 'ALL'"
-                (click)="setPartyFilter('ALL')">
-                All Types ({{ filteredParties().length }})
-              </button>
-              <button
-                type="button"
-                class="pill-btn pill-danger"
-                [class.active]="partyFilter() === 'Payable'"
-                (click)="setPartyFilter('Payable')">
-                🔴 Dena Hai (Payable)
-              </button>
-              <button
-                type="button"
-                class="pill-btn pill-success"
-                [class.active]="partyFilter() === 'Receivable'"
-                (click)="setPartyFilter('Receivable')">
-                🟢 Lena Hai (Receivable)
-              </button>
+              <div class="filter-pills">
+                <button
+                  type="button"
+                  class="pill-btn"
+                  [class.active]="partyFilter() === 'ALL'"
+                  (click)="setPartyFilter('ALL')">
+                  All Types ({{ filteredParties().length }})
+                </button>
+                <button
+                  type="button"
+                  class="pill-btn pill-danger"
+                  [class.active]="partyFilter() === 'Payable'"
+                  (click)="setPartyFilter('Payable')">
+                  🔴 Dena Hai (Payable)
+                </button>
+                <button
+                  type="button"
+                  class="pill-btn pill-success"
+                  [class.active]="partyFilter() === 'Receivable'"
+                  (click)="setPartyFilter('Receivable')">
+                  🟢 Lena Hai (Receivable)
+                </button>
+              </div>
             </div>
           </div>
 
@@ -234,7 +221,7 @@ import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
                 @if (partyStatusFilter() === 'SETTLED') {
                   Accounts that are marked as settled (हिसाब चुकता) or fully cleared will appear here.
                 } @else {
-                  Create your first person's khata or click "Import My Sheet Data" above to load Junaid, Mosin, and other loans.
+                  Create your first person's khata or click "Import Sheet" above to load Junaid, Mosin, and other loans.
                 }
               </p>
               @if (partyStatusFilter() === 'SETTLED') {
@@ -246,85 +233,88 @@ import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
           } @else {
             <div class="parties-grid">
               @for (party of filteredParties(); track party.id) {
-                <div class="party-card card" [class.is-settled]="party.isSettled" (click)="openPartyPassbook(party.id)">
-                  <div class="party-card-top">
-                    <div class="party-avatar" [class.payable]="party.type === 'Payable'" [class.receivable]="party.type === 'Receivable'">
-                      {{ party.name.substring(0, 2).toUpperCase() }}
-                    </div>
-                    <div class="party-meta">
-                      <div class="party-name-row">
-                        <div class="party-name-group">
-                          <h3 class="party-name">{{ party.name }}</h3>
-                          @if (party.isSettled) {
-                            <span class="badge badge-settled-pill">🏁 Settled</span>
-                          } @else if (party.netPending === 0 && party.entriesCount > 0) {
-                            <span class="badge badge-ready-pill">✨ ₹0 Clear</span>
-                          } @else {
-                            <span class="badge badge-active-pill">🟢 Active</span>
-                          }
-                        </div>
-                        <span class="badge" [class.badge-danger]="party.type === 'Payable'" [class.badge-success]="party.type === 'Receivable'">
-                          {{ party.type === 'Payable' ? 'Dena Hai' : 'Lena Hai' }}
-                        </span>
+                <div class="khata-card card" [class.is-payable]="party.type === 'Payable'" [class.is-receivable]="party.type === 'Receivable'" [class.is-settled]="party.isSettled" (click)="openPartyPassbook(party.id)">
+                  <!-- Card Header -->
+                  <div class="card-header">
+                    <div class="header-left">
+                      <div class="party-avatar" [class.payable]="party.type === 'Payable'" [class.receivable]="party.type === 'Receivable'">
+                        {{ party.name.substring(0, 2).toUpperCase() }}
                       </div>
-                      <span class="party-category">{{ party.category || 'General' }} • {{ party.entriesCount }} transactions</span>
+                      <div class="party-titles">
+                        <h3 class="party-name">{{ party.name }}</h3>
+                        <span class="party-subtitle">{{ party.category || 'General' }} &bull; {{ party.entriesCount }} transactions</span>
+                      </div>
                     </div>
-
-                    <!-- Quick Party Edit, Settle & Delete Action Menu -->
-                    <div class="party-card-actions" (click)="$event.stopPropagation()">
+                    <div class="header-right">
+                      <span class="badge" [class.badge-danger]="party.type === 'Payable'" [class.badge-success]="party.type === 'Receivable'">
+                        {{ party.type === 'Payable' ? 'Dena Hai' : 'Lena Hai' }}
+                      </span>
                       @if (party.isSettled) {
-                        <button type="button" class="btn-action-icon btn-reopen-icon" (click)="toggleSettleParty(party, $event)" title="Reopen Khata (खाता दोबारा चालू करें)">🔄</button>
+                        <span class="status-pill status-achieved">🏁 Settled</span>
+                      } @else if (party.netPending === 0 && party.entriesCount > 0) {
+                        <span class="status-pill status-paused">✨ ₹0 Clear</span>
                       } @else {
-                        <button type="button" class="btn-action-icon btn-settle-icon" (click)="toggleSettleParty(party, $event)" title="Mark as Settled / Close Khata (हिसाब चुकता करें)">✓</button>
-                      }
-                      <button type="button" class="btn-action-icon" (click)="openEditPartyModal(party)" title="Edit Person Details">✏️</button>
-                      <button type="button" class="btn-action-icon btn-del-icon" (click)="deleteParty(party)" title="Delete Khata">🗑️</button>
-                    </div>
-                  </div>
-
-                  <div class="party-balance-row" [class.settled-balance-row]="party.isSettled">
-                    <div class="balance-left">
-                      <span class="balance-label">
-                        @if (party.isSettled) {
-                          Ledger Status
-                        } @else {
-                          Net Pending Amount
-                        }
-                      </span>
-                      <span class="balance-value" [class.text-danger]="!party.isSettled && party.type === 'Payable'" [class.text-success]="!party.isSettled && party.type === 'Receivable'" [class.text-settled]="party.isSettled">
-                        @if (party.isSettled) {
-                          ✓ हिसाब चुकता (Settled)
-                        } @else {
-                          {{ party.netPending | inrCurrency }}
-                        }
-                      </span>
-                    </div>
-                    <div class="balance-action">
-                      @if (!party.isSettled && party.netPending === 0 && party.entriesCount > 0) {
-                        <button type="button" class="btn-quick-settle" (click)="toggleSettleParty(party, $event)" title="Click to Settle & Close Khata">✓ Settle Khata</button>
-                      } @else {
-                        <button type="button" class="btn-open-passbook">{{ party.isSettled ? 'View Passbook ➔' : 'Passbook ➔' }}</button>
+                        <span class="status-pill status-progress">🟢 Active</span>
                       }
                     </div>
                   </div>
 
-                  <div class="party-mini-ledger">
-                    <div class="mini-col">
-                      <span class="mini-lbl">IN (Mila/Received)</span>
-                      <span class="mini-val text-success">{{ party.totalIn | inrCurrency }}</span>
+                  <!-- Amounts Grid (Matches Goals amounts-grid) -->
+                  <div class="amounts-grid">
+                    <div class="amount-box">
+                      <span class="amount-lbl">Mila (IN)</span>
+                      <span class="amount-val text-green">{{ party.totalIn | inrCurrency }}</span>
                     </div>
-                    <div class="mini-col divider"></div>
-                    <div class="mini-col">
-                      <span class="mini-lbl">OUT (Diya/Spent)</span>
-                      <span class="mini-val text-danger">{{ party.totalOut | inrCurrency }}</span>
+                    <div class="amount-box">
+                      <span class="amount-lbl">Diya (OUT)</span>
+                      <span class="amount-val text-danger">{{ party.totalOut | inrCurrency }}</span>
+                    </div>
+                    <div class="amount-box highlight">
+                      <span class="amount-lbl">Net Pending</span>
+                      <span class="amount-val font-bold" [class.text-danger]="!party.isSettled && party.type === 'Payable'" [class.text-success]="!party.isSettled && party.type === 'Receivable'" [class.text-settled]="party.isSettled">
+                        {{ party.isSettled ? '✓ Chukta' : (party.netPending | inrCurrency) }}
+                      </span>
                     </div>
                   </div>
 
+                  <!-- Notes Preview if available -->
                   @if (party.notes) {
-                    <div class="party-note-preview">
-                      <span>📝 {{ party.notes }}</span>
+                    <div class="note-preview">
+                      <span class="note-text">📝 {{ party.notes }}</span>
                     </div>
                   }
+
+                  <!-- Card Footer (Matches Goals card-footer) -->
+                  <div class="card-footer" (click)="$event.stopPropagation()">
+                    <div class="footer-left">
+                      <button type="button" class="btn-detail" (click)="openPartyPassbook(party.id)">
+                        {{ party.isSettled ? 'View Passbook →' : 'Passbook →' }}
+                      </button>
+                      @if (!party.isSettled && party.netPending === 0 && party.entriesCount > 0) {
+                        <button type="button" class="btn-quick-settle" (click)="toggleSettleParty(party, $event)" title="Mark account as settled">
+                          ✓ Settle
+                        </button>
+                      }
+                    </div>
+
+                    <div class="footer-right">
+                      @if (party.isSettled) {
+                        <button type="button" class="icon-action-btn" (click)="toggleSettleParty(party, $event)" title="Reopen Khata (खाता दोबारा चालू करें)">
+                          🔄
+                        </button>
+                      } @else {
+                        <button type="button" class="icon-action-btn" (click)="toggleSettleParty(party, $event)" title="Mark as Settled / Close Khata">
+                          ✓
+                        </button>
+                      }
+                      <button type="button" class="icon-action-btn" (click)="openEditPartyModal(party)" title="Edit Person Details">
+                        ✏️
+                      </button>
+                      <button type="button" class="icon-action-btn btn-del" (click)="deleteParty(party)" title="Delete Khata">
+                        🗑️
+                      </button>
+                    </div>
+                  </div>
                 </div>
               }
             </div>
@@ -707,9 +697,9 @@ import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
                   <div class="flex-center gap-2">
                     <h2 class="drawer-name">{{ p.name }}</h2>
                     @if (p.isSettled) {
-                      <span class="badge badge-settled-pill">🏁 Settled / चुकता</span>
+                      <span class="status-pill status-achieved">🏁 Settled</span>
                     } @else {
-                      <span class="badge badge-active-pill">🟢 Active</span>
+                      <span class="status-pill status-progress">🟢 Active</span>
                     }
                     <button type="button" class="btn-action-icon" (click)="openEditPartyModal(p)" title="Edit Person Details">✏️</button>
                     <button type="button" class="btn-action-icon btn-del-icon" (click)="deleteParty(p)" title="Delete Khata">🗑️</button>
@@ -1112,11 +1102,12 @@ import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
     </div>
   `,
   styles: [`
-    /* Fluid Container: Expands cleanly across 24", 25", 27", 32" monitors, and 55" TV */
-    .khata-container {
+    /* Clean Fluid Page Layout matching Dreams & Goals & Transactions */
+    .goals-page, .khata-page {
+      padding: 1.5rem;
+      max-width: 1400px;
+      margin: 0 auto;
       width: 100%;
-      max-width: 100%;
-      padding: 0.75rem 1rem 3rem;
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
@@ -1127,101 +1118,202 @@ import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
     .page-header {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1.25rem;
-      background: var(--bg-card, #ffffff);
-      padding: 1.25rem 1.75rem;
-      border-radius: 1rem;
-      border: 1px solid var(--border-color, #e2e8f0);
-      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
-    }
-    .header-titles .title-row {
-      display: flex;
-      align-items: center;
+      align-items: flex-start;
+      margin-bottom: 0.25rem;
       gap: 1rem;
+      flex-wrap: wrap;
     }
-    .header-icon-box {
-      font-size: 2.2rem;
-      width: 56px;
-      height: 56px;
+    .title-with-badge {
       display: flex;
       align-items: center;
-      justify-content: center;
-      background: #f8fafc;
-      border: 1px solid #e2e8f0;
-      border-radius: 0.85rem;
-      flex-shrink: 0;
+      gap: 0.75rem;
     }
     .page-title {
-      font-size: 1.6rem;
-      font-weight: 800;
-      color: var(--text-primary, #0f172a);
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--color-fg-default, #0f172a);
       margin: 0;
-      line-height: 1.2;
-      letter-spacing: -0.01em;
+      letter-spacing: -0.02em;
+    }
+    .header-badge {
+      background: rgba(245, 158, 11, 0.15);
+      color: #d97706;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.2rem 0.55rem;
+      border-radius: 9999px;
+      border: 1px solid rgba(245, 158, 11, 0.3);
     }
     .subtitle {
-      font-size: 0.875rem;
-      color: var(--text-secondary, #64748b);
-      margin: 0.35rem 0 0;
+      color: var(--color-fg-muted, #64748b);
+      font-size: 0.9rem;
+      margin: 0.25rem 0 0;
     }
     .header-actions {
       display: flex;
-      gap: 0.75rem;
       align-items: center;
+      gap: 0.75rem;
       flex-wrap: wrap;
     }
-
-    /* Navigation Tabs */
-    .nav-tabs {
-      display: flex;
-      gap: 0.75rem;
-      border-bottom: 2px solid var(--border-color, #e2e8f0);
-      padding-bottom: 0.25rem;
-      overflow-x: auto;
+    .btn-console-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.45rem 0.95rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: 9999px;
+      border: 1px solid var(--color-border-default, #cbd5e1);
+      background: var(--color-canvas-default, #ffffff);
+      color: var(--color-fg-default, #0f172a);
+      cursor: pointer;
+      transition: all 0.15s ease;
     }
-    .tab-btn {
+    .btn-console-pill:hover {
+      background: var(--color-canvas-surface, #f8fafc);
+      border-color: var(--color-border-subtle, #94a3b8);
+    }
+    .btn-console-pill.danger-outline {
+      color: #dc2626;
+      border-color: #fca5a5;
+    }
+    .btn-console-pill.danger-outline:hover {
+      background: #fef2f2;
+      border-color: #f87171;
+    }
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.55rem 1.15rem;
+      background: var(--color-accent-emphasis, #10b981);
+      color: #ffffff;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-primary:hover {
+      filter: brightness(0.92);
+    }
+    .btn-icon {
+      font-size: 1.05rem;
+      font-weight: 800;
+    }
+
+    /* KPI Summary Stat Cards Grid */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    .settled-kpi-card {
+      background: var(--color-bg-card, #ffffff);
+      border: 1px solid var(--color-border, #e2e8f0);
+      border-radius: var(--radius-md, 8px);
+      padding: 0.7rem 0.95rem;
+      box-shadow: var(--shadow-xs, 0 1px 2px rgba(0,0,0,0.04));
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+    }
+    .settled-kpi-card:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+      transform: translateY(-1px);
+    }
+    .settled-kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background: #059669;
+    }
+    .stat-header {
       display: flex;
       align-items: center;
-      gap: 0.65rem;
-      padding: 0.85rem 1.5rem;
-      border: none;
-      background: transparent;
-      font-size: 0.95rem;
+      width: 100%;
+    }
+    .stat-title {
+      font-size: 0.6875rem;
       font-weight: 700;
-      color: var(--text-secondary, #64748b);
-      border-radius: 0.75rem 0.75rem 0 0;
-      cursor: pointer;
-      transition: all 0.2s;
+      color: var(--color-text-muted, #64748b);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .stat-amount {
+      font-size: 1.15rem;
+      font-weight: 700;
+      line-height: 1.25;
+      color: var(--color-text-main, #0f172a);
+      letter-spacing: -0.015em;
       white-space: nowrap;
     }
-    .tab-btn:hover {
-      color: var(--text-primary, #0f172a);
-      background: rgba(0,0,0,0.03);
+    .stat-subtitle {
+      font-size: 0.6875rem;
+      color: var(--color-text-muted, #64748b);
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
-    .tab-btn.active {
-      color: #4f46e5;
-      background: var(--bg-card, #ffffff);
-      border-bottom: 3px solid #4f46e5;
-      margin-bottom: -0.25rem;
-      box-shadow: 0 -2px 6px rgba(79, 70, 229, 0.06);
+
+    /* Section Navigation Tabs */
+    .main-nav-tabs {
+      display: flex;
+      gap: 0.75rem;
+      border-bottom: 1px solid var(--color-border-subtle, #e2e8f0);
+      padding-bottom: 0.35rem;
+      overflow-x: auto;
     }
-    .tab-icon {
-      font-size: 1.15rem;
+    .nav-tab-btn {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border: none;
+      background: transparent;
+      font-size: 0.88rem;
+      font-weight: 600;
+      color: var(--color-fg-muted, #64748b);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
     }
-    .tab-badge {
-      font-size: 0.75rem;
-      padding: 0.2rem 0.6rem;
-      border-radius: 1rem;
-      background: #f1f5f9;
-      color: #334155;
+    .nav-tab-btn:hover {
+      background: var(--color-canvas-surface, #f8fafc);
+      color: var(--color-fg-default, #0f172a);
+    }
+    .nav-tab-btn.active {
+      background: var(--color-accent-subtle, #ecfdf5);
+      color: var(--color-accent-emphasis, #047857);
       font-weight: 700;
     }
-    .tab-badge.warning {
+    .nav-tab-icon {
+      font-size: 1rem;
+    }
+    .nav-tab-badge {
+      font-size: 0.72rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 9999px;
+      background: rgba(100, 116, 139, 0.12);
+      color: inherit;
+      font-weight: 700;
+    }
+    .nav-tab-badge.warning {
       background: #fef3c7;
       color: #b45309;
-      border: 1px solid #fde68a;
     }
 
     /* Alert Banner */
@@ -1229,11 +1321,12 @@ import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 0.9rem 1.5rem;
-      border-radius: 0.75rem;
+      padding: 0.75rem 1.25rem;
+      border-radius: 8px;
       background: #e0f2fe;
       color: #0369a1;
       font-weight: 600;
+      font-size: 0.88rem;
       border: 1px solid #bae6fd;
     }
     .alert-banner.success { background: #dcfce7; color: #15803d; border-color: #bbf7d0; }
@@ -1243,240 +1336,335 @@ import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
 
     /* Common Card Styles */
     .card {
-      background: var(--bg-card, #ffffff);
-      border: 1px solid var(--border-color, #e2e8f0);
-      border-radius: 1rem;
-      padding: 1.35rem;
-      box-shadow: 0 1px 4px rgba(0,0,0,0.03);
-    }
-
-    /* Summary Cards */
-    .summary-cards {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-      gap: 1.25rem;
-      margin-bottom: 0.5rem;
-    }
-    .stat-card {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      padding: 1.1rem 1.25rem;
-      background: var(--bg-card, #ffffff);
-      border-radius: 0.85rem;
-      border: 1px solid var(--border-color, #e2e8f0);
+      background: var(--color-canvas-default, #ffffff);
+      border: 1px solid var(--color-border-default, #e2e8f0);
+      border-radius: 10px;
+      padding: 1.25rem;
       box-shadow: 0 1px 3px rgba(0,0,0,0.04);
-      min-width: 0;
-      transition: transform 0.15s, box-shadow 0.15s;
     }
-    .stat-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(0,0,0,0.06);
-    }
-    .card-icon {
-      width: 46px;
-      height: 46px;
-      border-radius: 0.75rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.45rem;
-      flex-shrink: 0;
-    }
-    .icon-red { background: #fee2e2; color: #dc2626; }
-    .icon-green { background: #dcfce7; color: #16a34a; }
-    .icon-blue { background: #e0e7ff; color: #4338ca; }
-    .icon-purple { background: #f3e8ff; color: #7e22ce; }
-    .icon-orange { background: #ffedd5; color: #c2410c; }
-    .icon-amber { background: #fef3c7; color: #b45309; }
-    .icon-dark { background: #f1f5f9; color: #334155; }
-    .icon-emerald { background: #ecfdf5; color: #047857; }
 
-    .card-info {
+    /* Unified Filters & Toolbar (Matching Dreams & Goals) */
+    .toolbar {
+      background: var(--color-canvas-default, #ffffff);
+      border: 1px solid var(--color-border-default, #e2e8f0);
+      border-radius: 8px;
+      padding: 0.875rem 1rem;
       display: flex;
       flex-direction: column;
-      flex: 1;
-      min-width: 0;
+      gap: 0.875rem;
     }
-    .card-label {
-      font-size: 0.78rem;
-      font-weight: 700;
-      color: var(--text-secondary, #64748b);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-      white-space: normal;
-      line-height: 1.2;
-      word-break: break-word;
+    .status-tabs {
+      display: flex;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--color-border-subtle, #e2e8f0);
+      padding-bottom: 0.5rem;
+      overflow-x: auto;
     }
-    .card-amount {
-      font-size: clamp(1.25rem, 1.4vw, 1.65rem);
-      font-weight: 800;
-      color: var(--text-primary, #0f172a);
-      line-height: 1.25;
-      margin: 0.25rem 0 0.15rem;
+    .tab-btn {
+      background: transparent;
+      border: none;
+      padding: 0.4rem 0.85rem;
+      font-size: 0.825rem;
+      font-weight: 500;
+      color: var(--color-fg-muted, #64748b);
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s ease;
       white-space: nowrap;
-      font-family: inherit;
     }
-    .card-sub {
-      font-size: 0.76rem;
-      color: var(--text-secondary, #64748b);
-      white-space: normal;
-      line-height: 1.25;
-      word-break: break-word;
+    .tab-btn:hover {
+      background: var(--color-canvas-surface, #f8fafc);
+      color: var(--color-fg-default, #0f172a);
     }
-
-    /* Colors */
-    .text-danger { color: #dc2626 !important; }
-    .text-success { color: #16a34a !important; }
-    .text-primary { color: #2563eb !important; }
-    .text-warning { color: #d97706 !important; }
-    .text-final-success { color: #059669 !important; font-size: 1.85rem !important; }
-
-    /* Toolbar */
-    .toolbar-card {
+    .tab-btn.active {
+      background: var(--color-accent-subtle, #ecfdf5);
+      color: var(--color-accent-emphasis, #047857);
+      font-weight: 600;
+    }
+    .filter-controls {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
+      gap: 0.75rem;
       flex-wrap: wrap;
-      gap: 1rem;
-      margin-bottom: 0.5rem;
+      align-items: center;
+      justify-content: space-between;
     }
-    .search-box {
+    .search-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 240px;
       display: flex;
       align-items: center;
-      gap: 0.65rem;
-      background: var(--bg-input, #f8fafc);
-      border: 1px solid var(--border-color, #cbd5e1);
-      border-radius: 0.75rem;
-      padding: 0.65rem 1rem;
-      min-width: 320px;
-      flex: 1;
+    }
+    .search-wrap svg {
+      position: absolute;
+      left: 0.75rem;
+      color: var(--color-fg-subtle, #94a3b8);
+      pointer-events: none;
     }
     .search-input {
-      border: none;
-      background: transparent;
-      outline: none;
       width: 100%;
-      font-size: 0.95rem;
-      color: var(--text-primary, #0f172a);
+      padding: 0.45rem 2rem 0.45rem 2.25rem;
+      font-size: 0.85rem;
+      background: var(--color-canvas-subtle, #f8fafc);
+      border: 1px solid var(--color-border-default, #cbd5e1);
+      border-radius: 6px;
+      color: var(--color-fg-default, #0f172a);
+      outline: none;
+      transition: border-color 0.15s ease;
+    }
+    .search-input:focus {
+      border-color: var(--color-accent-fg, #10b981);
+      background: var(--color-canvas-default, #ffffff);
+    }
+    .clear-search {
+      position: absolute;
+      right: 0.65rem;
+      background: none;
+      border: none;
+      color: var(--color-fg-muted, #64748b);
+      cursor: pointer;
+      font-size: 0.85rem;
     }
     .filter-pills {
       display: flex;
-      gap: 0.5rem;
+      gap: 0.4rem;
       flex-wrap: wrap;
     }
     .pill-btn {
-      padding: 0.6rem 1.15rem;
-      border-radius: 2rem;
-      border: 1px solid var(--border-color, #cbd5e1);
+      padding: 0.4rem 0.85rem;
+      border-radius: 9999px;
+      border: 1px solid var(--color-border-default, #cbd5e1);
       background: transparent;
-      font-size: 0.88rem;
-      font-weight: 700;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--color-fg-muted, #64748b);
       cursor: pointer;
-      transition: all 0.2s;
+      transition: all 0.15s ease;
     }
-    .pill-btn.active { background: #0f172a; color: #ffffff; border-color: #0f172a; }
-    .pill-btn.pill-danger.active { background: #fee2e2; color: #991b1b; border-color: #fca5a5; }
-    .pill-btn.pill-success.active { background: #dcfce7; color: #166534; border-color: #86efac; }
+    .pill-btn:hover {
+      background: var(--color-canvas-surface, #f8fafc);
+    }
+    .pill-btn.active {
+      background: #0f172a;
+      color: #ffffff;
+      border-color: #0f172a;
+    }
+    .pill-btn.pill-danger.active {
+      background: #fee2e2;
+      color: #dc2626;
+      border-color: #fca5a5;
+    }
+    .pill-btn.pill-success.active {
+      background: #dcfce7;
+      color: #15803d;
+      border-color: #86efac;
+    }
 
-    /* Parties Grid */
+    /* Parties Grid & Khata Cards */
     .parties-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
-      gap: 1.5rem;
+      grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+      gap: 1.25rem;
     }
-    .party-card {
-      cursor: pointer;
-      transition: transform 0.15s, box-shadow 0.15s;
+    .khata-card {
+      background: var(--color-canvas-default, #ffffff);
+      border: 1px solid var(--color-border-default, #e2e8f0);
+      border-top: 4px solid var(--color-border-default, #cbd5e1);
+      border-radius: 10px;
+      padding: 1.25rem;
       display: flex;
       flex-direction: column;
-      gap: 1rem;
-      border: 1px solid var(--border-color, #e2e8f0);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+      transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+      cursor: pointer;
     }
-    .party-card:hover {
+    .khata-card:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0,0,0,0.06);
-      border-color: #cbd5e1;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+      border-color: var(--color-border-subtle, #94a3b8);
     }
-    .party-card-top {
+    .khata-card.is-payable {
+      border-top-color: #ef4444;
+    }
+    .khata-card.is-receivable {
+      border-top-color: #10b981;
+    }
+    .khata-card.is-settled {
+      border-top-color: #94a3b8;
+      opacity: 0.92;
+      background: #fafbfc;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-bottom: 0.85rem;
+    }
+    .header-left {
       display: flex;
       align-items: center;
-      gap: 1rem;
+      gap: 0.75rem;
+      flex: 1;
+      min-width: 0;
     }
     .party-avatar {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 800;
-      font-size: 1.1rem;
+      font-weight: 700;
+      font-size: 1rem;
       flex-shrink: 0;
     }
     .party-avatar.payable { background: #fee2e2; color: #dc2626; }
     .party-avatar.receivable { background: #dcfce7; color: #16a34a; }
-    .party-meta { flex: 1; min-width: 0; }
-    .party-name-row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
-    .party-name { font-size: 1.15rem; font-weight: 800; color: var(--text-primary, #0f172a); margin: 0; }
-    .party-category { font-size: 0.8rem; color: var(--text-secondary, #64748b); }
+    .party-titles {
+      flex: 1;
+      min-width: 0;
+    }
+    .party-name {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--color-fg-default, #0f172a);
+      margin: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .party-subtitle {
+      font-size: 0.75rem;
+      color: var(--color-fg-muted, #64748b);
+    }
+    .header-right {
+      display: flex;
+      gap: 0.35rem;
+      align-items: center;
+      flex-shrink: 0;
+    }
 
-    .party-card-actions {
+    /* Amounts Grid (Matching Goals amounts-grid) */
+    .amounts-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      background: var(--color-canvas-subtle, #f8fafc);
+      border: 1px solid var(--color-border-subtle, #e2e8f0);
+      border-radius: 8px;
+      padding: 0.65rem 0.5rem;
+      margin-bottom: 0.85rem;
+      text-align: center;
+    }
+    .amount-box {
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+    .amount-box:not(:last-child) {
+      border-right: 1px solid var(--color-border-subtle, #e2e8f0);
+    }
+    .amount-lbl {
+      font-size: 0.68rem;
+      color: var(--color-fg-subtle, #64748b);
+      text-transform: uppercase;
+      font-weight: 600;
+    }
+    .amount-val {
+      font-size: 0.875rem;
+      font-weight: 700;
+      color: var(--color-fg-default, #0f172a);
+    }
+    .text-green { color: #10b981 !important; }
+    .text-danger, .text-red { color: #ef4444 !important; }
+    .text-success { color: #10b981 !important; }
+    .text-settled { color: #059669 !important; }
+
+    /* Note Preview */
+    .note-preview {
+      font-size: 0.75rem;
+      color: var(--color-fg-muted, #64748b);
+      margin-bottom: 0.75rem;
+      font-style: italic;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Card Footer */
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: auto;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--color-border-subtle, #e2e8f0);
+      gap: 0.5rem;
+    }
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .footer-right {
       display: flex;
       align-items: center;
       gap: 0.35rem;
     }
-    .btn-action-icon {
-      width: 32px;
-      height: 32px;
+    .btn-detail {
+      background: none;
+      border: 1px solid var(--color-border-default, #cbd5e1);
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--color-fg-default, #0f172a);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-detail:hover {
+      background: var(--color-canvas-surface, #f8fafc);
+      border-color: var(--color-border-subtle, #94a3b8);
+    }
+    .btn-quick-settle {
+      background: #ecfdf5;
+      border: 1px solid #a7f3d0;
+      color: #047857;
+      padding: 0.35rem 0.65rem;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-quick-settle:hover {
+      background: #d1fae5;
+      border-color: #6ee7b7;
+    }
+    .icon-action-btn {
+      width: 28px;
+      height: 28px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      border-radius: 0.45rem;
-      border: 1px solid #e2e8f0;
-      background: #ffffff;
+      border-radius: 6px;
+      border: 1px solid var(--color-border-default, #cbd5e1);
+      background: var(--color-canvas-default, #ffffff);
+      color: var(--color-fg-muted, #64748b);
       cursor: pointer;
       font-size: 0.85rem;
-      transition: all 0.15s;
+      transition: all 0.15s ease;
     }
-    .btn-action-icon:hover { background: #f1f5f9; border-color: #cbd5e1; }
-    .btn-del-icon:hover { background: #fee2e2; border-color: #fca5a5; color: #dc2626; }
-
-    .party-balance-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: var(--bg-highlight, #f8fafc);
-      padding: 0.85rem 1.15rem;
-      border-radius: 0.75rem;
-      border: 1px solid #f1f5f9;
+    .icon-action-btn:hover {
+      background: var(--color-canvas-surface, #f8fafc);
+      border-color: var(--color-border-subtle, #94a3b8);
+      color: var(--color-fg-default, #0f172a);
     }
-    .balance-left { display: flex; flex-direction: column; }
-    .balance-label { font-size: 0.75rem; color: var(--text-secondary, #64748b); text-transform: uppercase; font-weight: 700; }
-    .balance-value { font-size: 1.45rem; font-weight: 800; line-height: 1.2; margin-top: 0.15rem; }
-    .btn-open-passbook {
-      padding: 0.5rem 1rem;
-      font-size: 0.85rem;
-      font-weight: 700;
-      background: #0f172a;
-      color: #ffffff;
-      border: none;
-      border-radius: 0.5rem;
-      cursor: pointer;
-      transition: background 0.15s;
+    .icon-action-btn.btn-del:hover {
+      background: #fee2e2;
+      border-color: #fca5a5;
+      color: #dc2626;
     }
-    .btn-open-passbook:hover { background: #334155; }
-    .party-mini-ledger {
-      display: flex;
-      justify-content: space-between;
-      border-top: 1px dashed var(--border-color, #e2e8f0);
-      padding-top: 0.75rem;
-    }
-    .mini-col { display: flex; flex-direction: column; flex: 1; }
-    .mini-col.divider { width: 1px; max-width: 1px; background: var(--border-color, #e2e8f0); margin: 0 0.75rem; }
-    .mini-lbl { font-size: 0.75rem; color: var(--text-secondary, #64748b); }
-    .mini-val { font-size: 1rem; font-weight: 800; margin-top: 0.1rem; }
-    .party-note-preview { font-size: 0.78rem; color: var(--text-secondary, #64748b); font-style: italic; }
 
     /* Settlement Hero Banner (Image 1 Engine) */
     .settlement-hero {
@@ -2134,158 +2322,32 @@ import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
     .btn-plus { font-size: 1.1rem; font-weight: 900; }
     .btn-emoji { font-size: 1.05rem; }
 
-    /* Badges */
-    .badge { font-size: 0.75rem; font-weight: 800; padding: 0.25rem 0.6rem; border-radius: 0.4rem; }
-    .badge-danger { background: #fee2e2; color: #dc2626; }
-    .badge-success { background: #dcfce7; color: #16a34a; }
+    /* Badges & Status Pills */
+    .badge { font-size: 0.72rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 9999px; }
+    .badge-danger { background: #fee2e2; color: #dc2626; border: 1px solid #fecaca; }
+    .badge-success { background: #dcfce7; color: #16a34a; border: 1px solid #bbf7d0; }
 
-    /* Status Segmented Filter Bar */
-    .status-segmented-container {
-      margin-bottom: 0.85rem;
-    }
-    .status-segmented-bar {
-      display: inline-flex;
-      align-items: center;
-      background: var(--bg-card, #ffffff);
-      padding: 0.35rem;
-      border-radius: 2rem;
-      border: 1.5px solid var(--border-color, #e2e8f0);
-      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
-      gap: 0.35rem;
-      flex-wrap: wrap;
-    }
-    .status-tab-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.55rem 1.15rem;
-      border-radius: 1.5rem;
-      border: 1px solid transparent;
-      background: transparent;
-      color: var(--text-secondary, #64748b);
-      font-size: 0.88rem;
-      font-weight: 700;
-      cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    }
-    .status-tab-btn:hover {
-      color: var(--text-primary, #0f172a);
-      background: var(--bg-highlight, #f8fafc);
-    }
-    .status-tab-btn.active {
-      background: #0f172a;
-      color: #ffffff;
-      border-color: #0f172a;
-      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.15);
-    }
-    .status-indicator {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      display: inline-block;
-    }
-    .active-dot { background: #22c55e; box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.25); }
-    .settled-dot { background: #059669; }
-    .all-dot { background: #3b82f6; }
-    .status-tab-pill {
-      font-size: 0.75rem;
-      font-weight: 800;
-      padding: 0.15rem 0.55rem;
-      border-radius: 1rem;
-      background: rgba(100, 116, 139, 0.15);
-      color: inherit;
-    }
-    .status-tab-btn.active .status-tab-pill {
-      background: rgba(255, 255, 255, 0.22);
-      color: #ffffff;
-    }
-
-    /* Party Card Badges & Settled State */
-    .party-name-group {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-    .badge-settled-pill {
-      background: #ecfdf5;
-      color: #047857;
-      border: 1px solid #a7f3d0;
+    .status-pill {
       font-size: 0.72rem;
-      font-weight: 800;
+      font-weight: 600;
       padding: 0.2rem 0.55rem;
-      border-radius: 0.4rem;
+      border-radius: 9999px;
+      white-space: nowrap;
     }
-    .badge-active-pill {
-      background: #f0fdf4;
-      color: #15803d;
-      border: 1px solid #bbf7d0;
-      font-size: 0.72rem;
-      font-weight: 800;
-      padding: 0.2rem 0.55rem;
-      border-radius: 0.4rem;
+    .status-progress {
+      background: var(--color-accent-subtle, #ecfdf5);
+      color: var(--color-accent-emphasis, #047857);
+      border: 1px solid rgba(16, 185, 129, 0.25);
     }
-    .badge-ready-pill {
-      background: #fefce8;
-      color: #a16207;
-      border: 1px solid #fef08a;
-      font-size: 0.72rem;
-      font-weight: 800;
-      padding: 0.2rem 0.55rem;
-      border-radius: 0.4rem;
+    .status-achieved {
+      background: rgba(16, 185, 129, 0.15);
+      color: #059669;
+      border: 1px solid rgba(16, 185, 129, 0.3);
     }
-    .party-card.is-settled {
-      opacity: 0.92;
-      background: #fbfdfc;
-      border-color: #d1fae5;
-    }
-    .party-card.is-settled:hover {
-      opacity: 1;
-      border-color: #86efac;
-    }
-    .settled-balance-row {
-      background: #f0fdf4 !important;
-      border-color: #bbf7d0 !important;
-    }
-    .text-settled {
-      color: #059669 !important;
-      font-size: 1.15rem !important;
-      font-weight: 800;
-    }
-
-    /* Settle / Reopen Actions */
-    .btn-settle-icon {
-      background: #f0fdf4;
-      border-color: #bbf7d0;
-      color: #16a34a;
-      font-weight: 900;
-    }
-    .btn-settle-icon:hover {
-      background: #dcfce7;
-      border-color: #86efac;
-    }
-    .btn-reopen-icon {
-      background: #eff6ff;
-      border-color: #bfdbfe;
-      color: #2563eb;
-    }
-    .btn-reopen-icon:hover {
-      background: #dbeafe;
-      border-color: #93c5fd;
-    }
-    .btn-quick-settle {
-      padding: 0.5rem 0.9rem;
-      font-size: 0.82rem;
-      font-weight: 800;
-      background: #059669;
-      color: #ffffff;
-      border: none;
-      border-radius: 0.5rem;
-      cursor: pointer;
-      transition: background 0.15s;
-    }
-    .btn-quick-settle:hover {
-      background: #047857;
+    .status-paused {
+      background: rgba(245, 158, 11, 0.15);
+      color: #d97706;
+      border: 1px solid rgba(245, 158, 11, 0.3);
     }
 
     /* Drawer Action Buttons */
