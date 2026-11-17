@@ -137,6 +137,50 @@ import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
                 <span class="card-sub">{{ (summary()?.netBalance || 0) >= 0 ? 'Surplus (Net Receivable)' : 'Net Debt to Clear' }}</span>
               </div>
             </div>
+
+            <div class="card stat-card settled-kpi-card" (click)="setPartyStatusFilter('SETTLED')" style="cursor: pointer;" title="Click to view all closed/settled accounts">
+              <div class="card-icon icon-emerald">🏁</div>
+              <div class="card-info">
+                <span class="card-label">Closed / Settled (हिसाब चुकता)</span>
+                <span class="card-amount text-success">{{ summary()?.settledCount || 0 }} Accounts</span>
+                <span class="card-sub">Click to view settled history</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Status Segmented Filter Bar: Active vs Settled/Closed (Default: Active) -->
+          <div class="status-segmented-container">
+            <div class="status-segmented-bar">
+              <button
+                type="button"
+                class="status-tab-btn"
+                [class.active]="partyStatusFilter() === 'ACTIVE'"
+                (click)="setPartyStatusFilter('ACTIVE')">
+                <span class="status-indicator active-dot"></span>
+                <span class="status-tab-label">🟢 Active Accounts (चलते खाते)</span>
+                <span class="status-tab-pill">{{ summary()?.activeCount ?? 0 }}</span>
+              </button>
+
+              <button
+                type="button"
+                class="status-tab-btn"
+                [class.active]="partyStatusFilter() === 'SETTLED'"
+                (click)="setPartyStatusFilter('SETTLED')">
+                <span class="status-indicator settled-dot"></span>
+                <span class="status-tab-label">🏁 Closed / Settled (हिसाब चुकता)</span>
+                <span class="status-tab-pill settled-pill">{{ summary()?.settledCount ?? 0 }}</span>
+              </button>
+
+              <button
+                type="button"
+                class="status-tab-btn"
+                [class.active]="partyStatusFilter() === 'ALL'"
+                (click)="setPartyStatusFilter('ALL')">
+                <span class="status-indicator all-dot"></span>
+                <span class="status-tab-label">📋 All Ledgers (कुल खाते)</span>
+                <span class="status-tab-pill all-pill">{{ summary()?.totalParties ?? 0 }}</span>
+              </button>
+            </div>
           </div>
 
           <!-- Filter & Search Toolbar -->
@@ -157,7 +201,7 @@ import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
                 class="pill-btn"
                 [class.active]="partyFilter() === 'ALL'"
                 (click)="setPartyFilter('ALL')">
-                All Ledgers ({{ parties().length }})
+                All Types ({{ filteredParties().length }})
               </button>
               <button
                 type="button"
@@ -184,22 +228,41 @@ import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
             </div>
           } @else if (filteredParties().length === 0) {
             <div class="empty-state card">
-              <div class="empty-icon">📂</div>
-              <h3>No Party Accounts Found</h3>
-              <p>Create your first person's khata or click "Import My Sheet Data" above to load Junaid, Mosin, and other loans.</p>
-              <button type="button" class="btn-primary" (click)="openNewPartyModal()">+ Create Khata</button>
+              <div class="empty-icon">{{ partyStatusFilter() === 'SETTLED' ? '🏁' : '📂' }}</div>
+              <h3>{{ partyStatusFilter() === 'SETTLED' ? 'No Settled Accounts Found' : 'No Active Accounts Found' }}</h3>
+              <p>
+                @if (partyStatusFilter() === 'SETTLED') {
+                  Accounts that are marked as settled (हिसाब चुकता) or fully cleared will appear here.
+                } @else {
+                  Create your first person's khata or click "Import My Sheet Data" above to load Junaid, Mosin, and other loans.
+                }
+              </p>
+              @if (partyStatusFilter() === 'SETTLED') {
+                <button type="button" class="btn-primary" (click)="setPartyStatusFilter('ACTIVE')">View Active Accounts</button>
+              } @else {
+                <button type="button" class="btn-primary" (click)="openNewPartyModal()">+ Create Khata</button>
+              }
             </div>
           } @else {
             <div class="parties-grid">
               @for (party of filteredParties(); track party.id) {
-                <div class="party-card card" (click)="openPartyPassbook(party.id)">
+                <div class="party-card card" [class.is-settled]="party.isSettled" (click)="openPartyPassbook(party.id)">
                   <div class="party-card-top">
                     <div class="party-avatar" [class.payable]="party.type === 'Payable'" [class.receivable]="party.type === 'Receivable'">
                       {{ party.name.substring(0, 2).toUpperCase() }}
                     </div>
                     <div class="party-meta">
                       <div class="party-name-row">
-                        <h3 class="party-name">{{ party.name }}</h3>
+                        <div class="party-name-group">
+                          <h3 class="party-name">{{ party.name }}</h3>
+                          @if (party.isSettled) {
+                            <span class="badge badge-settled-pill">🏁 Settled</span>
+                          } @else if (party.netPending === 0 && party.entriesCount > 0) {
+                            <span class="badge badge-ready-pill">✨ ₹0 Clear</span>
+                          } @else {
+                            <span class="badge badge-active-pill">🟢 Active</span>
+                          }
+                        </div>
                         <span class="badge" [class.badge-danger]="party.type === 'Payable'" [class.badge-success]="party.type === 'Receivable'">
                           {{ party.type === 'Payable' ? 'Dena Hai' : 'Lena Hai' }}
                         </span>
@@ -207,22 +270,41 @@ import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
                       <span class="party-category">{{ party.category || 'General' }} • {{ party.entriesCount }} transactions</span>
                     </div>
 
-                    <!-- Quick Party Edit & Delete Action Menu -->
+                    <!-- Quick Party Edit, Settle & Delete Action Menu -->
                     <div class="party-card-actions" (click)="$event.stopPropagation()">
+                      @if (party.isSettled) {
+                        <button type="button" class="btn-action-icon btn-reopen-icon" (click)="toggleSettleParty(party, $event)" title="Reopen Khata (खाता दोबारा चालू करें)">🔄</button>
+                      } @else {
+                        <button type="button" class="btn-action-icon btn-settle-icon" (click)="toggleSettleParty(party, $event)" title="Mark as Settled / Close Khata (हिसाब चुकता करें)">✓</button>
+                      }
                       <button type="button" class="btn-action-icon" (click)="openEditPartyModal(party)" title="Edit Person Details">✏️</button>
                       <button type="button" class="btn-action-icon btn-del-icon" (click)="deleteParty(party)" title="Delete Khata">🗑️</button>
                     </div>
                   </div>
 
-                  <div class="party-balance-row">
+                  <div class="party-balance-row" [class.settled-balance-row]="party.isSettled">
                     <div class="balance-left">
-                      <span class="balance-label">Net Pending Amount</span>
-                      <span class="balance-value" [class.text-danger]="party.type === 'Payable'" [class.text-success]="party.type === 'Receivable'">
-                        {{ party.netPending | inrCurrency }}
+                      <span class="balance-label">
+                        @if (party.isSettled) {
+                          Ledger Status
+                        } @else {
+                          Net Pending Amount
+                        }
+                      </span>
+                      <span class="balance-value" [class.text-danger]="!party.isSettled && party.type === 'Payable'" [class.text-success]="!party.isSettled && party.type === 'Receivable'" [class.text-settled]="party.isSettled">
+                        @if (party.isSettled) {
+                          ✓ हिसाब चुकता (Settled)
+                        } @else {
+                          {{ party.netPending | inrCurrency }}
+                        }
                       </span>
                     </div>
                     <div class="balance-action">
-                      <button type="button" class="btn-open-passbook">Passbook ➔</button>
+                      @if (!party.isSettled && party.netPending === 0 && party.entriesCount > 0) {
+                        <button type="button" class="btn-quick-settle" (click)="toggleSettleParty(party, $event)" title="Click to Settle & Close Khata">✓ Settle Khata</button>
+                      } @else {
+                        <button type="button" class="btn-open-passbook">{{ party.isSettled ? 'View Passbook ➔' : 'Passbook ➔' }}</button>
+                      }
                     </div>
                   </div>
 
@@ -624,6 +706,11 @@ import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
                 <div>
                   <div class="flex-center gap-2">
                     <h2 class="drawer-name">{{ p.name }}</h2>
+                    @if (p.isSettled) {
+                      <span class="badge badge-settled-pill">🏁 Settled / चुकता</span>
+                    } @else {
+                      <span class="badge badge-active-pill">🟢 Active</span>
+                    }
                     <button type="button" class="btn-action-icon" (click)="openEditPartyModal(p)" title="Edit Person Details">✏️</button>
                     <button type="button" class="btn-action-icon btn-del-icon" (click)="deleteParty(p)" title="Delete Khata">🗑️</button>
                   </div>
@@ -632,6 +719,15 @@ import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
               </div>
 
               <div class="drawer-right-actions">
+                @if (p.isSettled) {
+                  <button type="button" class="btn-drawer-reopen" (click)="toggleSettleParty(p)">
+                    <span>🔄</span> Re-open Khata
+                  </button>
+                } @else {
+                  <button type="button" class="btn-drawer-settle" (click)="toggleSettleParty(p)">
+                    <span>✓</span> Settle & Close Khata
+                  </button>
+                }
                 <button type="button" class="btn-whatsapp" (click)="shareWhatsApp(p)">
                   <span>💬</span> WhatsApp Statement
                 </button>
@@ -2043,6 +2139,193 @@ import { InrCurrencyPipe } from '../../shared/pipes/inr-currency.pipe';
     .badge-danger { background: #fee2e2; color: #dc2626; }
     .badge-success { background: #dcfce7; color: #16a34a; }
 
+    /* Status Segmented Filter Bar */
+    .status-segmented-container {
+      margin-bottom: 0.85rem;
+    }
+    .status-segmented-bar {
+      display: inline-flex;
+      align-items: center;
+      background: var(--bg-card, #ffffff);
+      padding: 0.35rem;
+      border-radius: 2rem;
+      border: 1.5px solid var(--border-color, #e2e8f0);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+      gap: 0.35rem;
+      flex-wrap: wrap;
+    }
+    .status-tab-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.55rem 1.15rem;
+      border-radius: 1.5rem;
+      border: 1px solid transparent;
+      background: transparent;
+      color: var(--text-secondary, #64748b);
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .status-tab-btn:hover {
+      color: var(--text-primary, #0f172a);
+      background: var(--bg-highlight, #f8fafc);
+    }
+    .status-tab-btn.active {
+      background: #0f172a;
+      color: #ffffff;
+      border-color: #0f172a;
+      box-shadow: 0 2px 6px rgba(15, 23, 42, 0.15);
+    }
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .active-dot { background: #22c55e; box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.25); }
+    .settled-dot { background: #059669; }
+    .all-dot { background: #3b82f6; }
+    .status-tab-pill {
+      font-size: 0.75rem;
+      font-weight: 800;
+      padding: 0.15rem 0.55rem;
+      border-radius: 1rem;
+      background: rgba(100, 116, 139, 0.15);
+      color: inherit;
+    }
+    .status-tab-btn.active .status-tab-pill {
+      background: rgba(255, 255, 255, 0.22);
+      color: #ffffff;
+    }
+
+    /* Party Card Badges & Settled State */
+    .party-name-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .badge-settled-pill {
+      background: #ecfdf5;
+      color: #047857;
+      border: 1px solid #a7f3d0;
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 0.2rem 0.55rem;
+      border-radius: 0.4rem;
+    }
+    .badge-active-pill {
+      background: #f0fdf4;
+      color: #15803d;
+      border: 1px solid #bbf7d0;
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 0.2rem 0.55rem;
+      border-radius: 0.4rem;
+    }
+    .badge-ready-pill {
+      background: #fefce8;
+      color: #a16207;
+      border: 1px solid #fef08a;
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 0.2rem 0.55rem;
+      border-radius: 0.4rem;
+    }
+    .party-card.is-settled {
+      opacity: 0.92;
+      background: #fbfdfc;
+      border-color: #d1fae5;
+    }
+    .party-card.is-settled:hover {
+      opacity: 1;
+      border-color: #86efac;
+    }
+    .settled-balance-row {
+      background: #f0fdf4 !important;
+      border-color: #bbf7d0 !important;
+    }
+    .text-settled {
+      color: #059669 !important;
+      font-size: 1.15rem !important;
+      font-weight: 800;
+    }
+
+    /* Settle / Reopen Actions */
+    .btn-settle-icon {
+      background: #f0fdf4;
+      border-color: #bbf7d0;
+      color: #16a34a;
+      font-weight: 900;
+    }
+    .btn-settle-icon:hover {
+      background: #dcfce7;
+      border-color: #86efac;
+    }
+    .btn-reopen-icon {
+      background: #eff6ff;
+      border-color: #bfdbfe;
+      color: #2563eb;
+    }
+    .btn-reopen-icon:hover {
+      background: #dbeafe;
+      border-color: #93c5fd;
+    }
+    .btn-quick-settle {
+      padding: 0.5rem 0.9rem;
+      font-size: 0.82rem;
+      font-weight: 800;
+      background: #059669;
+      color: #ffffff;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-quick-settle:hover {
+      background: #047857;
+    }
+
+    /* Drawer Action Buttons */
+    .btn-drawer-settle {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.6rem 1rem;
+      border-radius: 0.6rem;
+      border: 1px solid #10b981;
+      background: #ecfdf5;
+      color: #047857;
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-drawer-settle:hover {
+      background: #d1fae5;
+      border-color: #059669;
+    }
+    .btn-drawer-reopen {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.6rem 1rem;
+      border-radius: 0.6rem;
+      border: 1px solid #3b82f6;
+      background: #eff6ff;
+      color: #1d4ed8;
+      font-size: 0.88rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-drawer-reopen:hover {
+      background: #dbeafe;
+      border-color: #2563eb;
+    }
+
     /* Utility */
     .text-right { text-align: right; }
     .text-center { text-align: center; }
@@ -2076,8 +2359,16 @@ export class KhataComponent implements OnInit {
 
   // Parties state
   parties = signal<KhataParty[]>([]);
-  summary = signal<{ totalParties: number; totalDenaHai: number; totalLenaHai: number; netBalance: number } | null>(null);
+  summary = signal<{
+    totalParties: number;
+    activeCount: number;
+    settledCount: number;
+    totalDenaHai: number;
+    totalLenaHai: number;
+    netBalance: number;
+  } | null>(null);
   searchQuery = signal('');
+  partyStatusFilter = signal<'ACTIVE' | 'SETTLED' | 'ALL'>('ACTIVE'); // Default: ACTIVE
   partyFilter = signal<'ALL' | 'Payable' | 'Receivable'>('ALL');
   activePartyDetail = signal<KhataPartyDetail | null>(null);
 
@@ -2143,6 +2434,12 @@ export class KhataComponent implements OnInit {
 
   filteredParties = computed(() => {
     let list = this.parties();
+    const status = this.partyStatusFilter();
+    if (status === 'ACTIVE') {
+      list = list.filter(p => !p.isSettled);
+    } else if (status === 'SETTLED') {
+      list = list.filter(p => p.isSettled);
+    }
     const filter = this.partyFilter();
     if (filter !== 'ALL') {
       list = list.filter(p => p.type === filter);
@@ -2198,6 +2495,24 @@ export class KhataComponent implements OnInit {
 
   setPartyFilter(filter: 'ALL' | 'Payable' | 'Receivable'): void {
     this.partyFilter.set(filter);
+  }
+
+  setPartyStatusFilter(filter: 'ACTIVE' | 'SETTLED' | 'ALL'): void {
+    this.partyStatusFilter.set(filter);
+  }
+
+  toggleSettleParty(party: KhataParty | KhataPartyDetail, event?: Event): void {
+    if (event) event.stopPropagation();
+    this.khataService.togglePartySettled(party.id).subscribe({
+      next: res => {
+        this.showAlert(res.message);
+        this.loadParties();
+        if (this.activePartyDetail()?.id === party.id) {
+          this.openPartyPassbook(party.id);
+        }
+      },
+      error: () => this.showAlert('Failed to update khata status', 'error')
+    });
   }
 
   openNewPartyModal(): void {

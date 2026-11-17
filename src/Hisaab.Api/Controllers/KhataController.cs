@@ -28,7 +28,7 @@ public class KhataController : ControllerBase
     #region Parties & Entries
 
     [HttpGet("parties")]
-    public async Task<IActionResult> GetParties([FromQuery] string? search, [FromQuery] string? type, CancellationToken ct)
+    public async Task<IActionResult> GetParties([FromQuery] string? search, [FromQuery] string? type, [FromQuery] string? status, CancellationToken ct)
     {
         var userId = RequireUserId();
         var query = _context.LocalKhataParties
@@ -51,7 +51,7 @@ public class KhataController : ControllerBase
             .OrderByDescending(p => p.CreatedAtUtc)
             .ToListAsync(ct);
 
-        var response = parties.Select(p =>
+        var allResponse = parties.Select(p =>
         {
             var activeEntries = p.Entries.Where(e => !e.IsDeleted).ToList();
             var totalIn = activeEntries.Where(e => e.EntryType == "IN").Sum(e => e.Amount);
@@ -78,15 +78,33 @@ public class KhataController : ControllerBase
             };
         }).ToList();
 
-        var totalDenaHai = response.Where(p => p.Type == "Payable" && p.NetPending > 0).Sum(p => p.NetPending);
-        var totalLenaHai = response.Where(p => p.Type == "Receivable" && p.NetPending > 0).Sum(p => p.NetPending);
+        var activeCount = allResponse.Count(p => !p.IsSettled);
+        var settledCount = allResponse.Count(p => p.IsSettled);
+        var totalDenaHai = allResponse.Where(p => !p.IsSettled && p.Type == "Payable" && p.NetPending > 0).Sum(p => p.NetPending);
+        var totalLenaHai = allResponse.Where(p => !p.IsSettled && p.Type == "Receivable" && p.NetPending > 0).Sum(p => p.NetPending);
+
+        var filteredResponse = allResponse;
+        if (!string.IsNullOrWhiteSpace(status))
+        {
+            var st = status.Trim().ToLowerInvariant();
+            if (st == "active")
+            {
+                filteredResponse = allResponse.Where(p => !p.IsSettled).ToList();
+            }
+            else if (st == "settled" || st == "closed")
+            {
+                filteredResponse = allResponse.Where(p => p.IsSettled).ToList();
+            }
+        }
 
         return Ok(new
         {
-            parties = response,
+            parties = filteredResponse,
             summary = new
             {
-                totalParties = response.Count,
+                totalParties = allResponse.Count,
+                activeCount,
+                settledCount,
                 totalDenaHai,
                 totalLenaHai,
                 netBalance = totalLenaHai - totalDenaHai
@@ -224,6 +242,28 @@ public class KhataController : ControllerBase
 
         await _context.SaveChangesAsync(ct);
         return Ok(new { message = "Party updated successfully" });
+    }
+
+    [HttpPut("parties/{id:guid}/toggle-settle")]
+    public async Task<IActionResult> ToggleSettleParty(Guid id, CancellationToken ct)
+    {
+        var userId = RequireUserId();
+        var party = await _context.LocalKhataParties
+            .FirstOrDefaultAsync(p => p.Id == id && p.UserId == userId && !p.IsDeleted, ct);
+
+        if (party == null) return NotFound(new { message = "Party not found" });
+
+        party.IsSettled = !party.IsSettled;
+        party.UpdatedAtUtc = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync(ct);
+        return Ok(new
+        {
+            message = party.IsSettled
+                ? $"Khata for {party.Name} marked as Settled / Closed (हिसाब चुकता)."
+                : $"Khata for {party.Name} re-opened as Active (खाता दोबारा चालू किया).",
+            isSettled = party.IsSettled
+        });
     }
 
     [HttpDelete("parties/{id:guid}")]

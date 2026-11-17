@@ -16,15 +16,20 @@ export class KhataService {
   private readonly http = inject(HttpClient);
   private readonly baseUrl = '/api/v1/khata';
 
-  getParties(search?: string, type?: string): Observable<KhataPartiesResponse> {
+  getParties(search?: string, type?: string, status?: string): Observable<KhataPartiesResponse> {
     let params = new HttpParams();
     if (search) params = params.set('search', search);
     if (type) params = params.set('type', type);
+    if (status) params = params.set('status', status);
     return this.http.get<KhataPartiesResponse>(`${this.baseUrl}/parties`, { params });
   }
 
   getPartyById(id: string): Observable<KhataPartyDetail> {
     return this.http.get<KhataPartyDetail>(`${this.baseUrl}/parties/${id}`);
+  }
+
+  togglePartySettled(id: string): Observable<{ message: string; isSettled: boolean }> {
+    return this.http.put<{ message: string; isSettled: boolean }>(`${this.baseUrl}/parties/${id}/toggle-settle`, {});
   }
 
   createParty(dto: {

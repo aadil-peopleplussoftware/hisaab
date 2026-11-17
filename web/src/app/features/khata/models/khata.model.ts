@@ -47,6 +47,8 @@ export interface KhataPartiesResponse {
   parties: KhataParty[];
   summary: {
     totalParties: number;
+    activeCount: number;
+    settledCount: number;
     totalDenaHai: number;
     totalLenaHai: number;
     netBalance: number;
