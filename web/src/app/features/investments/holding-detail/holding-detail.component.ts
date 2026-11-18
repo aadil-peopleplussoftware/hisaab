@@ -657,13 +657,13 @@ import { ThemeService } from '../../../core/services/theme.service';
       border-bottom: 1px solid var(--color-border);
     }
 
-    .badge-buy { background: #e0f2fe; color: #0284c7; }
-    .badge-sell { background: #fffbeb; color: #d97706; }
-    .badge-dividend { background: #ecfdf5; color: #059669; }
+    .badge-buy { background: var(--color-accent-subtle); color: var(--color-accent-fg); }
+    .badge-sell { background: var(--color-loan-bg, rgba(217, 119, 6, 0.15)); color: var(--color-loan, #d97706); }
+    .badge-dividend { background: var(--color-income-bg); color: var(--color-income); }
 
-    .text-buy { color: #0284c7; }
-    .text-sell { color: #d97706; }
-    .text-dividend { color: #059669; }
+    .text-buy { color: var(--color-accent-fg); }
+    .text-sell { color: var(--color-loan, #d97706); }
+    .text-dividend { color: var(--color-income); }
     .text-main { color: var(--color-text-main); }
     .text-right { text-align: right; }
 

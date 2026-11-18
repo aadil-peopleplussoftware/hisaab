@@ -1132,8 +1132,8 @@ import { ThemeService } from '../../core/services/theme.service';
       justify-content: space-between;
       gap: 1rem;
       padding: 0.85rem 1.25rem;
-      background: #fafbfc;
-      border: 1px solid #e2e8f0;
+      background: var(--color-canvas-subtle);
+      border: 1px solid var(--color-border);
       border-radius: 9px;
       margin: 1.25rem 0 1rem 0;
     }
@@ -1143,38 +1143,23 @@ import { ThemeService } from '../../core/services/theme.service';
       padding: 0.65rem 1rem;
     }
 
-    :host-context([data-theme='dark']) .total-balance-box {
-      background: rgba(255, 255, 255, 0.03);
-      border-color: rgba(255, 255, 255, 0.08);
-    }
-
     .total-balance-label {
       font-size: 0.925rem;
       font-weight: 500;
-      color: #64748b;
-    }
-
-    :host-context([data-theme='dark']) .total-balance-label {
-      color: #94a3b8;
+      color: var(--color-text-muted);
     }
 
     .total-balance-badge {
       font-size: 1.05rem;
       font-weight: 700;
-      color: #1e293b;
-      background: #f1f5f9;
-      border: 1px solid #e2e8f0;
+      color: var(--color-text-main);
+      background: var(--color-bg-card);
+      border: 1px solid var(--color-border);
       padding: 5px 14px;
       border-radius: 6px;
       font-variant-numeric: tabular-nums;
       letter-spacing: -0.01em;
       white-space: nowrap;
-    }
-
-    :host-context([data-theme='dark']) .total-balance-badge {
-      background: rgba(255, 255, 255, 0.08);
-      border-color: rgba(255, 255, 255, 0.12);
-      color: #f8fafc;
     }
 
     /* Donut Chart Container */
@@ -1226,8 +1211,8 @@ import { ThemeService } from '../../core/services/theme.service';
       color: #475569;
     }
 
-    :host-context([data-theme='dark']) .legend-label {
-      color: #cbd5e1;
+    .legend-label {
+      color: var(--color-text-muted);
     }
 
     .legend-swatch {
@@ -1312,8 +1297,8 @@ import { ThemeService } from '../../core/services/theme.service';
     }
 
     .badge-claims {
-      background: #fef2f2;
-      color: #b91c1c;
+      background: var(--color-expense-bg);
+      color: var(--color-expense);
       font-size: 0.7rem;
       font-weight: 700;
       padding: 2px 7px;
@@ -1321,8 +1306,9 @@ import { ThemeService } from '../../core/services/theme.service';
     }
 
     .badge-year {
-      background: #f1f5f9;
-      color: #475569;
+      background: var(--color-canvas-subtle);
+      color: var(--color-text-muted);
+      border: 1px solid var(--color-border);
       font-size: 0.7rem;
       font-weight: 700;
       padding: 2px 7px;
@@ -1414,8 +1400,8 @@ import { ThemeService } from '../../core/services/theme.service';
     }
 
     .badge-inflow {
-      background: #ecfdf5;
-      color: #065f46;
+      background: var(--color-income-bg);
+      color: var(--color-income);
     }
 
     .entry-metrics {

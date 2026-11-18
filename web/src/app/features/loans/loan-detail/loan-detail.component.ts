@@ -956,14 +956,14 @@ import { ThemeService } from '../../../core/services/theme.service';
     }
 
     /* Kind badge styling */
-    .badge-disburse { background: #e0f2fe; color: #0284c7; }
-    .badge-repayment { background: #ecfdf5; color: #059669; }
-    .badge-interest { background: #f3e8ff; color: #9333ea; }
-    .badge-penalty { background: #fee2e2; color: #dc2626; }
+    .badge-disburse { background: var(--color-accent-subtle); color: var(--color-accent-fg); }
+    .badge-repayment { background: var(--color-income-bg); color: var(--color-income); }
+    .badge-interest { background: var(--color-loan-bg, rgba(217, 119, 6, 0.15)); color: var(--color-loan, #d97706); }
+    .badge-penalty { background: var(--color-expense-bg); color: var(--color-expense); }
 
-    .text-income { color: #059669; }
-    .text-expense { color: #d97706; }
-    .text-danger { color: #dc2626; }
+    .text-income { color: var(--color-income); }
+    .text-expense { color: var(--color-loan, #d97706); }
+    .text-danger { color: var(--color-expense); }
     .text-purple { color: #9333ea; }
     .text-main { color: var(--color-text-main); }
     .text-right { text-align: right; }

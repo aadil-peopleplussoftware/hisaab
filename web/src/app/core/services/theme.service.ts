@@ -1,20 +1,26 @@
 import { Injectable, signal, computed, effect } from '@angular/core';
 
 export type ThemeName =
-  | 'google-play-light'
-  | 'apple-cupertino'
-  | 'linear-slate'
-  | 'emerald-mint'
-  | 'nord-light'
-  | 'github-light'
-  | 'sepia-paper'
-  | 'github-dark'
-  | 'nord'
-  | 'midnight-emerald'
-  | 'olive-sand'
-  | 'plum-cream'
-  | 'dusty-blue-white'
-  | 'terracotta-beige';
+  // Combination (Dual-Tone Sidebar + Topbar + Screen Canvas)
+  | 'linear-contrast'
+  | 'slate-executive'
+  | 'emerald-prestige'
+  | 'royal-plum-ivory'
+  | 'monochrome-studio'
+  // Light Themes (Clean & Precision)
+  | 'stripe-pure'
+  | 'apple-snow'
+  | 'nordic-frost-light'
+  | 'parchment-cashmere'
+  // Dark Themes (High-Contrast & OLED)
+  | 'obsidian-pitch'
+  | 'linear-dark'
+  | 'midnight-abyss'
+  | 'matrix-terminal'
+  // Colorful Themes (Vibrant & Neon)
+  | 'cyberpunk-neon'
+  | 'aurora-borealis'
+  | 'sunset-amber';
 export type IconStyle = 'linear' | 'filled' | 'duotone' | 'monoline';
 export type SidebarPosition = 'left' | 'right' | 'top' | 'collapsed';
 export type DensityMode = 'comfortable' | 'compact';
@@ -25,7 +31,7 @@ export type RadiusPreset = 'sharp' | 'modern' | 'rounded' | 'pill';
 export interface ThemeDefinition {
   id: ThemeName;
   name: string;
-  category: 'light' | 'dark' | 'combination';
+  category: 'light' | 'dark' | 'combination' | 'colorful';
   description: string;
   previewColors: string[];
 }
@@ -69,13 +75,21 @@ export interface RadiusOption {
   providedIn: 'root'
 })
 export class ThemeService {
-  // Theme state
-  readonly currentTheme = signal<ThemeName>('github-light');
+  // Theme state (Default: Linear Contrast Flagship)
+  readonly currentTheme = signal<ThemeName>('linear-contrast');
 
-  // Backwards-compatible isDarkMode computed signal
+  // Backwards-compatible isDarkMode computed signal (covers dark & colorful dark palettes)
   readonly isDarkMode = computed(() => {
     const t = this.currentTheme();
-    return t === 'github-dark' || t === 'nord' || t === 'midnight-emerald';
+    return (
+      t === 'obsidian-pitch' ||
+      t === 'linear-dark' ||
+      t === 'midnight-abyss' ||
+      t === 'matrix-terminal' ||
+      t === 'cyberpunk-neon' ||
+      t === 'aurora-borealis' ||
+      t === 'sunset-amber'
+    );
   });
 
   // Professional SVG Icon style state (Linear, Filled, Duotone, Monoline)
@@ -118,103 +132,124 @@ export class ThemeService {
   ];
 
   readonly availableThemes: ThemeDefinition[] = [
+    // 1. COMBINATION THEMES (Signature Dual-Tone: Rich Sidebar & Topbar + Crisp Light Canvas)
     {
-      id: 'olive-sand',
-      name: 'Olive Green + Sand',
+      id: 'linear-contrast',
+      name: 'Linear Obsidian & Alabaster',
       category: 'combination',
-      description: 'Artisan dual-tone: deep earthy olive green sidebar/topbar with warm sand canvas and gold trim',
-      previewColors: ['#4f5436', '#f2ebe0', '#c5a059', '#272a1e']
+      description: 'Silicon Valley flagship dual-tone: Obsidian charcoal sidebar & header with crisp alabaster canvas and electric violet-indigo accents',
+      previewColors: ['#0f1117', '#f4f6f8', '#5e6ad2', '#16a34a']
     },
     {
-      id: 'plum-cream',
-      name: 'Deep Plum + Cream',
+      id: 'slate-executive',
+      name: 'Executive Navy & Pure Snow',
       category: 'combination',
-      description: 'Regal luxury dual-tone: deep plum wine sidebar/topbar with warm ivory cream canvas and champagne gold trim',
-      previewColors: ['#54203e', '#faf3ea', '#d6b77e', '#281320']
+      description: 'Institutional Wall Street dual-tone: deep midnight marine navy sidebar & header with pure snow canvas and cobalt blue accents',
+      previewColors: ['#0c1427', '#f0f4f8', '#2563eb', '#059669']
     },
     {
-      id: 'dusty-blue-white',
-      name: 'Dusty Blue + White',
+      id: 'emerald-prestige',
+      name: 'Heritage Emerald & Sand Gold',
       category: 'combination',
-      description: 'Nordic editorial dual-tone: serene slate dusty blue sidebar/topbar with clean porcelain white canvas and warm gold trim',
-      previewColors: ['#5b7488', '#f5f7fa', '#cca762', '#1b2530']
+      description: 'Wealth heritage dual-tone: deep alpine forest emerald sidebar & header with warm sand canvas and gold leaf trim',
+      previewColors: ['#07261d', '#f5f3ec', '#d4af37', '#059669']
     },
     {
-      id: 'terracotta-beige',
-      name: 'Terracotta + Beige',
+      id: 'royal-plum-ivory',
+      name: 'Bordeaux Wine & Champagne Ivory',
       category: 'combination',
-      description: 'Warm Mediterranean dual-tone: rich terracotta earth sidebar/topbar with sunlit beige canvas and brass gold trim',
-      previewColors: ['#ba4836', '#f7efe5', '#deb16d', '#311d17']
+      description: 'Ultra-luxury private banking dual-tone: deep imperial Bordeaux wine sidebar & header with warm ivory silk canvas and champagne gold trim',
+      previewColors: ['#240c1a', '#faf5ee', '#e5c158', '#991b1b']
     },
     {
-      id: 'google-play-light',
-      name: 'Google Play Console',
+      id: 'monochrome-studio',
+      name: 'Pitch Black & Studio Paper',
+      category: 'combination',
+      description: 'High-fashion editorial dual-tone: stark jet-black sidebar & header with neutral studio paper canvas and carbon accents',
+      previewColors: ['#09090b', '#f4f4f5', '#18181b', '#16a34a']
+    },
+
+    // 2. PRISTINE LIGHT THEMES (World Standard Clean UI)
+    {
+      id: 'stripe-pure',
+      name: 'Stripe Precision Light',
       category: 'light',
-      description: 'Material 3 clean white canvas with Google Play blue accents and soft pill navigation',
-      previewColors: ['#ffffff', '#f8fafd', '#0b57d0', '#137333']
+      description: 'The world benchmark for fintech dashboards: pure optic white canvas, crisp slate borders, and iconic Stripe Iris accents',
+      previewColors: ['#ffffff', '#f6f9fc', '#635bff', '#00d084']
     },
     {
-      id: 'apple-cupertino',
+      id: 'apple-snow',
       name: 'Apple Cupertino Clean',
       category: 'light',
-      description: 'San Francisco minimal pure white with iOS system surfaces and Cupertino system blue',
+      description: 'Modern macOS / iOS clean aesthetic: seamless pure white canvas, soft neutral surfaces, and Cupertino system blue',
       previewColors: ['#ffffff', '#f5f5f7', '#0071e3', '#34c759']
     },
     {
-      id: 'linear-slate',
-      name: 'Linear Minimalist Slate',
+      id: 'nordic-frost-light',
+      name: 'Nordic Arctic Light',
       category: 'light',
-      description: 'Modern fintech slate canvas with crisp indigo accents and high-legibility typography',
-      previewColors: ['#ffffff', '#f8fafc', '#6366f1', '#10b981']
+      description: 'Crisp Scandinavian minimalism: glacial snow canvas, cool steel borders, and electric arctic cyan accents',
+      previewColors: ['#ffffff', '#edf2f7', '#0284c7', '#0d9488']
     },
     {
-      id: 'emerald-mint',
-      name: 'Emerald Prosperity Mint',
+      id: 'parchment-cashmere',
+      name: 'Warm Cashmere & Paper',
       category: 'light',
-      description: 'Refreshing wealth & prosperity palette with vibrant mint tones and emerald accents',
-      previewColors: ['#ffffff', '#f0fdf4', '#10b981', '#059669']
+      description: 'Warm editorial financial parchment: restful warm linen paper, rich espresso typography, and warm amber bronze trim',
+      previewColors: ['#fdfbf7', '#f6f1e7', '#b45309', '#15803d']
     },
+
+    // 3. ELITE DARK THEMES (OLED Pitch, Deep Slate & High-Contrast)
     {
-      id: 'nord-light',
-      name: 'Nordic Polar Snow',
-      category: 'light',
-      description: 'Clean Arctic polar snow surface with icy glacier cyan and cool steel slate',
-      previewColors: ['#ffffff', '#eceff4', '#5e81ac', '#88c0d0']
-    },
-    {
-      id: 'github-light',
-      name: 'GitHub Primer Light',
-      category: 'light',
-      description: 'Clean high-contrast canvas with GitHub green accents and crisp 1px borders',
-      previewColors: ['#ffffff', '#f6f8fa', '#1f883d', '#0969da']
-    },
-    {
-      id: 'sepia-paper',
-      name: 'Warm Sepia & Paper',
-      category: 'light',
-      description: 'Comfortable, paper-warm parchment reducing eye fatigue in long sessions',
-      previewColors: ['#fdfaf3', '#f4eee1', '#b85d19', '#2d2b28']
-    },
-    {
-      id: 'github-dark',
-      name: 'GitHub Primer Dark',
+      id: 'obsidian-pitch',
+      name: 'Obsidian True Black (OLED)',
       category: 'dark',
-      description: 'GitHub dim/dark slate with high-contrast typography and subtle borders',
-      previewColors: ['#0d1117', '#161b22', '#238636', '#4493f8']
+      description: 'True OLED pitch black: pure black backdrop, floating obsidian cards, razor-sharp hairline borders, and emerald indicators',
+      previewColors: ['#000000', '#0c0c0e', '#10b981', '#60a5fa']
     },
     {
-      id: 'nord',
-      name: 'Nordic Arctic Frost',
+      id: 'linear-dark',
+      name: 'Linear Deep Slate',
       category: 'dark',
-      description: 'World-renowned polar night palette with icy cyan and frost accents',
-      previewColors: ['#2e3440', '#242933', '#88c0d0', '#eceff4']
+      description: 'Linear-inspired high-contrast dark mode: deep charcoal canvas, sleek graphite cards, and luminous violet glow',
+      previewColors: ['#0f1013', '#16181d', '#5e6ad2', '#22c55e']
     },
     {
-      id: 'midnight-emerald',
-      name: 'Midnight Emerald Wealth',
+      id: 'midnight-abyss',
+      name: 'Midnight Oceanic Abyss',
       category: 'dark',
-      description: 'Luxury financial terminal with deep obsidian and vibrant emerald',
-      previewColors: ['#0b111e', '#06090e', '#10b981', '#38bdf8']
+      description: 'Deep oceanic abyss: rich twilight navy canvas, elevated sapphire cards, and glowing ice-blue accents',
+      previewColors: ['#070c18', '#0e172b', '#38bdf8', '#34d399']
+    },
+    {
+      id: 'matrix-terminal',
+      name: 'Cyber Terminal Matrix',
+      category: 'dark',
+      description: 'High-velocity financial command terminal: dark graphite backdrop with phosphor emerald accents and crisp telemetry',
+      previewColors: ['#0a0f0b', '#111b14', '#00f076', '#00e5ff']
+    },
+
+    // 4. VIBRANT & COLORFUL THEMES (Aesthetic Gradients & Neon Glow)
+    {
+      id: 'cyberpunk-neon',
+      name: 'Cyberpunk Synthwave',
+      category: 'colorful',
+      description: 'Electric futuristic dusk: deep neon violet-slate canvas with vivid electric cyan and hot magenta/fuchsia highlights',
+      previewColors: ['#0d0a1c', '#15102a', '#00f5d4', '#f72585']
+    },
+    {
+      id: 'aurora-borealis',
+      name: 'Aurora Borealis Teal & Indigo',
+      category: 'colorful',
+      description: 'Celestial northern lights: deep celestial indigo-teal canvas with glowing mint cyan and violet-blue accents',
+      previewColors: ['#07151e', '#0d2433', '#06d6a0', '#818cf8']
+    },
+    {
+      id: 'sunset-amber',
+      name: 'Sunset Terracotta & Bronze',
+      category: 'colorful',
+      description: 'Warm twilight ember: rich deep espresso/terracotta canvas with burning sunset amber and warm golden brass highlights',
+      previewColors: ['#19110d', '#231712', '#f97316', '#fbbf24']
     }
   ];
 
@@ -381,18 +416,37 @@ export class ThemeService {
   }
 
   private initFromStorage(): void {
-    const savedTheme = localStorage.getItem('hisaab_theme') as ThemeName | null;
+    const savedTheme = localStorage.getItem('hisaab_theme') as string | null;
     if (savedTheme) {
-      if ((savedTheme as string) === 'dark') {
-        this.currentTheme.set('github-dark');
-      } else if ((savedTheme as string) === 'light') {
-        this.currentTheme.set('github-light');
+      const legacyMap: Record<string, ThemeName> = {
+        'dark': 'linear-dark',
+        'github-dark': 'linear-dark',
+        'light': 'stripe-pure',
+        'github-light': 'stripe-pure',
+        'google-play-light': 'apple-snow',
+        'apple-cupertino': 'apple-snow',
+        'linear-slate': 'linear-contrast',
+        'emerald-mint': 'emerald-prestige',
+        'nord-light': 'nordic-frost-light',
+        'sepia-paper': 'parchment-cashmere',
+        'nord': 'midnight-abyss',
+        'midnight-emerald': 'matrix-terminal',
+        'olive-sand': 'emerald-prestige',
+        'plum-cream': 'royal-plum-ivory',
+        'dusty-blue-white': 'slate-executive',
+        'terracotta-beige': 'sunset-amber'
+      };
+
+      if (legacyMap[savedTheme]) {
+        this.currentTheme.set(legacyMap[savedTheme]);
+      } else if (this.availableThemes.some(t => t.id === savedTheme)) {
+        this.currentTheme.set(savedTheme as ThemeName);
       } else {
-        this.currentTheme.set(savedTheme);
+        this.currentTheme.set('linear-contrast');
       }
     } else {
       const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-      this.currentTheme.set(prefersDark ? 'github-dark' : 'google-play-light');
+      this.currentTheme.set(prefersDark ? 'linear-dark' : 'linear-contrast');
     }
 
     const savedIcon = localStorage.getItem('hisaab_icon_style') as IconStyle | null;
@@ -437,9 +491,9 @@ export class ThemeService {
 
   toggleTheme(): void {
     if (this.isDarkMode()) {
-      this.setTheme('github-light');
+      this.setTheme('stripe-pure');
     } else {
-      this.setTheme('github-dark');
+      this.setTheme('linear-dark');
     }
   }
 

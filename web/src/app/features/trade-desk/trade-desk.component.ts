@@ -1358,8 +1358,8 @@ import { ThemeService } from '../../core/services/theme.service';
       background: var(--color-border);
     }
 
-    .profit { color: #059669 !important; }
-    .loss { color: #dc2626 !important; }
+    .profit { color: var(--color-income) !important; }
+    .loss { color: var(--color-expense) !important; }
     .accent { color: var(--color-primary, #0b57d0); }
 
     .sum-badge {
@@ -1904,7 +1904,7 @@ import { ThemeService } from '../../core/services/theme.service';
       text-transform: uppercase;
       &.open { background: #dcfce7; color: #15803d; }
       &.upcoming { background: #e0f2fe; color: #0369a1; }
-      &.listed { background: #f1f5f9; color: #475569; }
+      &.listed { background: var(--color-canvas-subtle); color: var(--color-text-muted); }
     }
 
     .calc-preview-strip {
@@ -2169,8 +2169,8 @@ import { ThemeService } from '../../core/services/theme.service';
       font-size: 11px;
       font-weight: 600;
 
-      .label-win { color: #059669; }
-      .label-loss { color: #dc2626; }
+      .label-win { color: var(--color-income); }
+      .label-loss { color: var(--color-expense); }
     }
 
     /* Subgrid Metrics */

@@ -961,8 +961,8 @@ interface ModuleOption {
       .mod-info p { margin: 0; font-size: 0.75rem; color: var(--color-text-muted); }
     }
 
-    [data-theme='dark'] .module-card.selected {
-      background: #1e1b4b;
+    .module-card.selected {
+      background: var(--color-accent-subtle);
     }
 
     /* Dropzone */
@@ -977,17 +977,14 @@ interface ModuleOption {
       margin-bottom: 1rem;
 
       &:hover, &.dragover {
-        background: var(--color-primary-light, #eef2ff);
+        background: var(--color-accent-subtle);
       }
       .upload-icon { font-size: 2.5rem; display: block; margin-bottom: 0.5rem; }
       h4 { margin: 0 0 0.25rem; font-size: 1rem; color: var(--color-text-main); }
       p { margin: 0; color: var(--color-text-muted); font-size: 0.8125rem; }
     }
 
-    [data-theme='dark'] .dropzone:hover,
-    [data-theme='dark'] .dropzone.dragover {
-      background: #1e1b4b;
-    }
+
 
     .selected-file-badge {
       background: var(--color-investment-bg);

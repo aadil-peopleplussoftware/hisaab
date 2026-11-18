@@ -677,13 +677,15 @@ import { ThemeService } from '../../core/services/theme.service';
     }
 
     .gain-positive {
-      background: #ecfdf5;
-      color: #059669;
+      background: var(--color-income-bg);
+      color: var(--color-income);
+      border: 1px solid var(--color-income-border);
     }
 
     .gain-negative {
-      background: #fee2e2;
-      color: #dc2626;
+      background: var(--color-expense-bg);
+      color: var(--color-expense);
+      border: 1px solid var(--color-expense-border);
     }
 
     .card-metrics {
@@ -713,8 +715,8 @@ import { ThemeService } from '../../core/services/theme.service';
       color: var(--color-text-main);
     }
 
-    .text-green { color: #059669; }
-    .text-red { color: #dc2626; }
+    .text-green { color: var(--color-income) !important; }
+    .text-red { color: var(--color-expense) !important; }
     .text-main { color: var(--color-text-main); }
     .text-lg { font-size: 1.15rem; }
 

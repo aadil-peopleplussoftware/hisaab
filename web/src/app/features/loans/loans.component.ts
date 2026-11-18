@@ -1141,18 +1141,21 @@ import { DeletionPermissionsService } from '../../core/services/deletion-permiss
     }
 
     .badge-given {
-      background: #ecfdf5;
-      color: #065f46;
+      background: var(--color-income-bg);
+      color: var(--color-income);
+      border: 1px solid var(--color-income-border);
     }
 
     .badge-taken {
-      background: #fffbeb;
-      color: #92400e;
+      background: var(--color-loan-bg, rgba(217, 119, 6, 0.15));
+      color: var(--color-loan, #d97706);
+      border: 1px solid var(--color-loan-border, rgba(217, 119, 6, 0.3));
     }
 
     .badge-closed {
-      background: #f1f5f9;
-      color: #475569;
+      background: var(--color-canvas-subtle);
+      color: var(--color-text-muted);
+      border: 1px solid var(--color-border);
     }
 
     /* Priority Filter & Sorting Styles */

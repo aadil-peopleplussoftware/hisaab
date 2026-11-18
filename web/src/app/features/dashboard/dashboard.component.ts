@@ -417,7 +417,7 @@ import { RoleRightsService } from '../../core/services/role-rights.service';
       flex-direction: column;
       gap: 1.5rem;
       padding-bottom: 3rem;
-      font-family: 'Google Sans', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+      font-family: var(--font-family-base);
     }
 
     /* Google Play Console Home Header (Screenshot 4) */

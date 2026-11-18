@@ -1158,8 +1158,8 @@ import {
       display: inline-block;
     }
 
-    .rev-dot { background: #16a34a; }
-    .exp-dot { background: #ef4444; }
+    .rev-dot { background: var(--color-income); }
+    .exp-dot { background: var(--color-expense); }
 
     .bars-container {
       display: grid;
@@ -1215,8 +1215,8 @@ import {
       font-weight: 600;
     }
 
-    .net-indicator.positive { color: #16a34a; }
-    .net-indicator.negative { color: #ef4444; }
+    .net-indicator.positive { color: var(--color-income); }
+    .net-indicator.negative { color: var(--color-expense); }
 
     /* Breakdown list */
     .breakdown-list {
@@ -1832,13 +1832,13 @@ import {
     }
 
     .btn-primary {
-      background: #2563eb;
-      color: #ffffff;
-      border-color: #1d4ed8;
+      background: var(--color-primary);
+      color: var(--color-primary-contrast, #ffffff);
+      border-color: var(--color-primary);
     }
 
     .btn-primary:hover:not(:disabled) {
-      background: #1d4ed8;
+      background: var(--color-primary-hover);
     }
 
     .btn-secondary {

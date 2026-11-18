@@ -255,8 +255,8 @@ import { RoleRightsService, ModuleRight, RoleSummary, UserRoleAssignment } from 
                 <span class="showcase-label">LIVE THEME SHOWCASE</span>
               </div>
               <div class="showcase-theme-badge">
-                <span class="theme-mode-tag" [class.dark-tag]="activeThemeDef().category === 'dark'">
-                  {{ activeThemeDef().category === 'dark' ? '🌙 DARK PALETTE' : '☀️ LIGHT PALETTE' }}
+                <span class="theme-mode-tag" [class.dark-tag]="activeThemeDef().category === 'dark' || activeThemeDef().category === 'colorful'">
+                  {{ activeThemeDef().category === 'dark' ? '🌙 DARK PALETTE' : activeThemeDef().category === 'colorful' ? '🎨 COLORFUL PALETTE' : activeThemeDef().category === 'combination' ? '✨ COMBINATION DUAL-TONE' : '☀️ LIGHT PALETTE' }}
                 </span>
                 <span class="theme-name-tag">{{ activeThemeDef().name }}</span>
               </div>
@@ -327,7 +327,7 @@ import { RoleRightsService, ModuleRight, RoleSummary, UserRoleAssignment } from 
                   [class.active]="themeCategoryFilter() === 'combination'"
                   (click)="themeCategoryFilter.set('combination'); themeService.playClickSound()"
                 >
-                  ✨ Combination (4)
+                  ✨ Combination ({{ countThemesByCategory('combination') }})
                 </button>
                 <button
                   type="button"
@@ -335,7 +335,7 @@ import { RoleRightsService, ModuleRight, RoleSummary, UserRoleAssignment } from 
                   [class.active]="themeCategoryFilter() === 'light'"
                   (click)="themeCategoryFilter.set('light'); themeService.playClickSound()"
                 >
-                  ☀️ Light Themes (7)
+                  ☀️ Light ({{ countThemesByCategory('light') }})
                 </button>
                 <button
                   type="button"
@@ -343,7 +343,15 @@ import { RoleRightsService, ModuleRight, RoleSummary, UserRoleAssignment } from 
                   [class.active]="themeCategoryFilter() === 'dark'"
                   (click)="themeCategoryFilter.set('dark'); themeService.playClickSound()"
                 >
-                  🌙 Dark Themes (3)
+                  🌙 Dark ({{ countThemesByCategory('dark') }})
+                </button>
+                <button
+                  type="button"
+                  class="theme-filter-btn"
+                  [class.active]="themeCategoryFilter() === 'colorful'"
+                  (click)="themeCategoryFilter.set('colorful'); themeService.playClickSound()"
+                >
+                  🎨 Colorful ({{ countThemesByCategory('colorful') }})
                 </button>
               </div>
             </div>
@@ -356,8 +364,8 @@ import { RoleRightsService, ModuleRight, RoleSummary, UserRoleAssignment } from 
                   (click)="themeService.setTheme(t.id)"
                 >
                   <div class="theme-card-top">
-                    <span class="theme-category-pill" [class.dark]="t.category === 'dark'">
-                      {{ t.category === 'dark' ? '🌙 Dark' : '☀️ Light' }}
+                    <span class="theme-category-pill" [class.dark]="t.category === 'dark' || t.category === 'colorful'">
+                      {{ t.category === 'dark' ? '🌙 Dark' : t.category === 'colorful' ? '🎨 Colorful' : t.category === 'combination' ? '✨ Combo' : '☀️ Light' }}
                     </span>
                     <div class="theme-swatch-bar">
                       @for (c of t.previewColors; track c) {
@@ -4003,7 +4011,7 @@ export class SettingsComponent implements OnInit {
   newRoleCopyFrom = 'User';
 
   // Theme category filter & computed helpers
-  readonly themeCategoryFilter = signal<'all' | 'combination' | 'light' | 'dark'>('all');
+  readonly themeCategoryFilter = signal<'all' | 'combination' | 'light' | 'dark' | 'colorful'>('all');
   readonly filteredThemes = computed(() => {
     const filter = this.themeCategoryFilter();
     if (filter === 'all') return this.themeService.availableThemes;
@@ -4013,6 +4021,10 @@ export class SettingsComponent implements OnInit {
     const curr = this.themeService.currentTheme();
     return this.themeService.availableThemes.find(t => t.id === curr) || this.themeService.availableThemes[0];
   });
+
+  countThemesByCategory(cat: string): number {
+    return this.themeService.availableThemes.filter(t => t.category === cat).length;
+  }
 
   testSound(type: 'click' | 'success' | 'delete' | 'nav'): void {
     this.themeService.previewSound(type);

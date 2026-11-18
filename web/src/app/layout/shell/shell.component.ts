@@ -773,7 +773,7 @@ interface CommandItem {
                 <a routerLink="/trade-desk" (click)="closeMobileMenu()" class="drawer-link">
                   <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'tradedesk' }" />
                   <span>Trade & IPO Desk</span>
-                  <span class="nav-badge-pill" style="background: rgba(16, 185, 129, 0.15); color: #059669; font-weight: 700; font-size: 10px;">IPO</span>
+                  <span class="nav-badge-pill" style="background: var(--color-income-bg); color: var(--color-income); font-weight: 700; font-size: 10px;">IPO</span>
                 </a>
               }
 
@@ -781,7 +781,7 @@ interface CommandItem {
                 <a routerLink="/my-assistant" (click)="closeMobileMenu()" class="drawer-link">
                   <ng-container *ngTemplateOutlet="iconRenderer; context: { type: 'myassistant' }" />
                   <span>My Assistant</span>
-                  <span class="nav-badge-pill" style="background: rgba(37, 211, 102, 0.15); color: #128c7e; font-weight: 700; font-size: 10px;">BOT</span>
+                  <span class="nav-badge-pill" style="background: var(--color-accent-subtle); color: var(--color-accent-fg); font-weight: 700; font-size: 10px;">BOT</span>
                 </a>
               }
 
@@ -1251,7 +1251,7 @@ interface CommandItem {
 
           .desktop-sidebar {
             border-right: none;
-            border-left: 1px solid var(--color-border);
+            border-left: 1px solid var(--color-sidebar-border, var(--color-border));
           }
         }
 
@@ -1265,7 +1265,7 @@ interface CommandItem {
             position: sticky;
             top: 0;
             border-right: none;
-            border-bottom: 1px solid var(--color-border);
+            border-bottom: 1px solid var(--color-sidebar-border, var(--color-border));
             flex-direction: row;
             align-items: center;
             justify-content: space-between;
@@ -1589,7 +1589,7 @@ interface CommandItem {
         width: 22px;
         height: 22px;
         border-radius: 4px;
-        background: rgba(9, 105, 218, 0.08);
+        background: var(--color-accent-subtle);
       }
 
       .sidebar-user {
@@ -1733,8 +1733,8 @@ interface CommandItem {
         transition: all 0.15s ease;
 
         &:hover {
-          background: var(--color-bg-hover);
-          border-color: var(--color-border);
+          background: var(--color-header-tool-hover-bg, var(--color-bg-hover));
+          border-color: var(--color-header-tool-hover-border, var(--color-border));
         }
 
         @media (min-width: 900px) {
@@ -1794,7 +1794,7 @@ interface CommandItem {
         align-items: center;
         gap: 5px;
         background-color: var(--color-primary);
-        color: #ffffff;
+        color: var(--color-primary-contrast, #ffffff);
         border: 1px solid rgba(0, 0, 0, 0.1);
         border-radius: var(--radius-md);
         padding: 5px 12px;
@@ -1839,6 +1839,11 @@ interface CommandItem {
           color: var(--color-header-fg, var(--color-text-main));
           outline: none;
           cursor: pointer;
+
+          option {
+            background-color: var(--color-bg-card);
+            color: var(--color-text-main);
+          }
         }
       }
 
@@ -1908,8 +1913,8 @@ interface CommandItem {
         width: 32px;
         height: 32px;
         border-radius: 50%;
-        background: #0b57d0;
-        color: #ffffff;
+        background: var(--color-primary);
+        color: var(--color-primary-contrast, #ffffff);
         font-weight: 500;
         font-size: 13px;
         display: flex;
@@ -1922,7 +1927,7 @@ interface CommandItem {
       .btn-signin-nav {
         padding: 4px 12px;
         background: var(--color-primary);
-        color: #ffffff;
+        color: var(--color-primary-contrast, #ffffff);
         border-radius: var(--radius-md);
         font-size: 12px;
         font-weight: 600;
@@ -2195,7 +2200,7 @@ interface CommandItem {
 
           &.on {
             background: var(--color-primary);
-            color: #ffffff;
+            color: var(--color-primary-contrast, #ffffff);
           }
         }
       }
@@ -2559,7 +2564,7 @@ interface CommandItem {
         width: 100%;
         min-height: 40px;
         background: var(--color-primary);
-        color: #ffffff;
+        color: var(--color-primary-contrast, #ffffff);
         border: none;
         border-radius: var(--radius-md);
         font-weight: 600;
@@ -2574,8 +2579,8 @@ interface CommandItem {
         bottom: 0;
         left: 0;
         right: 0;
-        background: var(--color-bg-card);
-        border-top: 1px solid var(--color-border);
+        background: var(--color-header-bg, var(--color-bg-card));
+        border-top: 1px solid var(--color-header-border, var(--color-border));
         display: flex;
         justify-content: space-around;
         align-items: center;
@@ -2739,64 +2744,100 @@ export class ShellComponent implements OnInit {
       action: () => this.router.navigate(['/settings'])
     },
     {
-      id: 'theme-google-play',
-      title: 'Switch to Google Play Console Light',
+      id: 'theme-linear-contrast',
+      title: 'Theme: Linear Obsidian & Alabaster (Combination)',
       category: 'Theme',
-      action: () => this.themeService.setTheme('google-play-light')
+      action: () => this.themeService.setTheme('linear-contrast')
     },
     {
-      id: 'theme-apple',
-      title: 'Switch to Apple Cupertino Clean',
+      id: 'theme-slate-executive',
+      title: 'Theme: Executive Navy & Pure Snow (Combination)',
       category: 'Theme',
-      action: () => this.themeService.setTheme('apple-cupertino')
+      action: () => this.themeService.setTheme('slate-executive')
     },
     {
-      id: 'theme-linear',
-      title: 'Switch to Linear Minimalist Slate',
+      id: 'theme-emerald-prestige',
+      title: 'Theme: Heritage Emerald & Sand Gold (Combination)',
       category: 'Theme',
-      action: () => this.themeService.setTheme('linear-slate')
+      action: () => this.themeService.setTheme('emerald-prestige')
     },
     {
-      id: 'theme-emerald-mint',
-      title: 'Switch to Emerald Prosperity Mint',
+      id: 'theme-royal-plum-ivory',
+      title: 'Theme: Bordeaux Wine & Champagne Ivory (Combination)',
       category: 'Theme',
-      action: () => this.themeService.setTheme('emerald-mint')
+      action: () => this.themeService.setTheme('royal-plum-ivory')
     },
     {
-      id: 'theme-nord-light',
-      title: 'Switch to Nordic Polar Snow',
+      id: 'theme-monochrome-studio',
+      title: 'Theme: Pitch Black & Studio Paper (Combination)',
       category: 'Theme',
-      action: () => this.themeService.setTheme('nord-light')
+      action: () => this.themeService.setTheme('monochrome-studio')
     },
     {
-      id: 'theme-light',
-      title: 'Switch to GitHub Primer Light',
+      id: 'theme-stripe-pure',
+      title: 'Theme: Stripe Precision Light (Light)',
       category: 'Theme',
-      action: () => this.themeService.setTheme('github-light')
+      action: () => this.themeService.setTheme('stripe-pure')
     },
     {
-      id: 'theme-dark',
-      title: 'Switch to GitHub Primer Dark',
+      id: 'theme-apple-snow',
+      title: 'Theme: Apple Cupertino Clean (Light)',
       category: 'Theme',
-      action: () => this.themeService.setTheme('github-dark')
+      action: () => this.themeService.setTheme('apple-snow')
     },
     {
-      id: 'theme-nord',
-      title: 'Switch to Nordic Arctic Frost',
+      id: 'theme-nordic-frost-light',
+      title: 'Theme: Nordic Arctic Light (Light)',
       category: 'Theme',
-      action: () => this.themeService.setTheme('nord')
+      action: () => this.themeService.setTheme('nordic-frost-light')
     },
     {
-      id: 'theme-emerald',
-      title: 'Switch to Midnight Emerald Wealth',
+      id: 'theme-parchment-cashmere',
+      title: 'Theme: Warm Cashmere & Paper (Light)',
       category: 'Theme',
-      action: () => this.themeService.setTheme('midnight-emerald')
+      action: () => this.themeService.setTheme('parchment-cashmere')
     },
     {
-      id: 'theme-sepia',
-      title: 'Switch to Warm Sepia & Paper',
+      id: 'theme-obsidian-pitch',
+      title: 'Theme: Obsidian True Black OLED (Dark)',
       category: 'Theme',
-      action: () => this.themeService.setTheme('sepia-paper')
+      action: () => this.themeService.setTheme('obsidian-pitch')
+    },
+    {
+      id: 'theme-linear-dark',
+      title: 'Theme: Linear Deep Slate (Dark)',
+      category: 'Theme',
+      action: () => this.themeService.setTheme('linear-dark')
+    },
+    {
+      id: 'theme-midnight-abyss',
+      title: 'Theme: Midnight Oceanic Abyss (Dark)',
+      category: 'Theme',
+      action: () => this.themeService.setTheme('midnight-abyss')
+    },
+    {
+      id: 'theme-matrix-terminal',
+      title: 'Theme: Cyber Terminal Matrix (Dark)',
+      category: 'Theme',
+      action: () => this.themeService.setTheme('matrix-terminal')
+    },
+    {
+      id: 'theme-cyberpunk-neon',
+      title: 'Theme: Cyberpunk Synthwave (Colorful)',
+      category: 'Theme',
+      action: () => this.themeService.setTheme('cyberpunk-neon')
+    },
+    {
+      id: 'theme-aurora-borealis',
+      title: 'Theme: Aurora Borealis Teal & Indigo (Colorful)',
+      category: 'Theme',
+      action: () => this.themeService.setTheme('aurora-borealis')
+    },
+    {
+      id: 'theme-sunset-amber',
+      title: 'Theme: Sunset Terracotta & Bronze (Colorful)',
+      category: 'Theme',
+      action: () => this.themeService.setTheme('sunset-amber')
     },
     {
       id: 'icon-linear',

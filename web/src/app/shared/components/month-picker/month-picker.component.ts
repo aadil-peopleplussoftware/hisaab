@@ -131,7 +131,7 @@ import { CommonModule } from '@angular/common';
 
       &:hover {
         background: var(--color-primary);
-        color: #ffffff;
+        color: var(--color-primary-contrast, #ffffff);
         border-color: var(--color-primary);
       }
     }

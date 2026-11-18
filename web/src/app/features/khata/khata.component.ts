@@ -1519,8 +1519,8 @@ import { StatCardComponent } from '../../shared/components/stat-card/stat-card.c
       font-size: 1rem;
       flex-shrink: 0;
     }
-    .party-avatar.payable { background: #fee2e2; color: #dc2626; }
-    .party-avatar.receivable { background: #dcfce7; color: #16a34a; }
+    .party-avatar.payable { background: var(--color-expense-bg); color: var(--color-expense); }
+    .party-avatar.receivable { background: var(--color-income-bg); color: var(--color-income); }
     .party-titles {
       flex: 1;
       min-width: 0;
@@ -2073,8 +2073,8 @@ import { StatCardComponent } from '../../shared/components/stat-card/stat-card.c
       font-size: 1.3rem;
       font-weight: 800;
     }
-    .party-avatar-lg.payable { background: #fee2e2; color: #dc2626; }
-    .party-avatar-lg.receivable { background: #dcfce7; color: #16a34a; }
+    .party-avatar-lg.payable { background: var(--color-expense-bg); color: var(--color-expense); }
+    .party-avatar-lg.receivable { background: var(--color-income-bg); color: var(--color-income); }
     .drawer-name { margin: 0; font-size: 1.4rem; font-weight: 800; color: var(--text-primary, #0f172a); }
     .drawer-phone { font-size: 0.85rem; color: var(--text-secondary, #64748b); }
     .drawer-right-actions { display: flex; align-items: center; gap: 0.65rem; }
@@ -2101,8 +2101,8 @@ import { StatCardComponent } from '../../shared/components/stat-card/stat-card.c
       border-radius: 1rem;
       border: 1.5px solid var(--border-color, #e2e8f0);
     }
-    .bg-danger-soft { background: #fef2f2; border-color: #fecaca; }
-    .bg-success-soft { background: #f0fdf4; border-color: #bbf7d0; }
+    .bg-danger-soft { background: var(--color-expense-bg); border-color: var(--color-expense-border); color: var(--color-expense); }
+    .bg-success-soft { background: var(--color-income-bg); border-color: var(--color-income-border); color: var(--color-income); }
     .banner-stat { display: flex; flex-direction: column; align-items: center; text-align: center; }
     .banner-lbl { font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: #64748b; }
     .banner-amt { font-size: 1.35rem; font-weight: 800; margin-top: 0.25rem; }
@@ -2200,8 +2200,8 @@ import { StatCardComponent } from '../../shared/components/stat-card/stat-card.c
     }
     .ledger-table td { padding: 0.75rem 0.65rem; border-bottom: 1px solid var(--border-color, #f1f5f9); }
     .entry-desc { display: flex; flex-direction: column; }
-    .entry-cat { font-weight: 700; color: #0f172a; }
-    .entry-rem { font-size: 0.78rem; color: #64748b; }
+    .entry-cat { font-weight: 700; color: var(--color-text-main); }
+    .entry-rem { font-size: 0.78rem; color: var(--color-text-muted); }
 
     /* Modal Cards */
     .modal-card {
@@ -2246,7 +2246,7 @@ import { StatCardComponent } from '../../shared/components/stat-card/stat-card.c
       font-size: 0.9rem;
       font-weight: 700;
     }
-    .radio-label.selected { border-color: #0f172a; background: var(--bg-highlight, #f8fafc); }
+    .radio-label.selected { border-color: var(--color-primary); background: var(--color-accent-subtle); color: var(--color-text-main); }
 
     /* Buttons */
     .btn-primary {

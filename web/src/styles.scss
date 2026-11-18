@@ -24,7 +24,7 @@
 /* ==========================================================================
    Hisaab — Google Fonts Import (Plus Jakarta Sans, JetBrains Mono, Roboto, Open Sans)
    ========================================================================== */
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto:wght@300;400;500;700&family=Open+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Roboto:wght@300;400;500;700&display=swap');
 
 /* ==========================================================================
    Hisaab — GitHub Primer Design System
@@ -133,671 +133,211 @@
   --radius-full: 9999px;
   --min-touch-target: 36px;
 
-  /* Legacy Aliases */
-  --bg-surface: #ffffff;
-  --color-bg-main: #f1f5f8;
-  --text-primary: #1f2937;
-  --text-secondary: #4b5563;
-  --border-color: #e2e8f0;
-  --primary: #00a65a;
-  --primary-hover: #008d4c;
+  /* Universal & Legacy Compatibility Aliases */
+  --bg-surface: var(--color-bg-card);
+  --color-bg-main: var(--color-canvas-subtle);
+  --text-primary: var(--color-text-main);
+  --text-secondary: var(--color-text-muted);
+  --border-color: var(--color-border);
+  --primary: var(--color-primary);
+  --primary-hover: var(--color-primary-hover);
+
+  --bg-canvas: var(--color-bg-main);
+  --bg-card: var(--color-bg-card);
+  --bg-highlight: var(--color-canvas-subtle);
+  --bg-input: var(--color-bg-card);
+  --bg-primary: var(--color-primary);
+  --bg-secondary: var(--color-canvas-subtle);
+  --border-default: var(--color-border);
+  --card-bg: var(--color-bg-card);
+  --color-bg-base: var(--color-bg-main);
+  --color-bg-page: var(--color-bg-main);
+  --color-bg-secondary: var(--color-canvas-subtle);
+  --color-bg-surface: var(--color-bg-card);
+  --color-card-bg: var(--color-bg-card);
+  --color-danger: var(--color-expense);
+  --color-success: var(--color-income);
+  --color-surface: var(--color-bg-card);
+  --donut-divider: var(--color-bg-card);
+  --donut-track: var(--color-border);
+  --font-mono: var(--font-family-mono);
+  --shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --surface-card: var(--color-bg-card);
+  --surface-ground: var(--color-bg-main);
+  --text-color: var(--color-text-main);
+  --text-muted: var(--color-text-muted);
 }
 
-/* Theme 1: Light / GitHub Primer Light (Default) */
-[data-theme='light'],
-[data-theme='github-light'] {
-  /* Inherits root variables */
+select option {
+  background-color: var(--color-bg-card);
+  color: var(--color-text-main);
 }
 
-/* Theme 2: Dark / GitHub Primer Dark */
-[data-theme='dark'],
-[data-theme='github-dark'] {
-  --color-canvas-default: #0d1117;
-  --color-canvas-subtle: #161b22;
-  --color-border-default: #30363d;
-  --color-border-muted: #21262d;
-  --color-fg-default: #f0f6fc;
-  --color-fg-muted: #848d97;
-  --color-fg-subtle: #6e7681;
-  --color-accent-fg: #4493f8;
-  --color-accent-emphasis: #1f6feb;
-  --color-accent-subtle: rgba(56, 139, 253, 0.15);
+/* ==========================================================================
+   THE WORLD'S BEST THEME COMBINATIONS (16 Flagship Master Themes)
+   Engineered with Strict Color Harmony, Contrast Ratios (WCAG AA/AAA),
+   and Cohesive Sidebar + Topbar + Screen Canvas Synergy
+   ========================================================================== */
 
-  --color-btn-text: #c9d1d9;
-  --color-btn-bg: #21262d;
-  --color-btn-border: rgba(240, 246, 252, 0.1);
-  --color-btn-hover-bg: #30363d;
-  --color-btn-hover-border: #8b949e;
-  --color-btn-active-bg: #282e33;
+/* --------------------------------------------------------------------------
+   GROUP 1: COMBINATION THEMES (Dual-Tone: Signature Sidebar/Topbar + Light Canvas)
+   -------------------------------------------------------------------------- */
 
-  --color-btn-primary-text: #ffffff;
-  --color-btn-primary-bg: #238636;
-  --color-btn-primary-border: rgba(240, 246, 252, 0.1);
-  --color-btn-primary-hover-bg: #2ea043;
-
-  --color-btn-danger-text: #f85149;
-  --color-btn-danger-bg: #21262d;
-  --color-btn-danger-border: rgba(240, 246, 252, 0.1);
-  --color-btn-danger-hover-bg: #b62324;
-  --color-btn-danger-hover-text: #ffffff;
-
-  --color-income: #3fb950;
-  --color-income-bg: rgba(46, 160, 67, 0.15);
-  --color-income-border: #238636;
-  --color-expense: #f85149;
-  --color-expense-bg: rgba(248, 81, 73, 0.15);
-  --color-expense-border: #da3633;
-  --color-loan: #d29922;
-  --color-loan-bg: rgba(187, 128, 9, 0.15);
-  --color-loan-border: #9e6a03;
-  --color-investment: #58a6ff;
-  --color-investment-bg: rgba(56, 139, 253, 0.15);
-  --color-investment-border: #1f6feb;
-  --color-epf: #2dd4bf;
-  --color-epf-bg: rgba(13, 148, 136, 0.15);
-  --color-epf-border: #0d9488;
-
-  --color-bg-app: #0d1117;
-  --color-bg-card: #161b22;
-  --color-bg-subtle: #161b22;
-  --color-bg-hover: #21262d;
-  --color-border: #30363d;
-  --color-border-subtle: #21262d;
-  --color-text-main: #f0f6fc;
-  --color-text-secondary: #c9d1d9;
-  --color-text-muted: #848d97;
-  --color-text-subtle: #6e7681;
-  --color-primary: #238636;
-  --color-primary-hover: #2ea043;
-  --color-primary-active: #238636;
-  --color-primary-light: rgba(46, 160, 67, 0.15);
-  --color-primary-contrast: #ffffff;
-
-  --shadow-sm: 0 1px 0 rgba(1, 4, 9, 0.3);
-  --shadow-md: 0 3px 6px rgba(1, 4, 9, 0.5);
-
-  --bg-surface: #161b22;
-  --color-bg-main: #161b22;
-  --text-primary: #f0f6fc;
-  --text-secondary: #c9d1d9;
-  --border-color: #30363d;
-  --primary: #238636;
-  --primary-hover: #2ea043;
-
-  /* Sidebar & Navigation Tokens (Dark) */
-  --color-sidebar-bg: #161b22;
-  --color-sidebar-border: #30363d;
-  --color-nav-active-bg: rgba(56, 139, 253, 0.18);
-  --color-nav-active-fg: #58a6ff;
-  --color-nav-active-icon: #58a6ff;
-  --color-nav-hover-bg: #21262d;
-  --color-nav-hover-fg: #f0f6fc;
-  --color-notif-bg: rgba(248, 81, 73, 0.18);
-  --color-notif-fg: #f85149;
-}
-
-/* Theme 3: Nordic Arctic Frost */
-[data-theme='nord'] {
-  --color-canvas-default: #2e3440;
-  --color-canvas-subtle: #242933;
-  --color-border-default: #434c5e;
-  --color-border-muted: #3b4252;
-  --color-fg-default: #eceff4;
-  --color-fg-muted: #d8dee9;
-  --color-fg-subtle: #e5e9f0;
-  --color-accent-fg: #88c0d0;
-  --color-accent-emphasis: #81a1c1;
-  --color-accent-subtle: rgba(136, 192, 208, 0.15);
-
-  --color-btn-text: #eceff4;
-  --color-btn-bg: #3b4252;
-  --color-btn-border: #4c566a;
-  --color-btn-hover-bg: #434c5e;
-  --color-btn-hover-border: #88c0d0;
-  --color-btn-active-bg: #2e3440;
-
-  --color-btn-primary-text: #2e3440;
-  --color-btn-primary-bg: #88c0d0;
-  --color-btn-primary-border: #88c0d0;
-  --color-btn-primary-hover-bg: #8fbcbb;
-
-  --color-btn-danger-text: #bf616a;
-  --color-btn-danger-bg: #3b4252;
-  --color-btn-danger-border: rgba(191, 97, 106, 0.3);
-  --color-btn-danger-hover-bg: #bf616a;
-  --color-btn-danger-hover-text: #ffffff;
-
-  --color-income: #a3be8c;
-  --color-income-bg: rgba(163, 190, 140, 0.15);
-  --color-income-border: #a3be8c;
-  --color-expense: #bf616a;
-  --color-expense-bg: rgba(191, 97, 106, 0.15);
-  --color-expense-border: #bf616a;
-  --color-loan: #ebcb8b;
-  --color-loan-bg: rgba(235, 203, 139, 0.15);
-  --color-loan-border: #ebcb8b;
-  --color-investment: #81a1c1;
-  --color-investment-bg: rgba(129, 161, 193, 0.15);
-  --color-investment-border: #81a1c1;
-  --color-epf: #8fbcbb;
-  --color-epf-bg: rgba(143, 188, 187, 0.15);
-  --color-epf-border: #8fbcbb;
-
-  --color-bg-app: #242933;
-  --color-bg-card: #2e3440;
-  --color-bg-subtle: #242933;
-  --color-bg-hover: #3b4252;
-  --color-border: #434c5e;
-  --color-border-subtle: #3b4252;
-  --color-text-main: #eceff4;
-  --color-text-secondary: #e5e9f0;
-  --color-text-muted: #d8dee9;
-  --color-text-subtle: #e5e9f0;
-  --color-primary: #88c0d0;
-  --color-primary-hover: #8fbcbb;
-  --color-primary-active: #81a1c1;
-  --color-primary-light: rgba(136, 192, 208, 0.2);
-  --color-primary-contrast: #2e3440;
-
-  --shadow-sm: 0 1px 0 rgba(0, 0, 0, 0.3);
-  --shadow-md: 0 3px 6px rgba(0, 0, 0, 0.4);
-
-  --bg-surface: #2e3440;
-  --color-bg-main: #2e3440;
-  --text-primary: #eceff4;
-  --text-secondary: #e5e9f0;
-  --border-color: #434c5e;
-  --primary: #88c0d0;
-  --primary-hover: #8fbcbb;
-
-  /* Sidebar & Navigation Tokens (Nord) */
-  --color-sidebar-bg: #2e3440;
-  --color-sidebar-border: #434c5e;
-  --color-nav-active-bg: rgba(136, 192, 208, 0.2);
-  --color-nav-active-fg: #88c0d0;
-  --color-nav-active-icon: #88c0d0;
-  --color-nav-hover-bg: #3b4252;
-  --color-nav-hover-fg: #eceff4;
-  --color-notif-bg: rgba(191, 97, 106, 0.2);
-  --color-notif-fg: #bf616a;
-}
-
-/* Theme 4: Midnight Emerald Wealth */
-[data-theme='midnight-emerald'] {
-  --color-canvas-default: #0b111e;
-  --color-canvas-subtle: #06090e;
-  --color-border-default: #1a2639;
-  --color-border-muted: #131c2b;
-  --color-fg-default: #f1f5f9;
-  --color-fg-muted: #94a3b8;
-  --color-fg-subtle: #64748b;
-  --color-accent-fg: #10b981;
-  --color-accent-emphasis: #059669;
-  --color-accent-subtle: rgba(16, 185, 129, 0.15);
-
-  --color-btn-text: #f1f5f9;
-  --color-btn-bg: #111b2e;
-  --color-btn-border: #1a2639;
-  --color-btn-hover-bg: #192742;
-  --color-btn-hover-border: #10b981;
-  --color-btn-active-bg: #0b111e;
-
-  --color-btn-primary-text: #ffffff;
-  --color-btn-primary-bg: #10b981;
-  --color-btn-primary-border: #059669;
-  --color-btn-primary-hover-bg: #059669;
-
-  --color-btn-danger-text: #f43f5e;
-  --color-btn-danger-bg: #111b2e;
-  --color-btn-danger-border: rgba(244, 63, 94, 0.3);
-  --color-btn-danger-hover-bg: #f43f5e;
-  --color-btn-danger-hover-text: #ffffff;
-
-  --color-income: #10b981;
-  --color-income-bg: rgba(16, 185, 129, 0.15);
-  --color-income-border: #059669;
-  --color-expense: #f43f5e;
-  --color-expense-bg: rgba(244, 63, 94, 0.15);
-  --color-expense-border: #e11d48;
-  --color-loan: #f59e0b;
-  --color-loan-bg: rgba(245, 158, 11, 0.15);
-  --color-loan-border: #d97706;
-  --color-investment: #38bdf8;
-  --color-investment-bg: rgba(56, 189, 248, 0.15);
-  --color-investment-border: #0284c7;
-  --color-epf: #2dd4bf;
-  --color-epf-bg: rgba(45, 212, 191, 0.15);
-  --color-epf-border: #0d9488;
-
-  --color-bg-app: #06090e;
-  --color-bg-card: #0b111e;
-  --color-bg-subtle: #06090e;
-  --color-bg-hover: #111b2e;
-  --color-border: #1a2639;
-  --color-border-subtle: #131c2b;
-  --color-text-main: #f1f5f9;
-  --color-text-secondary: #e2e8f0;
-  --color-text-muted: #94a3b8;
-  --color-text-subtle: #64748b;
-  --color-primary: #10b981;
-  --color-primary-hover: #059669;
-  --color-primary-active: #047857;
-  --color-primary-light: rgba(16, 185, 129, 0.15);
-  --color-primary-contrast: #ffffff;
-
-  --shadow-sm: 0 1px 0 rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 3px 6px rgba(0, 0, 0, 0.6);
-
-  --bg-surface: #0b111e;
-  --color-bg-main: #0b111e;
-  --text-primary: #f1f5f9;
-  --text-secondary: #e2e8f0;
-  --border-color: #1a2639;
-  --primary: #10b981;
-  --primary-hover: #059669;
-
-  /* Sidebar & Navigation Tokens (Midnight Emerald) */
-  --color-sidebar-bg: #0b111e;
-  --color-sidebar-border: #1a2639;
-  --color-nav-active-bg: rgba(16, 185, 129, 0.18);
-  --color-nav-active-fg: #34d399;
-  --color-nav-active-icon: #10b981;
-  --color-nav-hover-bg: #131c2b;
-  --color-nav-hover-fg: #f1f5f9;
-  --color-notif-bg: rgba(244, 63, 94, 0.2);
-  --color-notif-fg: #f43f5e;
-}
-
-/* Theme 5: Warm Sepia & Paper */
-[data-theme='sepia-paper'] {
-  --color-canvas-default: #fdfaf3;
-  --color-canvas-subtle: #f4eee1;
-  --color-border-default: #dcd3c1;
-  --color-border-muted: #e7dfd0;
-  --color-fg-default: #2d2b28;
-  --color-fg-muted: #736e65;
-  --color-fg-subtle: #8c867c;
-  --color-accent-fg: #b85d19;
-  --color-accent-emphasis: #9e4b0e;
-  --color-accent-subtle: rgba(184, 93, 25, 0.12);
-
-  --color-btn-text: #2d2b28;
-  --color-btn-bg: #ede5d4;
-  --color-btn-border: #dcd3c1;
-  --color-btn-hover-bg: #e2d9c6;
-  --color-btn-hover-border: #b85d19;
-  --color-btn-active-bg: #dacfb9;
-
-  --color-btn-primary-text: #ffffff;
-  --color-btn-primary-bg: #b85d19;
-  --color-btn-primary-border: #9e4b0e;
-  --color-btn-primary-hover-bg: #9e4b0e;
-
-  --color-btn-danger-text: #b93838;
-  --color-btn-danger-bg: #ede5d4;
-  --color-btn-danger-border: rgba(185, 56, 56, 0.3);
-  --color-btn-danger-hover-bg: #b93838;
-  --color-btn-danger-hover-text: #ffffff;
-
-  --color-income: #2b7a4b;
-  --color-income-bg: #e3f2e8;
-  --color-income-border: #4ea873;
-  --color-expense: #b93838;
-  --color-expense-bg: #fae6e6;
-  --color-expense-border: #df6e6e;
-  --color-loan: #a06a18;
-  --color-loan-bg: #fcf1d8;
-  --color-loan-border: #d89b38;
-  --color-investment: #2a6b8f;
-  --color-investment-bg: #e1eff8;
-  --color-investment-border: #529fc7;
-  --color-epf: #237871;
-  --color-epf-bg: #dff2f0;
-  --color-epf-border: #44aba2;
-
-  --color-bg-app: #f4eee1;
-  --color-bg-card: #fdfaf3;
-  --color-bg-subtle: #f4eee1;
-  --color-bg-hover: #ede5d4;
-  --color-border: #dcd3c1;
-  --color-border-subtle: #e7dfd0;
-  --color-text-main: #2d2b28;
-  --color-text-secondary: #48443e;
-  --color-text-muted: #736e65;
-  --color-text-subtle: #8c867c;
-  --color-primary: #b85d19;
-  --color-primary-hover: #9e4b0e;
-  --color-primary-active: #823c08;
-  --color-primary-light: #f7e6d7;
-  --color-primary-contrast: #ffffff;
-
-  --shadow-sm: 0 1px 0 rgba(60, 50, 40, 0.08);
-  --shadow-md: 0 3px 6px rgba(60, 50, 40, 0.12);
-
-  --bg-surface: #fdfaf3;
-  --color-bg-main: #fdfaf3;
-  --text-primary: #2d2b28;
-  --text-secondary: #48443e;
-  --border-color: #dcd3c1;
-  --primary: #b85d19;
-  --primary-hover: #9e4b0e;
-
-  /* Sidebar & Navigation Tokens (Sepia Paper) */
-  --color-sidebar-bg: #fdfaf3;
-  --color-sidebar-border: #dcd3c1;
-  --color-nav-active-bg: rgba(184, 93, 25, 0.15);
-  --color-nav-active-fg: #b85d19;
-  --color-nav-active-icon: #b85d19;
-  --color-nav-hover-bg: #f4eee1;
-  --color-nav-hover-fg: #2d2b28;
-  --color-notif-bg: rgba(184, 93, 25, 0.15);
-  --color-notif-fg: #b85d19;
-}
-
-/* Theme: Google Play Console Light */
-[data-theme='google-play-light'] {
+/* 1. Linear Obsidian & Alabaster (Flagship Modern Silicon Valley Fintech) */
+[data-theme='linear-contrast'],
+[data-theme='combination'] {
   --color-canvas-default: #ffffff;
-  --color-canvas-subtle: #f8fafd;
-  --color-canvas-surface: #f0f4f9;
-  --color-border-default: #e0e2e5;
-  --color-border-muted: #e7eaed;
-  --color-border-subtle: #f1f3f4;
-  --color-fg-default: #1f1f1f;
-  --color-fg-muted: #444746;
-  --color-fg-subtle: #5f6368;
-  --color-fg-disabled: #8e918f;
-
-  --color-accent-fg: #0b57d0;
-  --color-accent-emphasis: #0b57d0;
-  --color-accent-subtle: #d3e3fd;
-  --color-accent-hover: #0842a0;
-
-  --color-nav-active-bg: #d3e3fd;
-  --color-nav-active-fg: #041e49;
-  --color-nav-active-icon: #0b57d0;
-  --color-nav-hover-bg: #f1f3f4;
-  --color-nav-hover-fg: #1f1f1f;
-  --color-sidebar-bg: #ffffff;
-  --color-sidebar-border: #e0e2e5;
-
-  --color-btn-text: #0b57d0;
-  --color-btn-bg: #ffffff;
-  --color-btn-border: #747775;
-  --color-btn-hover-bg: #f1f3f4;
-  --color-btn-hover-border: #747775;
-  --color-btn-active-bg: #e1e3e1;
-
-  --color-btn-primary-text: #ffffff;
-  --color-btn-primary-bg: #0b57d0;
-  --color-btn-primary-border: #0b57d0;
-  --color-btn-primary-hover-bg: #0842a0;
-
-  --color-btn-danger-text: #c5221f;
-  --color-btn-danger-bg: #fce8e6;
-  --color-btn-danger-border: #fad2cf;
-  --color-btn-danger-hover-bg: #c5221f;
-  --color-btn-danger-hover-text: #ffffff;
-
-  --color-notif-bg: #fce8e6;
-  --color-notif-fg: #c5221f;
-
-  --color-income: #137333;
-  --color-income-bg: #e6f4ea;
-  --color-income-border: #ceead6;
-  --color-expense: #c5221f;
-  --color-expense-bg: #fce8e6;
-  --color-expense-border: #fad2cf;
-  --color-loan: #b06000;
-  --color-loan-bg: #fef7e0;
-  --color-loan-border: #feefc3;
-  --color-investment: #0b57d0;
-  --color-investment-bg: #d3e3fd;
-  --color-investment-border: #a8c7fa;
-  --color-epf: #007b83;
-  --color-epf-bg: #e0f2f1;
-  --color-epf-border: #b2dfdb;
-
-  --color-bg-app: #ffffff;
-  --color-bg-card: #ffffff;
-  --color-bg-subtle: #f8fafd;
-  --color-bg-hover: #f1f3f4;
-  --color-border: #e0e2e5;
-  --color-border-subtle: #f1f3f4;
-  --color-text-main: #1f1f1f;
-  --color-text-secondary: #444746;
-  --color-text-muted: #5f6368;
-  --color-text-subtle: #747775;
-  --color-primary: #0b57d0;
-  --color-primary-hover: #0842a0;
-  --color-primary-active: #041e49;
-  --color-primary-light: #d3e3fd;
-  --color-primary-contrast: #ffffff;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.06);
-  --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.08);
-  --bg-surface: #ffffff;
-  --color-bg-main: #ffffff;
-  --text-primary: #1f1f1f;
-  --text-secondary: #444746;
-  --border-color: #e0e2e5;
-  --primary: #0b57d0;
-  --primary-hover: #0842a0;
-}
-
-/* Theme: Apple Cupertino Clean */
-[data-theme='apple-cupertino'] {
-  --color-canvas-default: #ffffff;
-  --color-canvas-subtle: #f5f5f7;
-  --color-canvas-surface: #e5e5ea;
-  --color-border-default: #d1d1d6;
-  --color-border-muted: #e5e5ea;
-  --color-border-subtle: #f2f2f7;
-  --color-fg-default: #1d1d1f;
-  --color-fg-muted: #515154;
-  --color-fg-subtle: #86868b;
-  --color-fg-disabled: #aeaeb2;
-
-  --color-accent-fg: #0071e3;
-  --color-accent-emphasis: #0071e3;
-  --color-accent-subtle: rgba(0, 113, 227, 0.12);
-  --color-accent-hover: #0077ed;
-
-  --color-nav-active-bg: rgba(0, 113, 227, 0.12);
-  --color-nav-active-fg: #0071e3;
-  --color-nav-active-icon: #0071e3;
-  --color-nav-hover-bg: #f2f2f7;
-  --color-nav-hover-fg: #1d1d1f;
-  --color-sidebar-bg: #ffffff;
-  --color-sidebar-border: #e5e5ea;
-
-  --color-btn-text: #0071e3;
-  --color-btn-bg: #f5f5f7;
-  --color-btn-border: #d1d1d6;
-  --color-btn-hover-bg: #e5e5ea;
-  --color-btn-hover-border: #0071e3;
-  --color-btn-active-bg: #d1d1d6;
-
-  --color-btn-primary-text: #ffffff;
-  --color-btn-primary-bg: #0071e3;
-  --color-btn-primary-border: #0071e3;
-  --color-btn-primary-hover-bg: #0077ed;
-
-  --color-btn-danger-text: #ff3b30;
-  --color-btn-danger-bg: #ffefef;
-  --color-btn-danger-border: #ffd2d0;
-  --color-btn-danger-hover-bg: #ff3b30;
-  --color-btn-danger-hover-text: #ffffff;
-
-  --color-notif-bg: #ffefef;
-  --color-notif-fg: #ff3b30;
-
-  --color-income: #34c759;
-  --color-income-bg: rgba(52, 199, 89, 0.12);
-  --color-income-border: #bcf0c8;
-  --color-expense: #ff3b30;
-  --color-expense-bg: rgba(255, 59, 48, 0.12);
-  --color-expense-border: #ffd2d0;
-  --color-loan: #ff9500;
-  --color-loan-bg: rgba(255, 149, 0, 0.12);
-  --color-loan-border: #ffe1b3;
-  --color-investment: #5856d6;
-  --color-investment-bg: rgba(88, 86, 214, 0.12);
-  --color-investment-border: #d6d5f7;
-  --color-epf: #00c7be;
-  --color-epf-bg: rgba(0, 199, 190, 0.12);
-  --color-epf-border: #b3f2ee;
-
-  --color-bg-app: #f5f5f7;
-  --color-bg-card: #ffffff;
-  --color-bg-subtle: #f5f5f7;
-  --color-bg-hover: #ebebf0;
-  --color-border: #e5e5ea;
-  --color-border-subtle: #f2f2f7;
-  --color-text-main: #1d1d1f;
-  --color-text-secondary: #515154;
-  --color-text-muted: #86868b;
-  --color-text-subtle: #aeaeb2;
-  --color-primary: #0071e3;
-  --color-primary-hover: #0077ed;
-  --color-primary-active: #005bb5;
-  --color-primary-light: rgba(0, 113, 227, 0.12);
-  --color-primary-contrast: #ffffff;
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.07);
-  --bg-surface: #ffffff;
-  --color-bg-main: #ffffff;
-  --text-primary: #1d1d1f;
-  --text-secondary: #515154;
-  --border-color: #e5e5ea;
-  --primary: #0071e3;
-  --primary-hover: #0077ed;
-}
-
-/* Theme: Linear Minimalist Slate */
-[data-theme='linear-slate'] {
-  --color-canvas-default: #ffffff;
-  --color-canvas-subtle: #f8fafc;
-  --color-canvas-surface: #f1f5f9;
+  --color-canvas-subtle: #f4f6f8;
+  --color-canvas-surface: #ffffff;
   --color-border-default: #e2e8f0;
-  --color-border-muted: #cbd5e1;
+  --color-border-muted: #e5e7eb;
   --color-border-subtle: #f1f5f9;
   --color-fg-default: #0f172a;
   --color-fg-muted: #475569;
   --color-fg-subtle: #64748b;
   --color-fg-disabled: #94a3b8;
 
-  --color-accent-fg: #6366f1;
-  --color-accent-emphasis: #4f46e5;
-  --color-accent-subtle: rgba(99, 102, 241, 0.12);
-  --color-accent-hover: #4338ca;
+  --color-accent-fg: #5e6ad2;
+  --color-accent-emphasis: #4b55ba;
+  --color-accent-subtle: rgba(94, 106, 210, 0.12);
+  --color-accent-hover: #4b55ba;
 
-  --color-nav-active-bg: rgba(99, 102, 241, 0.12);
-  --color-nav-active-fg: #4f46e5;
-  --color-nav-active-icon: #6366f1;
-  --color-nav-hover-bg: #f1f5f9;
-  --color-nav-hover-fg: #0f172a;
-  --color-sidebar-bg: #ffffff;
-  --color-sidebar-border: #e2e8f0;
-
-  --color-btn-text: #4f46e5;
-  --color-btn-bg: #f8fafc;
-  --color-btn-border: #e2e8f0;
-  --color-btn-hover-bg: #f1f5f9;
-  --color-btn-hover-border: #6366f1;
-  --color-btn-active-bg: #e2e8f0;
-
-  --color-btn-primary-text: #ffffff;
-  --color-btn-primary-bg: #6366f1;
-  --color-btn-primary-border: #4f46e5;
-  --color-btn-primary-hover-bg: #4f46e5;
-
-  --color-btn-danger-text: #ef4444;
-  --color-btn-danger-bg: #fef2f2;
-  --color-btn-danger-border: #fecaca;
-  --color-btn-danger-hover-bg: #ef4444;
-  --color-btn-danger-hover-text: #ffffff;
-
-  --color-notif-bg: #fef2f2;
-  --color-notif-fg: #ef4444;
-
-  --color-income: #10b981;
-  --color-income-bg: rgba(16, 185, 129, 0.12);
-  --color-income-border: #a7f3d0;
-  --color-expense: #ef4444;
-  --color-expense-bg: rgba(239, 68, 68, 0.12);
-  --color-expense-border: #fecaca;
-  --color-loan: #f59e0b;
-  --color-loan-bg: rgba(245, 158, 11, 0.12);
-  --color-loan-border: #fde68a;
-  --color-investment: #3b82f6;
-  --color-investment-bg: rgba(59, 130, 246, 0.12);
-  --color-investment-border: #bfdbfe;
-  --color-epf: #06b6d4;
-  --color-epf-bg: rgba(6, 182, 212, 0.12);
-  --color-epf-border: #a5f3fc;
-
-  --color-bg-app: #f8fafc;
+  --color-bg-app: #f4f6f8;
   --color-bg-card: #ffffff;
   --color-bg-subtle: #f8fafc;
   --color-bg-hover: #f1f5f9;
   --color-border: #e2e8f0;
   --color-border-subtle: #f1f5f9;
   --color-text-main: #0f172a;
-  --color-text-secondary: #475569;
+  --color-text-secondary: #334155;
   --color-text-muted: #64748b;
   --color-text-subtle: #94a3b8;
-  --color-primary: #6366f1;
-  --color-primary-hover: #4f46e5;
-  --color-primary-active: #4338ca;
-  --color-primary-light: rgba(99, 102, 241, 0.12);
+  --color-primary: #5e6ad2;
+  --color-primary-hover: #4b55ba;
+  --color-primary-active: #3e47a0;
+  --color-primary-light: rgba(94, 106, 210, 0.12);
   --color-primary-contrast: #ffffff;
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
+
+  --color-btn-text: #0f172a;
+  --color-btn-bg: #ffffff;
+  --color-btn-border: #cbd5e1;
+  --color-btn-hover-bg: #f8fafc;
+  --color-btn-hover-border: #94a3b8;
+  --color-btn-active-bg: #f1f5f9;
+  --color-btn-primary-text: #ffffff;
+  --color-btn-primary-bg: #5e6ad2;
+  --color-btn-primary-border: #5e6ad2;
+  --color-btn-primary-hover-bg: #4b55ba;
+
+  --color-btn-danger-text: #e11d48;
+  --color-btn-danger-bg: #fff1f2;
+  --color-btn-danger-border: #fecdd3;
+  --color-btn-danger-hover-bg: #e11d48;
+  --color-btn-danger-hover-text: #ffffff;
+
+  --color-income: #16a34a;
+  --color-income-bg: #f0fdf4;
+  --color-income-border: #bbf7d0;
+  --color-expense: #e11d48;
+  --color-expense-bg: #fff1f2;
+  --color-expense-border: #fecdd3;
+  --color-loan: #d97706;
+  --color-loan-bg: #fffbeb;
+  --color-loan-border: #fde68a;
+  --color-investment: #5e6ad2;
+  --color-investment-bg: #eef2ff;
+  --color-investment-border: #c7d2fe;
+  --color-epf: #0d9488;
+  --color-epf-bg: #f0fdfa;
+  --color-epf-border: #99f6e4;
+  --color-notif-bg: #e11d48;
+  --color-notif-fg: #ffffff;
+
+  --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 4px 10px rgba(15, 23, 42, 0.07);
+  --shadow-lg: 0 10px 25px rgba(15, 23, 42, 0.10);
   --bg-surface: #ffffff;
-  --color-bg-main: #ffffff;
+  --color-bg-main: #f4f6f8;
   --text-primary: #0f172a;
-  --text-secondary: #475569;
+  --text-secondary: #334155;
   --border-color: #e2e8f0;
-  --primary: #6366f1;
-  --primary-hover: #4f46e5;
+  --primary: #5e6ad2;
+  --primary-hover: #4b55ba;
+
+  /* Obsidian Charcoal Sidebar with Razor Border */
+  --color-sidebar-bg: #0f1117;
+  --color-sidebar-border: #1e222d;
+  --color-sidebar-border-inner: #161922;
+  --color-sidebar-fg: #f8fafc;
+  --color-sidebar-muted: #8b949e;
+  --color-sidebar-nav-fg: #cbd5e1;
+  --color-sidebar-nav-icon: #94a3b8;
+  --color-nav-hover-bg: rgba(255, 255, 255, 0.08);
+  --color-nav-hover-fg: #ffffff;
+  --color-nav-active-bg: rgba(94, 106, 210, 0.24);
+  --color-nav-active-fg: #ffffff;
+  --color-nav-active-icon: #818cf8;
+
+  /* Obsidian Matching Header Bar */
+  --color-header-bg: #0f1117;
+  --color-header-border: #1e222d;
+  --color-header-fg: #f8fafc;
+  --color-header-btn-bg: rgba(255, 255, 255, 0.07);
+  --color-header-btn-border: #272c38;
+  --color-header-btn-fg: #cbd5e1;
+  --color-header-tool-fg: #94a3b8;
+  --color-header-tool-hover-bg: rgba(255, 255, 255, 0.10);
+  --color-header-tool-hover-border: #384050;
+  --color-header-key-bg: rgba(255, 255, 255, 0.12);
+  --color-header-key-border: #323846;
+  --color-header-key-fg: #f8fafc;
 }
 
-/* Theme: Emerald Prosperity Mint */
-[data-theme='emerald-mint'] {
+/* 2. Executive Navy & Pure Snow (Wall Street Institutional Elegance) */
+[data-theme='slate-executive'],
+[data-theme='dusty-blue-white'] {
   --color-canvas-default: #ffffff;
-  --color-canvas-subtle: #f0fdf4;
-  --color-canvas-surface: #dcfce7;
-  --color-border-default: #bbf7d0;
-  --color-border-muted: #86efac;
-  --color-border-subtle: #f0fdf4;
-  --color-fg-default: #064e3b;
-  --color-fg-muted: #065f46;
-  --color-fg-subtle: #047857;
-  --color-fg-disabled: #6ee7b7;
+  --color-canvas-subtle: #f0f4f8;
+  --color-canvas-surface: #ffffff;
+  --color-border-default: #e2e8f0;
+  --color-border-muted: #e5e7eb;
+  --color-border-subtle: #f1f5f9;
+  --color-fg-default: #0f172a;
+  --color-fg-muted: #475569;
+  --color-fg-subtle: #64748b;
+  --color-fg-disabled: #94a3b8;
 
-  --color-accent-fg: #10b981;
-  --color-accent-emphasis: #059669;
-  --color-accent-subtle: rgba(16, 185, 129, 0.15);
-  --color-accent-hover: #047857;
+  --color-accent-fg: #2563eb;
+  --color-accent-emphasis: #1d4ed8;
+  --color-accent-subtle: rgba(37, 99, 235, 0.12);
+  --color-accent-hover: #1d4ed8;
 
-  --color-nav-active-bg: #dcfce7;
-  --color-nav-active-fg: #065f46;
-  --color-nav-active-icon: #059669;
-  --color-nav-hover-bg: #f0fdf4;
-  --color-nav-hover-fg: #064e3b;
-  --color-sidebar-bg: #ffffff;
-  --color-sidebar-border: #bbf7d0;
+  --color-bg-app: #f0f4f8;
+  --color-bg-card: #ffffff;
+  --color-bg-subtle: #f8fafc;
+  --color-bg-hover: #eef3f9;
+  --color-border: #e2e8f0;
+  --color-border-subtle: #f1f5f9;
+  --color-text-main: #0f172a;
+  --color-text-secondary: #334155;
+  --color-text-muted: #475569;
+  --color-text-subtle: #94a3b8;
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  --color-primary-active: #1e40af;
+  --color-primary-light: rgba(37, 99, 235, 0.12);
+  --color-primary-contrast: #ffffff;
 
-  --color-btn-text: #059669;
-  --color-btn-bg: #f0fdf4;
-  --color-btn-border: #86efac;
-  --color-btn-hover-bg: #dcfce7;
-  --color-btn-hover-border: #059669;
-  --color-btn-active-bg: #bbf7d0;
-
+  --color-btn-text: #0f172a;
+  --color-btn-bg: #ffffff;
+  --color-btn-border: #cbd5e1;
+  --color-btn-hover-bg: #f8fafc;
+  --color-btn-hover-border: #94a3b8;
+  --color-btn-active-bg: #f1f5f9;
   --color-btn-primary-text: #ffffff;
-  --color-btn-primary-bg: #059669;
-  --color-btn-primary-border: #047857;
-  --color-btn-primary-hover-bg: #047857;
+  --color-btn-primary-bg: #2563eb;
+  --color-btn-primary-border: #2563eb;
+  --color-btn-primary-hover-bg: #1d4ed8;
 
   --color-btn-danger-text: #dc2626;
   --color-btn-danger-bg: #fef2f2;
@@ -805,546 +345,1613 @@
   --color-btn-danger-hover-bg: #dc2626;
   --color-btn-danger-hover-text: #ffffff;
 
-  --color-notif-bg: #fef2f2;
-  --color-notif-fg: #dc2626;
-
   --color-income: #059669;
-  --color-income-bg: #dcfce7;
-  --color-income-border: #86efac;
+  --color-income-bg: #ecfdf5;
+  --color-income-border: #a7f3d0;
   --color-expense: #dc2626;
   --color-expense-bg: #fef2f2;
   --color-expense-border: #fecaca;
   --color-loan: #d97706;
-  --color-loan-bg: #fef3c7;
+  --color-loan-bg: #fffbeb;
   --color-loan-border: #fde68a;
   --color-investment: #0284c7;
-  --color-investment-bg: #e0f2fe;
+  --color-investment-bg: #f0f9ff;
   --color-investment-border: #bae6fd;
   --color-epf: #0d9488;
-  --color-epf-bg: #ccfbf1;
+  --color-epf-bg: #f0fdfa;
   --color-epf-border: #99f6e4;
+  --color-notif-bg: #2563eb;
+  --color-notif-fg: #ffffff;
 
-  --color-bg-app: #f7fee7;
-  --color-bg-card: #ffffff;
-  --color-bg-subtle: #f0fdf4;
-  --color-bg-hover: #dcfce7;
-  --color-border: #bbf7d0;
-  --color-border-subtle: #f0fdf4;
-  --color-text-main: #064e3b;
-  --color-text-secondary: #065f46;
-  --color-text-muted: #047857;
-  --color-text-subtle: #10b981;
-  --color-primary: #059669;
-  --color-primary-hover: #047857;
-  --color-primary-active: #064e3b;
-  --color-primary-light: #dcfce7;
-  --color-primary-contrast: #ffffff;
-  --shadow-sm: 0 1px 3px rgba(6, 78, 59, 0.08);
-  --shadow-md: 0 4px 10px rgba(6, 78, 59, 0.1);
+  --shadow-sm: 0 1px 3px rgba(12, 20, 39, 0.06);
+  --shadow-md: 0 4px 10px rgba(12, 20, 39, 0.08);
+  --shadow-lg: 0 10px 25px rgba(12, 20, 39, 0.12);
   --bg-surface: #ffffff;
-  --color-bg-main: #ffffff;
-  --text-primary: #064e3b;
-  --text-secondary: #065f46;
-  --border-color: #bbf7d0;
-  --primary: #059669;
-  --primary-hover: #047857;
+  --color-bg-main: #f0f4f8;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --border-color: #e2e8f0;
+  --primary: #2563eb;
+  --primary-hover: #1d4ed8;
+
+  /* Deep Marine Midnight Navy Sidebar */
+  --color-sidebar-bg: #0c1427;
+  --color-sidebar-border: #1e293b;
+  --color-sidebar-border-inner: #152037;
+  --color-sidebar-fg: #f8fafc;
+  --color-sidebar-muted: #94a3b8;
+  --color-sidebar-nav-fg: #cbd5e1;
+  --color-sidebar-nav-icon: #94a3b8;
+  --color-nav-hover-bg: rgba(255, 255, 255, 0.08);
+  --color-nav-hover-fg: #ffffff;
+  --color-nav-active-bg: rgba(37, 99, 235, 0.25);
+  --color-nav-active-fg: #ffffff;
+  --color-nav-active-icon: #60a5fa;
+
+  /* Deep Navy Topbar */
+  --color-header-bg: #0c1427;
+  --color-header-border: #1e293b;
+  --color-header-fg: #f8fafc;
+  --color-header-btn-bg: rgba(255, 255, 255, 0.08);
+  --color-header-btn-border: #24334f;
+  --color-header-btn-fg: #cbd5e1;
+  --color-header-tool-fg: #94a3b8;
+  --color-header-tool-hover-bg: rgba(255, 255, 255, 0.10);
+  --color-header-tool-hover-border: #2d3e5b;
+  --color-header-key-bg: rgba(255, 255, 255, 0.12);
+  --color-header-key-border: #324361;
+  --color-header-key-fg: #f8fafc;
 }
 
-/* Theme: Nordic Polar Snow (Nord Light) */
-[data-theme='nord-light'] {
+/* 3. Heritage Emerald & Sand Gold (Alpine Forest & Wealth Gold) */
+[data-theme='emerald-prestige'],
+[data-theme='olive-sand'] {
   --color-canvas-default: #ffffff;
-  --color-canvas-subtle: #eceff4;
-  --color-canvas-surface: #e5e9f0;
-  --color-border-default: #d8dee9;
-  --color-border-muted: #e5e9f0;
-  --color-border-subtle: #eceff4;
-  --color-fg-default: #2e3440;
-  --color-fg-muted: #3b4252;
-  --color-fg-subtle: #4c566a;
-  --color-fg-disabled: #d8dee9;
+  --color-canvas-subtle: #f5f3ec;
+  --color-canvas-surface: #ffffff;
+  --color-border-default: #ddd7c7;
+  --color-border-muted: #e7e2d5;
+  --color-border-subtle: #f0ece3;
+  --color-fg-default: #1a261f;
+  --color-fg-muted: #586358;
+  --color-fg-subtle: #788478;
+  --color-fg-disabled: #a0aca0;
 
-  --color-accent-fg: #5e81ac;
-  --color-accent-emphasis: #81a1c1;
-  --color-accent-subtle: rgba(94, 129, 172, 0.15);
-  --color-accent-hover: #4c566a;
+  --color-accent-fg: #059669;
+  --color-accent-emphasis: #047857;
+  --color-accent-subtle: rgba(5, 150, 105, 0.12);
+  --color-accent-hover: #047857;
 
-  --color-nav-active-bg: rgba(94, 129, 172, 0.15);
-  --color-nav-active-fg: #5e81ac;
-  --color-nav-active-icon: #5e81ac;
-  --color-nav-hover-bg: #e5e9f0;
-  --color-nav-hover-fg: #2e3440;
-  --color-sidebar-bg: #ffffff;
-  --color-sidebar-border: #d8dee9;
+  --color-bg-app: #f5f3ec;
+  --color-bg-card: #ffffff;
+  --color-bg-subtle: #fbfaf7;
+  --color-bg-hover: #eeebe1;
+  --color-border: #ddd7c7;
+  --color-border-subtle: #ebe6da;
+  --color-text-main: #1a261f;
+  --color-text-secondary: #3b473f;
+  --color-text-muted: #586358;
+  --color-text-subtle: #788478;
+  --color-primary: #07261d;
+  --color-primary-hover: #0f3b2f;
+  --color-primary-active: #051a14;
+  --color-primary-light: rgba(7, 38, 29, 0.10);
+  --color-primary-contrast: #ffffff;
 
-  --color-btn-text: #2e3440;
-  --color-btn-bg: #eceff4;
-  --color-btn-border: #d8dee9;
-  --color-btn-hover-bg: #e5e9f0;
-  --color-btn-hover-border: #5e81ac;
-  --color-btn-active-bg: #d8dee9;
-
+  --color-btn-text: #1a261f;
+  --color-btn-bg: #ffffff;
+  --color-btn-border: #d4cebe;
+  --color-btn-hover-bg: #f9f8f4;
+  --color-btn-hover-border: #baa064;
+  --color-btn-active-bg: #eeebe1;
   --color-btn-primary-text: #ffffff;
-  --color-btn-primary-bg: #5e81ac;
-  --color-btn-primary-border: #5e81ac;
-  --color-btn-primary-hover-bg: #4c6a92;
+  --color-btn-primary-bg: #07261d;
+  --color-btn-primary-border: #d4af37;
+  --color-btn-primary-hover-bg: #0f3b2f;
 
-  --color-btn-danger-text: #bf616a;
-  --color-btn-danger-bg: #eceff4;
-  --color-btn-danger-border: rgba(191, 97, 106, 0.3);
-  --color-btn-danger-hover-bg: #bf616a;
+  --color-btn-danger-text: #b91c1c;
+  --color-btn-danger-bg: #fef2f2;
+  --color-btn-danger-border: #fecaca;
+  --color-btn-danger-hover-bg: #b91c1c;
   --color-btn-danger-hover-text: #ffffff;
 
-  --color-notif-bg: rgba(191, 97, 106, 0.15);
-  --color-notif-fg: #bf616a;
-
-  --color-income: #a3be8c;
-  --color-income-bg: rgba(163, 190, 140, 0.18);
-  --color-income-border: #a3be8c;
-  --color-expense: #bf616a;
-  --color-expense-bg: rgba(191, 97, 106, 0.18);
-  --color-expense-border: #bf616a;
-  --color-loan: #ebcb8b;
-  --color-loan-bg: rgba(235, 203, 139, 0.18);
-  --color-loan-border: #ebcb8b;
-  --color-investment: #81a1c1;
-  --color-investment-bg: rgba(129, 161, 193, 0.18);
-  --color-investment-border: #81a1c1;
-  --color-epf: #8fbcbb;
-  --color-epf-bg: rgba(143, 188, 187, 0.18);
-  --color-epf-border: #8fbcbb;
-
-  --color-bg-app: #f8fafc;
-  --color-bg-card: #ffffff;
-  --color-bg-subtle: #eceff4;
-  --color-bg-hover: #e5e9f0;
-  --color-border: #d8dee9;
-  --color-border-subtle: #eceff4;
-  --color-text-main: #2e3440;
-  --color-text-secondary: #3b4252;
-  --color-text-muted: #4c566a;
-  --color-text-subtle: #d8dee9;
-  --color-primary: #5e81ac;
-  --color-primary-hover: #4c6a92;
-  --color-primary-active: #2e3440;
-  --color-primary-light: rgba(94, 129, 172, 0.15);
-  --color-primary-contrast: #ffffff;
-  --shadow-sm: 0 1px 3px rgba(46, 52, 64, 0.06);
-  --shadow-md: 0 4px 8px rgba(46, 52, 64, 0.08);
-  --bg-surface: #ffffff;
-  --color-bg-main: #ffffff;
-  --text-primary: #2e3440;
-  --text-secondary: #3b4252;
-  --border-color: #d8dee9;
-  --primary: #5e81ac;
-  --primary-hover: #4c6a92;
-}
-
-/* ======================================================== */
-/* COMBINATION THEMES (Dark Sidebar/Topbar + Light Canvas) */
-/* ======================================================== */
-
-/* Theme 11: Combination - Olive Green + Sand */
-[data-theme='olive-sand'] {
-  /* Main Canvas (Sand - Warm Sandy Beige) */
-  --color-canvas-default: #f2ebe0;
-  --color-canvas-subtle: #e8dfd1;
-  --color-canvas-surface: #fbf8f2;
-  --color-border-default: #ddd1c0;
-  --color-border-muted: #e6dcce;
-  --color-border-subtle: #e8dfd2;
-  --color-fg-default: #272a1e;
-  --color-fg-muted: #5e634e;
-  --color-fg-subtle: #797e68;
-  --color-accent-fg: #5a603c;
-  --color-accent-emphasis: #4f5436;
-  --color-accent-subtle: rgba(79, 84, 54, 0.12);
-
-  --color-bg-app: #f2ebe0;
-  --color-bg-card: #fbf8f2;
-  --color-bg-subtle: #e8dfd1;
-  --color-bg-hover: #eae1d3;
-  --color-border: #ddd1c0;
-  --color-border-subtle: #e8dfd2;
-  --color-text-main: #272a1e;
-  --color-text-secondary: #484c39;
-  --color-text-muted: #6f745e;
-  --color-text-subtle: #898e78;
-  --color-primary: #4f5436;
-  --color-primary-hover: #3f432a;
-  --color-primary-active: #353823;
-  --color-primary-light: rgba(79, 84, 54, 0.12);
-  --color-primary-contrast: #ffffff;
-
-  --color-btn-text: #272a1e;
-  --color-btn-bg: #f5eee4;
-  --color-btn-border: #d8cdbc;
-  --color-btn-hover-bg: #ece3d7;
-  --color-btn-hover-border: #cbbfae;
-
-  --color-btn-primary-text: #ffffff;
-  --color-btn-primary-bg: #4f5436;
-  --color-btn-primary-border: #3f432a;
-  --color-btn-primary-hover-bg: #3f432a;
-
-  --color-income: #2d7a46;
-  --color-income-bg: rgba(45, 122, 70, 0.12);
-  --color-income-border: #2d7a46;
-  --color-expense: #ba3828;
-  --color-expense-bg: rgba(186, 56, 40, 0.12);
-  --color-expense-border: #ba3828;
-  --color-loan: #b58022;
-  --color-loan-bg: rgba(181, 128, 34, 0.12);
-  --color-loan-border: #b58022;
-  --color-investment: #4f5436;
-  --color-investment-bg: rgba(79, 84, 54, 0.12);
-  --color-investment-border: #4f5436;
+  --color-income: #059669;
+  --color-income-bg: rgba(5, 150, 105, 0.12);
+  --color-income-border: #6ee7b7;
+  --color-expense: #b91c1c;
+  --color-expense-bg: #fef2f2;
+  --color-expense-border: #fca5a5;
+  --color-loan: #b45309;
+  --color-loan-bg: #fffbeb;
+  --color-loan-border: #fde68a;
+  --color-investment: #047857;
+  --color-investment-bg: #ecfdf5;
+  --color-investment-border: #a7f3d0;
   --color-epf: #0d9488;
-  --color-epf-bg: rgba(13, 148, 136, 0.12);
-  --color-epf-border: #0d9488;
+  --color-epf-bg: #f0fdfa;
+  --color-epf-border: #99f6e4;
+  --color-notif-bg: #d4af37;
+  --color-notif-fg: #07261d;
 
-  --shadow-sm: 0 1px 3px rgba(79, 84, 54, 0.06);
-  --shadow-md: 0 4px 8px rgba(79, 84, 54, 0.08);
-  --bg-surface: #fbf8f2;
-  --color-bg-main: #fbf8f2;
-  --text-primary: #272a1e;
-  --text-secondary: #484c39;
-  --border-color: #ddd1c0;
-  --primary: #4f5436;
-  --primary-hover: #3f432a;
+  --shadow-sm: 0 1px 3px rgba(7, 38, 29, 0.05);
+  --shadow-md: 0 4px 10px rgba(7, 38, 29, 0.08);
+  --shadow-lg: 0 10px 25px rgba(7, 38, 29, 0.12);
+  --bg-surface: #ffffff;
+  --color-bg-main: #f5f3ec;
+  --text-primary: #1a261f;
+  --text-secondary: #3b473f;
+  --border-color: #ddd7c7;
+  --primary: #07261d;
+  --primary-hover: #0f3b2f;
 
-  /* Sidebar & Header (Olive Green with Gold Trim) */
-  --color-sidebar-bg: #4f5436;
-  --color-sidebar-border: #c5a059; /* Signature Gold Divider */
-  --color-sidebar-border-inner: rgba(255, 255, 255, 0.12);
-  --color-sidebar-fg: #f7f4ed;
-  --color-sidebar-muted: #c4c9b0;
-  --color-sidebar-nav-fg: #ede8dc;
-  --color-sidebar-nav-icon: #c2c7ab;
-  --color-nav-hover-bg: rgba(255, 255, 255, 0.12);
+  /* British Racing Forest Emerald Sidebar with Signature Gold Trim */
+  --color-sidebar-bg: #07261d;
+  --color-sidebar-border: #d4af37;
+  --color-sidebar-border-inner: rgba(212, 175, 55, 0.22);
+  --color-sidebar-fg: #f7f5ed;
+  --color-sidebar-muted: #a3b899;
+  --color-sidebar-nav-fg: #e8e4d3;
+  --color-sidebar-nav-icon: #b8c5af;
+  --color-nav-hover-bg: rgba(255, 255, 255, 0.10);
   --color-nav-hover-fg: #ffffff;
-  --color-nav-active-bg: rgba(197, 160, 89, 0.28);
+  --color-nav-active-bg: rgba(212, 175, 55, 0.26);
   --color-nav-active-fg: #ffffff;
-  --color-nav-active-icon: #f4d38c;
-  --color-notif-bg: #c5a059;
-  --color-notif-fg: #272a1e;
+  --color-nav-active-icon: #f3d67e;
 
-  --color-header-bg: #4f5436;
-  --color-header-border: #c5a059; /* Signature Gold Divider */
-  --color-header-fg: #f7f4ed;
-  --color-header-btn-bg: rgba(255, 255, 255, 0.12);
-  --color-header-btn-border: rgba(197, 160, 89, 0.45);
+  /* Forest Emerald Header with Gold Separator */
+  --color-header-bg: #07261d;
+  --color-header-border: #d4af37;
+  --color-header-fg: #f7f5ed;
+  --color-header-btn-bg: rgba(255, 255, 255, 0.10);
+  --color-header-btn-border: rgba(212, 175, 55, 0.40);
   --color-header-btn-fg: #f4eee2;
-  --color-header-key-bg: rgba(255, 255, 255, 0.16);
-  --color-header-key-border: rgba(255, 255, 255, 0.25);
-  --color-header-key-fg: #f7f4ed;
-  --color-header-tool-fg: #dce1cb;
-  --color-header-tool-hover-bg: rgba(255, 255, 255, 0.18);
-  --color-header-tool-hover-border: #c5a059;
-
-  --gold-accent: #c5a059;
+  --color-header-tool-fg: #cbd5c0;
+  --color-header-tool-hover-bg: rgba(255, 255, 255, 0.12);
+  --color-header-tool-hover-border: #d4af37;
+  --color-header-key-bg: rgba(255, 255, 255, 0.14);
+  --color-header-key-border: rgba(212, 175, 55, 0.50);
+  --color-header-key-fg: #f7f5ed;
 }
 
-/* Theme 12: Combination - Deep Plum + Cream */
+/* 4. Bordeaux Wine & Champagne Ivory (Regal Luxury Private Banking) */
+[data-theme='royal-plum-ivory'],
 [data-theme='plum-cream'] {
-  /* Main Canvas (Cream - Warm Ivory Cream) */
-  --color-canvas-default: #faf3ea;
-  --color-canvas-subtle: #f3e8da;
+  --color-canvas-default: #ffffff;
+  --color-canvas-subtle: #faf5ee;
   --color-canvas-surface: #ffffff;
-  --color-border-default: #e5d7c5;
-  --color-border-muted: #eee3d4;
-  --color-border-subtle: #efe4d5;
-  --color-fg-default: #281320;
-  --color-fg-muted: #624357;
-  --color-fg-subtle: #826377;
-  --color-accent-fg: #54203e;
-  --color-accent-emphasis: #42152f;
-  --color-accent-subtle: rgba(84, 32, 62, 0.12);
+  --color-border-default: #e2d6c9;
+  --color-border-muted: #ebe0d5;
+  --color-border-subtle: #f4ede3;
+  --color-fg-default: #2b141e;
+  --color-fg-muted: #6e5560;
+  --color-fg-subtle: #8e7580;
+  --color-fg-disabled: #b39da6;
 
-  --color-bg-app: #faf3ea;
+  --color-accent-fg: #991b1b;
+  --color-accent-emphasis: #7f1d1d;
+  --color-accent-subtle: rgba(153, 27, 27, 0.12);
+  --color-accent-hover: #7f1d1d;
+
+  --color-bg-app: #faf5ee;
   --color-bg-card: #ffffff;
-  --color-bg-subtle: #f3e8da;
-  --color-bg-hover: #f1e3d2;
-  --color-border: #e5d7c5;
-  --color-border-subtle: #efe4d5;
-  --color-text-main: #281320;
-  --color-text-secondary: #4a293f;
-  --color-text-muted: #735067;
-  --color-text-subtle: #937187;
-  --color-primary: #54203e;
-  --color-primary-hover: #42152f;
-  --color-primary-active: #351025;
-  --color-primary-light: rgba(84, 32, 62, 0.12);
+  --color-bg-subtle: #fcf9f5;
+  --color-bg-hover: #f3ece2;
+  --color-border: #e2d6c9;
+  --color-border-subtle: #ebe0d5;
+  --color-text-main: #2b141e;
+  --color-text-secondary: #4d2b38;
+  --color-text-muted: #6e5560;
+  --color-text-subtle: #8e7580;
+  --color-primary: #240c1a;
+  --color-primary-hover: #3b142c;
+  --color-primary-active: #170711;
+  --color-primary-light: rgba(36, 12, 26, 0.10);
   --color-primary-contrast: #ffffff;
 
-  --color-btn-text: #281320;
-  --color-btn-bg: #f8efe5;
-  --color-btn-border: #e1d1be;
-  --color-btn-hover-bg: #f0e3d4;
-  --color-btn-hover-border: #d4c2ac;
-
+  --color-btn-text: #2b141e;
+  --color-btn-bg: #ffffff;
+  --color-btn-border: #d8c8b8;
+  --color-btn-hover-bg: #fdfaf6;
+  --color-btn-hover-border: #e5c158;
+  --color-btn-active-bg: #f3ece2;
   --color-btn-primary-text: #ffffff;
-  --color-btn-primary-bg: #54203e;
-  --color-btn-primary-border: #42152f;
-  --color-btn-primary-hover-bg: #42152f;
+  --color-btn-primary-bg: #240c1a;
+  --color-btn-primary-border: #e5c158;
+  --color-btn-primary-hover-bg: #3b142c;
 
-  --color-income: #247a46;
-  --color-income-bg: rgba(36, 122, 70, 0.12);
-  --color-income-border: #247a46;
-  --color-expense: #b82645;
-  --color-expense-bg: rgba(184, 38, 69, 0.12);
-  --color-expense-border: #b82645;
-  --color-loan: #c48c27;
-  --color-loan-bg: rgba(196, 140, 39, 0.12);
-  --color-loan-border: #c48c27;
-  --color-investment: #54203e;
-  --color-investment-bg: rgba(84, 32, 62, 0.12);
-  --color-investment-border: #54203e;
+  --color-btn-danger-text: #b91c1c;
+  --color-btn-danger-bg: #fef2f2;
+  --color-btn-danger-border: #fecaca;
+  --color-btn-danger-hover-bg: #b91c1c;
+  --color-btn-danger-hover-text: #ffffff;
+
+  --color-income: #15803d;
+  --color-income-bg: #f0fdf4;
+  --color-income-border: #bbf7d0;
+  --color-expense: #b91c1c;
+  --color-expense-bg: #fef2f2;
+  --color-expense-border: #fca5a5;
+  --color-loan: #b45309;
+  --color-loan-bg: #fffbeb;
+  --color-loan-border: #fde68a;
+  --color-investment: #7e22ce;
+  --color-investment-bg: #faf5ff;
+  --color-investment-border: #e9d5ff;
   --color-epf: #0d9488;
-  --color-epf-bg: rgba(13, 148, 136, 0.12);
-  --color-epf-border: #0d9488;
+  --color-epf-bg: #f0fdfa;
+  --color-epf-border: #99f6e4;
+  --color-notif-bg: #e5c158;
+  --color-notif-fg: #240c1a;
 
-  --shadow-sm: 0 1px 3px rgba(84, 32, 62, 0.06);
-  --shadow-md: 0 4px 8px rgba(84, 32, 62, 0.08);
+  --shadow-sm: 0 1px 3px rgba(36, 12, 26, 0.05);
+  --shadow-md: 0 4px 10px rgba(36, 12, 26, 0.08);
+  --shadow-lg: 0 10px 25px rgba(36, 12, 26, 0.12);
   --bg-surface: #ffffff;
-  --color-bg-main: #ffffff;
-  --text-primary: #281320;
-  --text-secondary: #4a293f;
-  --border-color: #e5d7c5;
-  --primary: #54203e;
-  --primary-hover: #42152f;
+  --color-bg-main: #faf5ee;
+  --text-primary: #2b141e;
+  --text-secondary: #4d2b38;
+  --border-color: #e2d6c9;
+  --primary: #240c1a;
+  --primary-hover: #3b142c;
 
-  /* Sidebar & Header (Deep Plum with Champagne Gold Trim) */
-  --color-sidebar-bg: #54203e;
-  --color-sidebar-border: #d6b77e; /* Signature Champagne Gold Divider */
-  --color-sidebar-border-inner: rgba(255, 255, 255, 0.12);
-  --color-sidebar-fg: #fdf7fa;
-  --color-sidebar-muted: #d9b8cb;
-  --color-sidebar-nav-fg: #f5e4ee;
-  --color-sidebar-nav-icon: #cf9dbb;
-  --color-nav-hover-bg: rgba(255, 255, 255, 0.12);
+  /* Imperial Velvet Wine Sidebar with Champagne Gold Trim */
+  --color-sidebar-bg: #240c1a;
+  --color-sidebar-border: #e5c158;
+  --color-sidebar-border-inner: rgba(229, 193, 88, 0.22);
+  --color-sidebar-fg: #faf6f0;
+  --color-sidebar-muted: #cbb4bd;
+  --color-sidebar-nav-fg: #ede4e8;
+  --color-sidebar-nav-icon: #d6c3cb;
+  --color-nav-hover-bg: rgba(255, 255, 255, 0.10);
   --color-nav-hover-fg: #ffffff;
-  --color-nav-active-bg: rgba(214, 183, 126, 0.28);
+  --color-nav-active-bg: rgba(229, 193, 88, 0.26);
   --color-nav-active-fg: #ffffff;
-  --color-nav-active-icon: #f6e0b5;
-  --color-notif-bg: #d6b77e;
-  --color-notif-fg: #351025;
+  --color-nav-active-icon: #f7dc8d;
 
-  --color-header-bg: #54203e;
-  --color-header-border: #d6b77e; /* Signature Champagne Gold Divider */
-  --color-header-fg: #fdf7fa;
-  --color-header-btn-bg: rgba(255, 255, 255, 0.12);
-  --color-header-btn-border: rgba(214, 183, 126, 0.45);
-  --color-header-btn-fg: #f8ebf3;
-  --color-header-key-bg: rgba(255, 255, 255, 0.16);
-  --color-header-key-border: rgba(255, 255, 255, 0.25);
-  --color-header-key-fg: #fdf7fa;
-  --color-header-tool-fg: #e2c0d4;
-  --color-header-tool-hover-bg: rgba(255, 255, 255, 0.18);
-  --color-header-tool-hover-border: #d6b77e;
-
-  --gold-accent: #d6b77e;
+  /* Imperial Wine Topbar */
+  --color-header-bg: #240c1a;
+  --color-header-border: #e5c158;
+  --color-header-fg: #faf6f0;
+  --color-header-btn-bg: rgba(255, 255, 255, 0.10);
+  --color-header-btn-border: rgba(229, 193, 88, 0.45);
+  --color-header-btn-fg: #faf2e6;
+  --color-header-tool-fg: #dac2cb;
+  --color-header-tool-hover-bg: rgba(255, 255, 255, 0.12);
+  --color-header-tool-hover-border: #e5c158;
+  --color-header-key-bg: rgba(255, 255, 255, 0.14);
+  --color-header-key-border: rgba(229, 193, 88, 0.50);
+  --color-header-key-fg: #faf6f0;
 }
 
-/* Theme 13: Combination - Dusty Blue + White */
-[data-theme='dusty-blue-white'] {
-  /* Main Canvas (White - Crisp Porcelain Canvas) */
-  --color-canvas-default: #f5f7fa;
-  --color-canvas-subtle: #eaeff4;
+/* 5. Pitch Black & Studio Paper (High-Fashion Monochromatic Precision) */
+[data-theme='monochrome-studio'] {
+  --color-canvas-default: #ffffff;
+  --color-canvas-subtle: #f4f4f5;
   --color-canvas-surface: #ffffff;
-  --color-border-default: #d5dde5;
-  --color-border-muted: #e2e8f0;
-  --color-border-subtle: #e4ebf2;
-  --color-fg-default: #1b2530;
-  --color-fg-muted: #4e5f70;
-  --color-fg-subtle: #728394;
-  --color-accent-fg: #5b7488;
-  --color-accent-emphasis: #4b6173;
-  --color-accent-subtle: rgba(91, 116, 136, 0.12);
+  --color-border-default: #e4e4e7;
+  --color-border-muted: #ebebee;
+  --color-border-subtle: #f4f4f5;
+  --color-fg-default: #09090b;
+  --color-fg-muted: #52525b;
+  --color-fg-subtle: #71717a;
+  --color-fg-disabled: #a1a1aa;
 
-  --color-bg-app: #f5f7fa;
+  --color-accent-fg: #18181b;
+  --color-accent-emphasis: #09090b;
+  --color-accent-subtle: rgba(24, 24, 27, 0.08);
+  --color-accent-hover: #09090b;
+
+  --color-bg-app: #f4f4f5;
   --color-bg-card: #ffffff;
-  --color-bg-subtle: #eaeff4;
-  --color-bg-hover: #e5ebf1;
-  --color-border: #d5dde5;
-  --color-border-subtle: #e4ebf2;
-  --color-text-main: #1b2530;
-  --color-text-secondary: #3b4c5c;
-  --color-text-muted: #647688;
-  --color-text-subtle: #8294a6;
-  --color-primary: #5b7488;
-  --color-primary-hover: #4b6173;
-  --color-primary-active: #3e5161;
-  --color-primary-light: rgba(91, 116, 136, 0.12);
+  --color-bg-subtle: #fafafa;
+  --color-bg-hover: #ececee;
+  --color-border: #e4e4e7;
+  --color-border-subtle: #f4f4f5;
+  --color-text-main: #09090b;
+  --color-text-secondary: #27272a;
+  --color-text-muted: #52525b;
+  --color-text-subtle: #71717a;
+  --color-primary: #09090b;
+  --color-primary-hover: #27272a;
+  --color-primary-active: #000000;
+  --color-primary-light: rgba(9, 9, 11, 0.08);
   --color-primary-contrast: #ffffff;
 
-  --color-btn-text: #1b2530;
-  --color-btn-bg: #edf2f7;
-  --color-btn-border: #cbd6e2;
-  --color-btn-hover-bg: #e2e9f1;
-  --color-btn-hover-border: #b8c7d6;
-
+  --color-btn-text: #09090b;
+  --color-btn-bg: #ffffff;
+  --color-btn-border: #d4d4d8;
+  --color-btn-hover-bg: #fafafa;
+  --color-btn-hover-border: #71717a;
+  --color-btn-active-bg: #f4f4f5;
   --color-btn-primary-text: #ffffff;
-  --color-btn-primary-bg: #5b7488;
-  --color-btn-primary-border: #4b6173;
-  --color-btn-primary-hover-bg: #4b6173;
+  --color-btn-primary-bg: #09090b;
+  --color-btn-primary-border: #09090b;
+  --color-btn-primary-hover-bg: #27272a;
 
-  --color-income: #1b804d;
-  --color-income-bg: rgba(27, 128, 77, 0.12);
-  --color-income-border: #1b804d;
-  --color-expense: #c83232;
-  --color-expense-bg: rgba(200, 50, 50, 0.12);
-  --color-expense-border: #c83232;
-  --color-loan: #c78f24;
-  --color-loan-bg: rgba(199, 143, 36, 0.12);
-  --color-loan-border: #c78f24;
-  --color-investment: #5b7488;
-  --color-investment-bg: rgba(91, 116, 136, 0.12);
-  --color-investment-border: #5b7488;
+  --color-btn-danger-text: #dc2626;
+  --color-btn-danger-bg: #fef2f2;
+  --color-btn-danger-border: #fecaca;
+  --color-btn-danger-hover-bg: #dc2626;
+  --color-btn-danger-hover-text: #ffffff;
+
+  --color-income: #16a34a;
+  --color-income-bg: #f0fdf4;
+  --color-income-border: #bbf7d0;
+  --color-expense: #dc2626;
+  --color-expense-bg: #fef2f2;
+  --color-expense-border: #fecaca;
+  --color-loan: #ca8a04;
+  --color-loan-bg: #fefce8;
+  --color-loan-border: #fef08a;
+  --color-investment: #2563eb;
+  --color-investment-bg: #eff6ff;
+  --color-investment-border: #bfdbfe;
   --color-epf: #0d9488;
-  --color-epf-bg: rgba(13, 148, 136, 0.12);
-  --color-epf-border: #0d9488;
+  --color-epf-bg: #f0fdfa;
+  --color-epf-border: #99f6e4;
+  --color-notif-bg: #09090b;
+  --color-notif-fg: #ffffff;
 
-  --shadow-sm: 0 1px 3px rgba(91, 116, 136, 0.06);
-  --shadow-md: 0 4px 8px rgba(91, 116, 136, 0.08);
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 10px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.12);
   --bg-surface: #ffffff;
-  --color-bg-main: #ffffff;
-  --text-primary: #1b2530;
-  --text-secondary: #3b4c5c;
-  --border-color: #d5dde5;
-  --primary: #5b7488;
-  --primary-hover: #4b6173;
+  --color-bg-main: #f4f4f5;
+  --text-primary: #09090b;
+  --text-secondary: #27272a;
+  --border-color: #e4e4e7;
+  --primary: #09090b;
+  --primary-hover: #27272a;
 
-  /* Sidebar & Header (Dusty Slate Blue with Gold Trim) */
-  --color-sidebar-bg: #5b7488;
-  --color-sidebar-border: #cca762; /* Signature Gold Divider */
-  --color-sidebar-border-inner: rgba(255, 255, 255, 0.15);
-  --color-sidebar-fg: #ffffff;
-  --color-sidebar-muted: #d0dde8;
-  --color-sidebar-nav-fg: #f0f4f8;
-  --color-sidebar-nav-icon: #c5d4e1;
-  --color-nav-hover-bg: rgba(255, 255, 255, 0.15);
+  /* Jet Black Stark Sidebar */
+  --color-sidebar-bg: #09090b;
+  --color-sidebar-border: #27272a;
+  --color-sidebar-border-inner: #18181b;
+  --color-sidebar-fg: #fafafa;
+  --color-sidebar-muted: #a1a1aa;
+  --color-sidebar-nav-fg: #d4d4d8;
+  --color-sidebar-nav-icon: #a1a1aa;
+  --color-nav-hover-bg: rgba(255, 255, 255, 0.08);
   --color-nav-hover-fg: #ffffff;
-  --color-nav-active-bg: rgba(204, 167, 98, 0.28);
+  --color-nav-active-bg: rgba(255, 255, 255, 0.15);
   --color-nav-active-fg: #ffffff;
-  --color-nav-active-icon: #f4d89a;
-  --color-notif-bg: #cca762;
-  --color-notif-fg: #1b2530;
+  --color-nav-active-icon: #ffffff;
 
-  --color-header-bg: #5b7488;
-  --color-header-border: #cca762; /* Signature Gold Divider */
-  --color-header-fg: #ffffff;
-  --color-header-btn-bg: rgba(255, 255, 255, 0.15);
-  --color-header-btn-border: rgba(204, 167, 98, 0.45);
-  --color-header-btn-fg: #f0f5fa;
-  --color-header-key-bg: rgba(255, 255, 255, 0.18);
-  --color-header-key-border: rgba(255, 255, 255, 0.28);
-  --color-header-key-fg: #ffffff;
-  --color-header-tool-fg: #dce7f0;
-  --color-header-tool-hover-bg: rgba(255, 255, 255, 0.2);
-  --color-header-tool-hover-border: #cca762;
-
-  --gold-accent: #cca762;
+  /* Jet Black Topbar */
+  --color-header-bg: #09090b;
+  --color-header-border: #27272a;
+  --color-header-fg: #fafafa;
+  --color-header-btn-bg: rgba(255, 255, 255, 0.08);
+  --color-header-btn-border: #3f3f46;
+  --color-header-btn-fg: #d4d4d8;
+  --color-header-tool-fg: #a1a1aa;
+  --color-header-tool-hover-bg: rgba(255, 255, 255, 0.10);
+  --color-header-tool-hover-border: #52525b;
+  --color-header-key-bg: rgba(255, 255, 255, 0.12);
+  --color-header-key-border: #3f3f46;
+  --color-header-key-fg: #fafafa;
 }
 
-/* Theme 14: Combination - Terracotta + Beige */
+/* --------------------------------------------------------------------------
+   GROUP 2: PRISTINE LIGHT THEMES (World Benchmark Clean UI)
+   -------------------------------------------------------------------------- */
+
+/* 6. Stripe Precision Light (The Gold Standard Fintech UI) */
+[data-theme='stripe-pure'],
+[data-theme='light'],
+[data-theme='github-light'] {
+  --color-canvas-default: #ffffff;
+  --color-canvas-subtle: #f6f9fc;
+  --color-canvas-surface: #ffffff;
+  --color-border-default: #e3e8ee;
+  --color-border-muted: #e9ecef;
+  --color-border-subtle: #f1f5f9;
+  --color-fg-default: #0a2540;
+  --color-fg-muted: #425466;
+  --color-fg-subtle: #627588;
+  --color-fg-disabled: #a1b0cb;
+
+  --color-accent-fg: #635bff;
+  --color-accent-emphasis: #5046e5;
+  --color-accent-subtle: #f0f2ff;
+  --color-accent-hover: #5046e5;
+
+  --color-bg-app: #f6f9fc;
+  --color-bg-card: #ffffff;
+  --color-bg-subtle: #f8fafc;
+  --color-bg-hover: #f1f5f9;
+  --color-border: #e3e8ee;
+  --color-border-subtle: #edf2f7;
+  --color-text-main: #0a2540;
+  --color-text-secondary: #425466;
+  --color-text-muted: #627588;
+  --color-text-subtle: #8792a2;
+  --color-primary: #635bff;
+  --color-primary-hover: #5046e5;
+  --color-primary-active: #4338ca;
+  --color-primary-light: #f0f2ff;
+  --color-primary-contrast: #ffffff;
+
+  --color-btn-text: #0a2540;
+  --color-btn-bg: #ffffff;
+  --color-btn-border: #d8e2ec;
+  --color-btn-hover-bg: #f8fafc;
+  --color-btn-hover-border: #a1b0cb;
+  --color-btn-active-bg: #f1f5f9;
+  --color-btn-primary-text: #ffffff;
+  --color-btn-primary-bg: #635bff;
+  --color-btn-primary-border: #635bff;
+  --color-btn-primary-hover-bg: #5046e5;
+
+  --color-btn-danger-text: #df1b41;
+  --color-btn-danger-bg: #fff1f3;
+  --color-btn-danger-border: #fecdd3;
+  --color-btn-danger-hover-bg: #df1b41;
+  --color-btn-danger-hover-text: #ffffff;
+
+  --color-income: #00d084;
+  --color-income-bg: #e6fbf2;
+  --color-income-border: #99f0ce;
+  --color-expense: #df1b41;
+  --color-expense-bg: #fff1f3;
+  --color-expense-border: #fecdd3;
+  --color-loan: #f5a623;
+  --color-loan-bg: #fef7ed;
+  --color-loan-border: #fed7aa;
+  --color-investment: #635bff;
+  --color-investment-bg: #f0f2ff;
+  --color-investment-border: #c7d2fe;
+  --color-epf: #00a878;
+  --color-epf-bg: #e6fbf4;
+  --color-epf-border: #99f1d8;
+  --color-notif-bg: #df1b41;
+  --color-notif-fg: #ffffff;
+
+  --shadow-sm: 0 1px 3px rgba(10, 37, 64, 0.05);
+  --shadow-md: 0 4px 12px rgba(10, 37, 64, 0.08);
+  --shadow-lg: 0 10px 28px rgba(10, 37, 64, 0.12);
+  --bg-surface: #ffffff;
+  --color-bg-main: #f6f9fc;
+  --text-primary: #0a2540;
+  --text-secondary: #425466;
+  --border-color: #e3e8ee;
+  --primary: #635bff;
+  --primary-hover: #5046e5;
+
+  /* Stripe Light Sidebar */
+  --color-sidebar-bg: #ffffff;
+  --color-sidebar-border: #e3e8ee;
+  --color-sidebar-border-inner: #f1f5f9;
+  --color-sidebar-fg: #0a2540;
+  --color-sidebar-muted: #627588;
+  --color-sidebar-nav-fg: #425466;
+  --color-sidebar-nav-icon: #627588;
+  --color-nav-hover-bg: #f8fafc;
+  --color-nav-hover-fg: #0a2540;
+  --color-nav-active-bg: #f0f2ff;
+  --color-nav-active-fg: #635bff;
+  --color-nav-active-icon: #635bff;
+
+  /* Stripe Light Topbar */
+  --color-header-bg: #ffffff;
+  --color-header-border: #e3e8ee;
+  --color-header-fg: #0a2540;
+  --color-header-btn-bg: #f8fafc;
+  --color-header-btn-border: #e2e8f0;
+  --color-header-btn-fg: #425466;
+  --color-header-tool-fg: #627588;
+  --color-header-tool-hover-bg: #f1f5f9;
+  --color-header-tool-hover-border: #cbd5e1;
+  --color-header-key-bg: #f1f5f9;
+  --color-header-key-border: #e2e8f0;
+  --color-header-key-fg: #425466;
+}
+
+/* 7. Apple Cupertino Clean (Pure Minimal Swiss Aesthetic) */
+[data-theme='apple-snow'],
+[data-theme='apple-cupertino'],
+[data-theme='google-play-light'] {
+  --color-canvas-default: #ffffff;
+  --color-canvas-subtle: #f5f5f7;
+  --color-canvas-surface: #ffffff;
+  --color-border-default: #e5e5ea;
+  --color-border-muted: #ebebf0;
+  --color-border-subtle: #f2f2f7;
+  --color-fg-default: #1c1c1e;
+  --color-fg-muted: #636366;
+  --color-fg-subtle: #8e8e93;
+  --color-fg-disabled: #aeaeb2;
+
+  --color-accent-fg: #0071e3;
+  --color-accent-emphasis: #0062c4;
+  --color-accent-subtle: rgba(0, 113, 227, 0.10);
+  --color-accent-hover: #0062c4;
+
+  --color-bg-app: #f5f5f7;
+  --color-bg-card: #ffffff;
+  --color-bg-subtle: #fbfbfd;
+  --color-bg-hover: #eaeaee;
+  --color-border: #e5e5ea;
+  --color-border-subtle: #f2f2f7;
+  --color-text-main: #1c1c1e;
+  --color-text-secondary: #3a3a3c;
+  --color-text-muted: #636366;
+  --color-text-subtle: #8e8e93;
+  --color-primary: #0071e3;
+  --color-primary-hover: #0062c4;
+  --color-primary-active: #0051a8;
+  --color-primary-light: rgba(0, 113, 227, 0.10);
+  --color-primary-contrast: #ffffff;
+
+  --color-btn-text: #1c1c1e;
+  --color-btn-bg: #ffffff;
+  --color-btn-border: #d1d1d6;
+  --color-btn-hover-bg: #f5f5f7;
+  --color-btn-hover-border: #8e8e93;
+  --color-btn-active-bg: #e5e5ea;
+  --color-btn-primary-text: #ffffff;
+  --color-btn-primary-bg: #0071e3;
+  --color-btn-primary-border: #0071e3;
+  --color-btn-primary-hover-bg: #0062c4;
+
+  --color-btn-danger-text: #ff3b30;
+  --color-btn-danger-bg: #fff2f1;
+  --color-btn-danger-border: #ffccd0;
+  --color-btn-danger-hover-bg: #ff3b30;
+  --color-btn-danger-hover-text: #ffffff;
+
+  --color-income: #34c759;
+  --color-income-bg: #eefaf0;
+  --color-income-border: #a3e7b4;
+  --color-expense: #ff3b30;
+  --color-expense-bg: #fff2f1;
+  --color-expense-border: #ffccd0;
+  --color-loan: #ff9500;
+  --color-loan-bg: #fff8ed;
+  --color-loan-border: #ffd79e;
+  --color-investment: #5856d6;
+  --color-investment-bg: #f4f3fd;
+  --color-investment-border: #d4d3fa;
+  --color-epf: #30b0c7;
+  --color-epf-bg: #eef9fb;
+  --color-epf-border: #b8e6ee;
+  --color-notif-bg: #ff3b30;
+  --color-notif-fg: #ffffff;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.10);
+  --bg-surface: #ffffff;
+  --color-bg-main: #f5f5f7;
+  --text-primary: #1c1c1e;
+  --text-secondary: #3a3a3c;
+  --border-color: #e5e5ea;
+  --primary: #0071e3;
+  --primary-hover: #0062c4;
+
+  /* Apple Cupertino Clean Sidebar */
+  --color-sidebar-bg: #ffffff;
+  --color-sidebar-border: #e5e5ea;
+  --color-sidebar-border-inner: #f2f2f7;
+  --color-sidebar-fg: #1c1c1e;
+  --color-sidebar-muted: #8e8e93;
+  --color-sidebar-nav-fg: #3a3a3c;
+  --color-sidebar-nav-icon: #8e8e93;
+  --color-nav-hover-bg: #f2f2f7;
+  --color-nav-hover-fg: #1c1c1e;
+  --color-nav-active-bg: rgba(0, 113, 227, 0.10);
+  --color-nav-active-fg: #0071e3;
+  --color-nav-active-icon: #0071e3;
+
+  /* Apple Cupertino Clean Topbar */
+  --color-header-bg: #ffffff;
+  --color-header-border: #e5e5ea;
+  --color-header-fg: #1c1c1e;
+  --color-header-btn-bg: #f5f5f7;
+  --color-header-btn-border: #e5e5ea;
+  --color-header-btn-fg: #3a3a3c;
+  --color-header-tool-fg: #8e8e93;
+  --color-header-tool-hover-bg: #f2f2f7;
+  --color-header-tool-hover-border: #d1d1d6;
+  --color-header-key-bg: #e5e5ea;
+  --color-header-key-border: #d1d1d6;
+  --color-header-key-fg: #3a3a3c;
+}
+
+/* 8. Nordic Arctic Light (Scandinavian Glacier & Polar Snow) */
+[data-theme='nordic-frost-light'],
+[data-theme='nord-light'] {
+  --color-canvas-default: #ffffff;
+  --color-canvas-subtle: #edf2f7;
+  --color-canvas-surface: #ffffff;
+  --color-border-default: #e2e8f0;
+  --color-border-muted: #e8edf3;
+  --color-border-subtle: #f1f5f9;
+  --color-fg-default: #1a202c;
+  --color-fg-muted: #4a5568;
+  --color-fg-subtle: #718096;
+  --color-fg-disabled: #a0aec0;
+
+  --color-accent-fg: #0284c7;
+  --color-accent-emphasis: #0369a1;
+  --color-accent-subtle: rgba(2, 132, 199, 0.12);
+  --color-accent-hover: #0369a1;
+
+  --color-bg-app: #edf2f7;
+  --color-bg-card: #ffffff;
+  --color-bg-subtle: #f8fafc;
+  --color-bg-hover: #e2e8f0;
+  --color-border: #e2e8f0;
+  --color-border-subtle: #edf2f7;
+  --color-text-main: #1a202c;
+  --color-text-secondary: #2d3748;
+  --color-text-muted: #4a5568;
+  --color-text-subtle: #718096;
+  --color-primary: #0284c7;
+  --color-primary-hover: #0369a1;
+  --color-primary-active: #075985;
+  --color-primary-light: rgba(2, 132, 199, 0.12);
+  --color-primary-contrast: #ffffff;
+
+  --color-btn-text: #1a202c;
+  --color-btn-bg: #ffffff;
+  --color-btn-border: #cbd5e1;
+  --color-btn-hover-bg: #f8fafc;
+  --color-btn-hover-border: #718096;
+  --color-btn-active-bg: #edf2f7;
+  --color-btn-primary-text: #ffffff;
+  --color-btn-primary-bg: #0284c7;
+  --color-btn-primary-border: #0284c7;
+  --color-btn-primary-hover-bg: #0369a1;
+
+  --color-btn-danger-text: #e53e3e;
+  --color-btn-danger-bg: #fff5f5;
+  --color-btn-danger-border: #fed7d7;
+  --color-btn-danger-hover-bg: #e53e3e;
+  --color-btn-danger-hover-text: #ffffff;
+
+  --color-income: #0d9488;
+  --color-income-bg: #f0fdfa;
+  --color-income-border: #99f6e4;
+  --color-expense: #e53e3e;
+  --color-expense-bg: #fff5f5;
+  --color-expense-border: #fed7d7;
+  --color-loan: #dd6b20;
+  --color-loan-bg: #fffaf0;
+  --color-loan-border: #feebc8;
+  --color-investment: #3182ce;
+  --color-investment-bg: #ebf8ff;
+  --color-investment-border: #bee3f8;
+  --color-epf: #0284c7;
+  --color-epf-bg: #f0f9ff;
+  --color-epf-border: #bae6fd;
+  --color-notif-bg: #e53e3e;
+  --color-notif-fg: #ffffff;
+
+  --shadow-sm: 0 1px 3px rgba(45, 55, 72, 0.05);
+  --shadow-md: 0 4px 10px rgba(45, 55, 72, 0.08);
+  --shadow-lg: 0 10px 25px rgba(45, 55, 72, 0.12);
+  --bg-surface: #ffffff;
+  --color-bg-main: #edf2f7;
+  --text-primary: #1a202c;
+  --text-secondary: #2d3748;
+  --border-color: #e2e8f0;
+  --primary: #0284c7;
+  --primary-hover: #0369a1;
+
+  /* Nordic Light Sidebar */
+  --color-sidebar-bg: #ffffff;
+  --color-sidebar-border: #e2e8f0;
+  --color-sidebar-border-inner: #edf2f7;
+  --color-sidebar-fg: #2d3748;
+  --color-sidebar-muted: #718096;
+  --color-sidebar-nav-fg: #4a5568;
+  --color-sidebar-nav-icon: #718096;
+  --color-nav-hover-bg: #edf2f7;
+  --color-nav-hover-fg: #1a202c;
+  --color-nav-active-bg: rgba(2, 132, 199, 0.12);
+  --color-nav-active-fg: #0284c7;
+  --color-nav-active-icon: #0284c7;
+
+  /* Nordic Light Topbar */
+  --color-header-bg: #ffffff;
+  --color-header-border: #e2e8f0;
+  --color-header-fg: #2d3748;
+  --color-header-btn-bg: #f8fafc;
+  --color-header-btn-border: #e2e8f0;
+  --color-header-btn-fg: #4a5568;
+  --color-header-tool-fg: #718096;
+  --color-header-tool-hover-bg: #edf2f7;
+  --color-header-tool-hover-border: #cbd5e1;
+  --color-header-key-bg: #edf2f7;
+  --color-header-key-border: #cbd5e1;
+  --color-header-key-fg: #4a5568;
+}
+
+/* 9. Warm Cashmere & Paper (Eye-Restful Parchment & Editorial Bronze) */
+[data-theme='parchment-cashmere'],
+[data-theme='sepia-paper'] {
+  --color-canvas-default: #ffffff;
+  --color-canvas-subtle: #fdfbf7;
+  --color-canvas-surface: #ffffff;
+  --color-border-default: #e7ddcb;
+  --color-border-muted: #efe6d7;
+  --color-border-subtle: #f7f2ea;
+  --color-fg-default: #261f18;
+  --color-fg-muted: #635647;
+  --color-fg-subtle: #8a7a68;
+  --color-fg-disabled: #b0a190;
+
+  --color-accent-fg: #b45309;
+  --color-accent-emphasis: #92400e;
+  --color-accent-subtle: rgba(180, 83, 9, 0.14);
+  --color-accent-hover: #92400e;
+
+  --color-bg-app: #fdfbf7;
+  --color-bg-card: #ffffff;
+  --color-bg-subtle: #faf6ee;
+  --color-bg-hover: #f3ecde;
+  --color-border: #e7ddcb;
+  --color-border-subtle: #f2ebd9;
+  --color-text-main: #261f18;
+  --color-text-secondary: #43392e;
+  --color-text-muted: #635647;
+  --color-text-subtle: #8a7a68;
+  --color-primary: #854d0e;
+  --color-primary-hover: #713f12;
+  --color-primary-active: #542d0c;
+  --color-primary-light: rgba(180, 83, 9, 0.12);
+  --color-primary-contrast: #ffffff;
+
+  --color-btn-text: #261f18;
+  --color-btn-bg: #ffffff;
+  --color-btn-border: #dfd2be;
+  --color-btn-hover-bg: #faf6ee;
+  --color-btn-hover-border: #b45309;
+  --color-btn-active-bg: #f3ecde;
+  --color-btn-primary-text: #ffffff;
+  --color-btn-primary-bg: #854d0e;
+  --color-btn-primary-border: #854d0e;
+  --color-btn-primary-hover-bg: #713f12;
+
+  --color-btn-danger-text: #b91c1c;
+  --color-btn-danger-bg: #fef2f2;
+  --color-btn-danger-border: #fecaca;
+  --color-btn-danger-hover-bg: #b91c1c;
+  --color-btn-danger-hover-text: #ffffff;
+
+  --color-income: #15803d;
+  --color-income-bg: #f0fdf4;
+  --color-income-border: #bbf7d0;
+  --color-expense: #b91c1c;
+  --color-expense-bg: #fef2f2;
+  --color-expense-border: #fca5a5;
+  --color-loan: #b45309;
+  --color-loan-bg: #fffbeb;
+  --color-loan-border: #fde68a;
+  --color-investment: #0369a1;
+  --color-investment-bg: #f0f9ff;
+  --color-investment-border: #bae6fd;
+  --color-epf: #0d9488;
+  --color-epf-bg: #f0fdfa;
+  --color-epf-border: #99f6e4;
+  --color-notif-bg: #b45309;
+  --color-notif-fg: #ffffff;
+
+  --shadow-sm: 0 1px 3px rgba(38, 31, 24, 0.05);
+  --shadow-md: 0 4px 10px rgba(38, 31, 24, 0.08);
+  --shadow-lg: 0 10px 25px rgba(38, 31, 24, 0.12);
+  --bg-surface: #ffffff;
+  --color-bg-main: #fdfbf7;
+  --text-primary: #261f18;
+  --text-secondary: #43392e;
+  --border-color: #e7ddcb;
+  --primary: #854d0e;
+  --primary-hover: #713f12;
+
+  /* Parchment Cashmere Sidebar */
+  --color-sidebar-bg: #f6f1e7;
+  --color-sidebar-border: #e1d6c3;
+  --color-sidebar-border-inner: #ede5d4;
+  --color-sidebar-fg: #2d261e;
+  --color-sidebar-muted: #776c5e;
+  --color-sidebar-nav-fg: #43392e;
+  --color-sidebar-nav-icon: #8c7e6d;
+  --color-nav-hover-bg: #ede5d4;
+  --color-nav-hover-fg: #1c1611;
+  --color-nav-active-bg: rgba(180, 83, 9, 0.16);
+  --color-nav-active-fg: #92400e;
+  --color-nav-active-icon: #b45309;
+
+  /* Parchment Cashmere Topbar */
+  --color-header-bg: #f6f1e7;
+  --color-header-border: #e1d6c3;
+  --color-header-fg: #2d261e;
+  --color-header-btn-bg: #ede5d4;
+  --color-header-btn-border: #ded2bc;
+  --color-header-btn-fg: #43392e;
+  --color-header-tool-fg: #776c5e;
+  --color-header-tool-hover-bg: #ede5d4;
+  --color-header-tool-hover-border: #d6c8b0;
+  --color-header-key-bg: #ede5d4;
+  --color-header-key-border: #ded2bc;
+  --color-header-key-fg: #43392e;
+}
+
+/* --------------------------------------------------------------------------
+   GROUP 3: ELITE DARK THEMES (OLED Pitch, Deep Slate & High-Contrast)
+   -------------------------------------------------------------------------- */
+
+/* 10. Obsidian True Black (Absolute OLED Pitch Black & Emerald) */
+[data-theme='obsidian-pitch'] {
+  --color-canvas-default: #0c0c0e;
+  --color-canvas-subtle: #141417;
+  --color-canvas-surface: #0c0c0e;
+  --color-border-default: #222225;
+  --color-border-muted: #1c1c1f;
+  --color-border-subtle: #18181b;
+  --color-fg-default: #fafafa;
+  --color-fg-muted: #a1a1aa;
+  --color-fg-subtle: #71717a;
+  --color-fg-disabled: #52525b;
+
+  --color-accent-fg: #10b981;
+  --color-accent-emphasis: #059669;
+  --color-accent-subtle: rgba(16, 185, 129, 0.16);
+  --color-accent-hover: #059669;
+
+  --color-bg-app: #000000;
+  --color-bg-card: #0c0c0e;
+  --color-bg-subtle: #141417;
+  --color-bg-hover: #19191d;
+  --color-border: #222225;
+  --color-border-subtle: #18181b;
+  --color-text-main: #f4f4f5;
+  --color-text-secondary: #d4d4d8;
+  --color-text-muted: #a1a1aa;
+  --color-text-subtle: #71717a;
+  --color-primary: #10b981;
+  --color-primary-hover: #059669;
+  --color-primary-active: #047857;
+  --color-primary-light: rgba(16, 185, 129, 0.16);
+  --color-primary-contrast: #000000;
+
+  --color-btn-text: #f4f4f5;
+  --color-btn-bg: #141417;
+  --color-btn-border: #27272a;
+  --color-btn-hover-bg: #1f1f23;
+  --color-btn-hover-border: #3f3f46;
+  --color-btn-active-bg: #27272a;
+  --color-btn-primary-text: #000000;
+  --color-btn-primary-bg: #10b981;
+  --color-btn-primary-border: #10b981;
+  --color-btn-primary-hover-bg: #059669;
+
+  --color-btn-danger-text: #f87171;
+  --color-btn-danger-bg: #1c1315;
+  --color-btn-danger-border: #451a1a;
+  --color-btn-danger-hover-bg: #ef4444;
+  --color-btn-danger-hover-text: #ffffff;
+
+  --color-income: #34d399;
+  --color-income-bg: rgba(52, 211, 153, 0.14);
+  --color-income-border: #059669;
+  --color-expense: #f87171;
+  --color-expense-bg: rgba(248, 113, 113, 0.14);
+  --color-expense-border: #dc2626;
+  --color-loan: #fbbf24;
+  --color-loan-bg: rgba(251, 191, 36, 0.14);
+  --color-loan-border: #d97706;
+  --color-investment: #60a5fa;
+  --color-investment-bg: rgba(96, 165, 250, 0.14);
+  --color-investment-border: #2563eb;
+  --color-epf: #2dd4bf;
+  --color-epf-bg: rgba(45, 212, 191, 0.14);
+  --color-epf-border: #0d9488;
+  --color-notif-bg: #ef4444;
+  --color-notif-fg: #ffffff;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.7);
+  --shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.9);
+  --bg-surface: #0c0c0e;
+  --color-bg-main: #0c0c0e;
+  --text-primary: #f4f4f5;
+  --text-secondary: #d4d4d8;
+  --border-color: #222225;
+  --primary: #10b981;
+  --primary-hover: #059669;
+
+  /* Obsidian True Black Sidebar */
+  --color-sidebar-bg: #050505;
+  --color-sidebar-border: #222225;
+  --color-sidebar-border-inner: #121214;
+  --color-sidebar-fg: #fafafa;
+  --color-sidebar-muted: #71717a;
+  --color-sidebar-nav-fg: #d4d4d8;
+  --color-sidebar-nav-icon: #71717a;
+  --color-nav-hover-bg: #141417;
+  --color-nav-hover-fg: #ffffff;
+  --color-nav-active-bg: rgba(16, 185, 129, 0.18);
+  --color-nav-active-fg: #34d399;
+  --color-nav-active-icon: #34d399;
+
+  /* Obsidian True Black Topbar */
+  --color-header-bg: #050505;
+  --color-header-border: #222225;
+  --color-header-fg: #fafafa;
+  --color-header-btn-bg: #121215;
+  --color-header-btn-border: #27272a;
+  --color-header-btn-fg: #d4d4d8;
+  --color-header-tool-fg: #a1a1aa;
+  --color-header-tool-hover-bg: #141417;
+  --color-header-tool-hover-border: #2e2e34;
+  --color-header-key-bg: #1c1c20;
+  --color-header-key-border: #2e2e34;
+  --color-header-key-fg: #fafafa;
+}
+
+/* 11. Linear Deep Slate (Iconic Silicon Valley Slate Dark Mode) */
+[data-theme='linear-dark'],
+[data-theme='dark'],
+[data-theme='github-dark'] {
+  --color-canvas-default: #16181d;
+  --color-canvas-subtle: #1a1c22;
+  --color-canvas-surface: #16181d;
+  --color-border-default: #242831;
+  --color-border-muted: #1e222a;
+  --color-border-subtle: #1c1f26;
+  --color-fg-default: #f7f8f8;
+  --color-fg-muted: #8a8f98;
+  --color-fg-subtle: #62666d;
+  --color-fg-disabled: #4e5258;
+
+  --color-accent-fg: #5e6ad2;
+  --color-accent-emphasis: #717fe0;
+  --color-accent-subtle: rgba(94, 106, 210, 0.18);
+  --color-accent-hover: #717fe0;
+
+  --color-bg-app: #0f1013;
+  --color-bg-card: #16181d;
+  --color-bg-subtle: #1a1c22;
+  --color-bg-hover: #20232a;
+  --color-border: #242831;
+  --color-border-subtle: #1c1f26;
+  --color-text-main: #f7f8f8;
+  --color-text-secondary: #c5c8cf;
+  --color-text-muted: #8a8f98;
+  --color-text-subtle: #62666d;
+  --color-primary: #5e6ad2;
+  --color-primary-hover: #717fe0;
+  --color-primary-active: #4b55ba;
+  --color-primary-light: rgba(94, 106, 210, 0.18);
+  --color-primary-contrast: #ffffff;
+
+  --color-btn-text: #f7f8f8;
+  --color-btn-bg: #1c1e24;
+  --color-btn-border: #2d313c;
+  --color-btn-hover-bg: #262932;
+  --color-btn-hover-border: #464c5c;
+  --color-btn-active-bg: #2d313c;
+  --color-btn-primary-text: #ffffff;
+  --color-btn-primary-bg: #5e6ad2;
+  --color-btn-primary-border: #5e6ad2;
+  --color-btn-primary-hover-bg: #717fe0;
+
+  --color-btn-danger-text: #fb7185;
+  --color-btn-danger-bg: #241418;
+  --color-btn-danger-border: #4c1d24;
+  --color-btn-danger-hover-bg: #f43f5e;
+  --color-btn-danger-hover-text: #ffffff;
+
+  --color-income: #22c55e;
+  --color-income-bg: rgba(34, 197, 94, 0.14);
+  --color-income-border: #16a34a;
+  --color-expense: #f43f5e;
+  --color-expense-bg: rgba(244, 63, 94, 0.14);
+  --color-expense-border: #e11d48;
+  --color-loan: #f59e0b;
+  --color-loan-bg: rgba(245, 158, 11, 0.14);
+  --color-loan-border: #d97706;
+  --color-investment: #38bdf8;
+  --color-investment-bg: rgba(56, 189, 248, 0.14);
+  --color-investment-border: #0284c7;
+  --color-epf: #2dd4bf;
+  --color-epf-bg: rgba(45, 212, 191, 0.14);
+  --color-epf-border: #0d9488;
+  --color-notif-bg: #f43f5e;
+  --color-notif-fg: #ffffff;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.7);
+  --bg-surface: #16181d;
+  --color-bg-main: #16181d;
+  --text-primary: #f7f8f8;
+  --text-secondary: #c5c8cf;
+  --border-color: #242831;
+  --primary: #5e6ad2;
+  --primary-hover: #717fe0;
+
+  /* Linear Deep Charcoal Sidebar */
+  --color-sidebar-bg: #0b0c0e;
+  --color-sidebar-border: #1e2025;
+  --color-sidebar-border-inner: #15171b;
+  --color-sidebar-fg: #f7f8f8;
+  --color-sidebar-muted: #8a8f98;
+  --color-sidebar-nav-fg: #c5c8cf;
+  --color-sidebar-nav-icon: #8a8f98;
+  --color-nav-hover-bg: #18191e;
+  --color-nav-hover-fg: #ffffff;
+  --color-nav-active-bg: rgba(94, 106, 210, 0.24);
+  --color-nav-active-fg: #ffffff;
+  --color-nav-active-icon: #818cf8;
+
+  /* Linear Deep Charcoal Topbar */
+  --color-header-bg: #0b0c0e;
+  --color-header-border: #1e2025;
+  --color-header-fg: #f7f8f8;
+  --color-header-btn-bg: #15171b;
+  --color-header-btn-border: #262930;
+  --color-header-btn-fg: #c5c8cf;
+  --color-header-tool-fg: #8a8f98;
+  --color-header-tool-hover-bg: #18191e;
+  --color-header-tool-hover-border: #2b2e37;
+  --color-header-key-bg: #1f2228;
+  --color-header-key-border: #2e323b;
+  --color-header-key-fg: #f7f8f8;
+}
+
+/* 12. Midnight Oceanic Abyss (Deep Sea Navy & Glacial Ice Blue) */
+[data-theme='midnight-abyss'],
+[data-theme='nord'] {
+  --color-canvas-default: #0e172b;
+  --color-canvas-subtle: #131f38;
+  --color-canvas-surface: #0e172b;
+  --color-border-default: #1e293b;
+  --color-border-muted: #182335;
+  --color-border-subtle: #162136;
+  --color-fg-default: #f0f6fc;
+  --color-fg-muted: #8fa3c7;
+  --color-fg-subtle: #677899;
+  --color-fg-disabled: #4a5872;
+
+  --color-accent-fg: #38bdf8;
+  --color-accent-emphasis: #0284c7;
+  --color-accent-subtle: rgba(56, 189, 248, 0.16);
+  --color-accent-hover: #0284c7;
+
+  --color-bg-app: #070c18;
+  --color-bg-card: #0e172b;
+  --color-bg-subtle: #131f38;
+  --color-bg-hover: #17243f;
+  --color-border: #1e293b;
+  --color-border-subtle: #162136;
+  --color-text-main: #f0f6fc;
+  --color-text-secondary: #cad5e8;
+  --color-text-muted: #8fa3c7;
+  --color-text-subtle: #677899;
+  --color-primary: #0284c7;
+  --color-primary-hover: #0369a1;
+  --color-primary-active: #075985;
+  --color-primary-light: rgba(56, 189, 248, 0.16);
+  --color-primary-contrast: #ffffff;
+
+  --color-btn-text: #f0f6fc;
+  --color-btn-bg: #14203a;
+  --color-btn-border: #223254;
+  --color-btn-hover-bg: #1a2a4c;
+  --color-btn-hover-border: #3b507d;
+  --color-btn-active-bg: #223254;
+  --color-btn-primary-text: #ffffff;
+  --color-btn-primary-bg: #0284c7;
+  --color-btn-primary-border: #0284c7;
+  --color-btn-primary-hover-bg: #0369a1;
+
+  --color-btn-danger-text: #f87171;
+  --color-btn-danger-bg: #22151d;
+  --color-btn-danger-border: #4d1d2b;
+  --color-btn-danger-hover-bg: #ef4444;
+  --color-btn-danger-hover-text: #ffffff;
+
+  --color-income: #34d399;
+  --color-income-bg: rgba(52, 211, 153, 0.14);
+  --color-income-border: #059669;
+  --color-expense: #f87171;
+  --color-expense-bg: rgba(248, 113, 113, 0.14);
+  --color-expense-border: #dc2626;
+  --color-loan: #fbbf24;
+  --color-loan-bg: rgba(251, 191, 36, 0.14);
+  --color-loan-border: #d97706;
+  --color-investment: #38bdf8;
+  --color-investment-bg: rgba(56, 189, 248, 0.14);
+  --color-investment-border: #0284c7;
+  --color-epf: #2dd4bf;
+  --color-epf-bg: rgba(45, 212, 191, 0.14);
+  --color-epf-border: #0d9488;
+  --color-notif-bg: #38bdf8;
+  --color-notif-fg: #070c18;
+
+  --shadow-sm: 0 1px 3px rgba(3, 7, 18, 0.4);
+  --shadow-md: 0 4px 12px rgba(3, 7, 18, 0.6);
+  --shadow-lg: 0 12px 30px rgba(3, 7, 18, 0.8);
+  --bg-surface: #0e172b;
+  --color-bg-main: #0e172b;
+  --text-primary: #f0f6fc;
+  --text-secondary: #cad5e8;
+  --border-color: #1e293b;
+  --primary: #0284c7;
+  --primary-hover: #0369a1;
+
+  /* Midnight Oceanic Abyss Sidebar */
+  --color-sidebar-bg: #050914;
+  --color-sidebar-border: #151f33;
+  --color-sidebar-border-inner: #0b1222;
+  --color-sidebar-fg: #f0f6fc;
+  --color-sidebar-muted: #7a8ba8;
+  --color-sidebar-nav-fg: #cad5e8;
+  --color-sidebar-nav-icon: #7a8ba8;
+  --color-nav-hover-bg: #0f182c;
+  --color-nav-hover-fg: #ffffff;
+  --color-nav-active-bg: rgba(56, 189, 248, 0.20);
+  --color-nav-active-fg: #38bdf8;
+  --color-nav-active-icon: #38bdf8;
+
+  /* Midnight Abyss Topbar */
+  --color-header-bg: #050914;
+  --color-header-border: #151f33;
+  --color-header-fg: #f0f6fc;
+  --color-header-btn-bg: #0e172a;
+  --color-header-btn-border: #1e293b;
+  --color-header-btn-fg: #cad5e8;
+  --color-header-tool-fg: #7a8ba8;
+  --color-header-tool-hover-bg: #0f182c;
+  --color-header-tool-hover-border: #233352;
+  --color-header-key-bg: #152037;
+  --color-header-key-border: #233352;
+  --color-header-key-fg: #f0f6fc;
+}
+
+/* 13. Cyber Terminal Matrix (Phosphor Emerald Telemetry Command Center) */
+[data-theme='matrix-terminal'],
+[data-theme='midnight-emerald'] {
+  --color-canvas-default: #111b14;
+  --color-canvas-subtle: #16241b;
+  --color-canvas-surface: #111b14;
+  --color-border-default: #1b3b22;
+  --color-border-muted: #15301c;
+  --color-border-subtle: #142b19;
+  --color-fg-default: #ecfdf5;
+  --color-fg-muted: #6ee7b7;
+  --color-fg-subtle: #34d399;
+  --color-fg-disabled: #065f46;
+
+  --color-accent-fg: #00f076;
+  --color-accent-emphasis: #00c853;
+  --color-accent-subtle: rgba(0, 240, 118, 0.16);
+  --color-accent-hover: #00c853;
+
+  --color-bg-app: #0a0f0b;
+  --color-bg-card: #111b14;
+  --color-bg-subtle: #16241b;
+  --color-bg-hover: #1b2e21;
+  --color-border: #1b3b22;
+  --color-border-subtle: #142b19;
+  --color-text-main: #ecfdf5;
+  --color-text-secondary: #a7f3d0;
+  --color-text-muted: #6ee7b7;
+  --color-text-subtle: #34d399;
+  --color-primary: #00c853;
+  --color-primary-hover: #009624;
+  --color-primary-active: #00701a;
+  --color-primary-light: rgba(0, 240, 118, 0.16);
+  --color-primary-contrast: #000000;
+
+  --color-btn-text: #ecfdf5;
+  --color-btn-bg: #15241b;
+  --color-btn-border: #214728;
+  --color-btn-hover-bg: #1d3626;
+  --color-btn-hover-border: #00f076;
+  --color-btn-active-bg: #214728;
+  --color-btn-primary-text: #000000;
+  --color-btn-primary-bg: #00f076;
+  --color-btn-primary-border: #00f076;
+  --color-btn-primary-hover-bg: #00c853;
+
+  --color-btn-danger-text: #ff4d4d;
+  --color-btn-danger-bg: #241314;
+  --color-btn-danger-border: #4a191b;
+  --color-btn-danger-hover-bg: #ff4d4d;
+  --color-btn-danger-hover-text: #000000;
+
+  --color-income: #00f076;
+  --color-income-bg: rgba(0, 240, 118, 0.14);
+  --color-income-border: #00c853;
+  --color-expense: #ff4d4d;
+  --color-expense-bg: rgba(255, 77, 77, 0.14);
+  --color-expense-border: #cc0000;
+  --color-loan: #ffb703;
+  --color-loan-bg: rgba(255, 183, 3, 0.14);
+  --color-loan-border: #fb8500;
+  --color-investment: #00e5ff;
+  --color-investment-bg: rgba(0, 229, 255, 0.14);
+  --color-investment-border: #00b0ff;
+  --color-epf: #00f076;
+  --color-epf-bg: rgba(0, 240, 118, 0.14);
+  --color-epf-border: #00c853;
+  --color-notif-bg: #ff4d4d;
+  --color-notif-fg: #000000;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.7);
+  --shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.9);
+  --bg-surface: #111b14;
+  --color-bg-main: #111b14;
+  --text-primary: #ecfdf5;
+  --text-secondary: #a7f3d0;
+  --border-color: #1b3b22;
+  --primary: #00c853;
+  --primary-hover: #009624;
+
+  /* Cyber Terminal Sidebar */
+  --color-sidebar-bg: #080c09;
+  --color-sidebar-border: #142918;
+  --color-sidebar-border-inner: #0d170f;
+  --color-sidebar-fg: #ecfdf5;
+  --color-sidebar-muted: #6ee7b7;
+  --color-sidebar-nav-fg: #a7f3d0;
+  --color-sidebar-nav-icon: #6ee7b7;
+  --color-nav-hover-bg: #102114;
+  --color-nav-hover-fg: #ffffff;
+  --color-nav-active-bg: rgba(0, 240, 118, 0.20);
+  --color-nav-active-fg: #00f076;
+  --color-nav-active-icon: #00f076;
+
+  /* Cyber Terminal Topbar */
+  --color-header-bg: #080c09;
+  --color-header-border: #142918;
+  --color-header-fg: #ecfdf5;
+  --color-header-btn-bg: #0f1f13;
+  --color-header-btn-border: #1b3b22;
+  --color-header-btn-fg: #a7f3d0;
+  --color-header-tool-fg: #6ee7b7;
+  --color-header-tool-hover-bg: #102114;
+  --color-header-tool-hover-border: #214728;
+  --color-header-key-bg: #142918;
+  --color-header-key-border: #214728;
+  --color-header-key-fg: #00f076;
+}
+
+/* --------------------------------------------------------------------------
+   GROUP 4: VIBRANT & COLORFUL THEMES (Futuristic & Aesthetic Gradients)
+   -------------------------------------------------------------------------- */
+
+/* 14. Cyberpunk Synthwave (Neon Cyan & Electric Fuchsia Glow) */
+[data-theme='cyberpunk-neon'] {
+  --color-canvas-default: #15102a;
+  --color-canvas-subtle: #1c1538;
+  --color-canvas-surface: #15102a;
+  --color-border-default: #2d1f47;
+  --color-border-muted: #24193a;
+  --color-border-subtle: #211736;
+  --color-fg-default: #fdf4ff;
+  --color-fg-muted: #c084fc;
+  --color-fg-subtle: #a855f7;
+  --color-fg-disabled: #581c87;
+
+  --color-accent-fg: #00f5d4;
+  --color-accent-emphasis: #f72585;
+  --color-accent-subtle: rgba(0, 245, 212, 0.18);
+  --color-accent-hover: #f72585;
+
+  --color-bg-app: #0d0a1c;
+  --color-bg-card: #15102a;
+  --color-bg-subtle: #1c1538;
+  --color-bg-hover: #231b45;
+  --color-border: #2d1f47;
+  --color-border-subtle: #211736;
+  --color-text-main: #fdf4ff;
+  --color-text-secondary: #e9d5ff;
+  --color-text-muted: #c084fc;
+  --color-text-subtle: #a855f7;
+  --color-primary: #f72585;
+  --color-primary-hover: #d91471;
+  --color-primary-active: #b5179e;
+  --color-primary-light: rgba(247, 37, 133, 0.18);
+  --color-primary-contrast: #ffffff;
+
+  --color-btn-text: #fdf4ff;
+  --color-btn-bg: #1c1538;
+  --color-btn-border: #3c295e;
+  --color-btn-hover-bg: #271c4c;
+  --color-btn-hover-border: #00f5d4;
+  --color-btn-active-bg: #3c295e;
+  --color-btn-primary-text: #ffffff;
+  --color-btn-primary-bg: #f72585;
+  --color-btn-primary-border: #f72585;
+  --color-btn-primary-hover-bg: #d91471;
+
+  --color-btn-danger-text: #f72585;
+  --color-btn-danger-bg: #26111f;
+  --color-btn-danger-border: #52183b;
+  --color-btn-danger-hover-bg: #f72585;
+  --color-btn-danger-hover-text: #ffffff;
+
+  --color-income: #00f5d4;
+  --color-income-bg: rgba(0, 245, 212, 0.14);
+  --color-income-border: #00c4a7;
+  --color-expense: #f72585;
+  --color-expense-bg: rgba(247, 37, 133, 0.14);
+  --color-expense-border: #d91471;
+  --color-loan: #fee440;
+  --color-loan-bg: rgba(254, 228, 64, 0.14);
+  --color-loan-border: #cca800;
+  --color-investment: #7209b7;
+  --color-investment-bg: rgba(114, 9, 183, 0.20);
+  --color-investment-border: #a855f7;
+  --color-epf: #00f5d4;
+  --color-epf-bg: rgba(0, 245, 212, 0.14);
+  --color-epf-border: #00c4a7;
+  --color-notif-bg: #f72585;
+  --color-notif-fg: #ffffff;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.7);
+  --shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.9);
+  --bg-surface: #15102a;
+  --color-bg-main: #15102a;
+  --text-primary: #fdf4ff;
+  --text-secondary: #e9d5ff;
+  --border-color: #2d1f47;
+  --primary: #f72585;
+  --primary-hover: #d91471;
+
+  /* Cyberpunk Synthwave Sidebar */
+  --color-sidebar-bg: #090714;
+  --color-sidebar-border: #261a3d;
+  --color-sidebar-border-inner: #120e24;
+  --color-sidebar-fg: #fdf4ff;
+  --color-sidebar-muted: #c084fc;
+  --color-sidebar-nav-fg: #e9d5ff;
+  --color-sidebar-nav-icon: #c084fc;
+  --color-nav-hover-bg: #1d1433;
+  --color-nav-hover-fg: #ffffff;
+  --color-nav-active-bg: rgba(247, 37, 133, 0.26);
+  --color-nav-active-fg: #00f5d4;
+  --color-nav-active-icon: #00f5d4;
+
+  /* Cyberpunk Synthwave Topbar */
+  --color-header-bg: #090714;
+  --color-header-border: #261a3d;
+  --color-header-fg: #fdf4ff;
+  --color-header-btn-bg: #17112c;
+  --color-header-btn-border: #342454;
+  --color-header-btn-fg: #e9d5ff;
+  --color-header-tool-fg: #c084fc;
+  --color-header-tool-hover-bg: #1d1433;
+  --color-header-tool-hover-border: #432a68;
+  --color-header-key-bg: #24163d;
+  --color-header-key-border: #3e2666;
+  --color-header-key-fg: #00f5d4;
+}
+
+/* 15. Aurora Borealis Teal & Indigo (Celestial Northern Lights) */
+[data-theme='aurora-borealis'] {
+  --color-canvas-default: #0d2433;
+  --color-canvas-subtle: #123145;
+  --color-canvas-surface: #0d2433;
+  --color-border-default: #183f52;
+  --color-border-muted: #143545;
+  --color-border-subtle: #102d3c;
+  --color-fg-default: #ecfeff;
+  --color-fg-muted: #94a3b8;
+  --color-fg-subtle: #64748b;
+  --color-fg-disabled: #334155;
+
+  --color-accent-fg: #06d6a0;
+  --color-accent-emphasis: #0ea5e9;
+  --color-accent-subtle: rgba(6, 214, 160, 0.18);
+  --color-accent-hover: #0ea5e9;
+
+  --color-bg-app: #07151e;
+  --color-bg-card: #0d2433;
+  --color-bg-subtle: #123145;
+  --color-bg-hover: #163d57;
+  --color-border: #183f52;
+  --color-border-subtle: #102d3c;
+  --color-text-main: #ecfeff;
+  --color-text-secondary: #cffafe;
+  --color-text-muted: #94a3b8;
+  --color-text-subtle: #64748b;
+  --color-primary: #0ea5e9;
+  --color-primary-hover: #0284c7;
+  --color-primary-active: #0369a1;
+  --color-primary-light: rgba(14, 165, 233, 0.18);
+  --color-primary-contrast: #ffffff;
+
+  --color-btn-text: #ecfeff;
+  --color-btn-bg: #143547;
+  --color-btn-border: #23546f;
+  --color-btn-hover-bg: #1a445c;
+  --color-btn-hover-border: #06d6a0;
+  --color-btn-active-bg: #23546f;
+  --color-btn-primary-text: #ffffff;
+  --color-btn-primary-bg: #0ea5e9;
+  --color-btn-primary-border: #0ea5e9;
+  --color-btn-primary-hover-bg: #0284c7;
+
+  --color-btn-danger-text: #f43f5e;
+  --color-btn-danger-bg: #28141d;
+  --color-btn-danger-border: #521c29;
+  --color-btn-danger-hover-bg: #f43f5e;
+  --color-btn-danger-hover-text: #ffffff;
+
+  --color-income: #06d6a0;
+  --color-income-bg: rgba(6, 214, 160, 0.14);
+  --color-income-border: #059669;
+  --color-expense: #f43f5e;
+  --color-expense-bg: rgba(244, 63, 94, 0.14);
+  --color-expense-border: #e11d48;
+  --color-loan: #facc15;
+  --color-loan-bg: rgba(250, 204, 21, 0.14);
+  --color-loan-border: #ca8a04;
+  --color-investment: #818cf8;
+  --color-investment-bg: rgba(129, 140, 248, 0.18);
+  --color-investment-border: #6366f1;
+  --color-epf: #06d6a0;
+  --color-epf-bg: rgba(6, 214, 160, 0.14);
+  --color-epf-border: #059669;
+  --color-notif-bg: #06d6a0;
+  --color-notif-fg: #07151e;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.6);
+  --shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.8);
+  --bg-surface: #0d2433;
+  --color-bg-main: #0d2433;
+  --text-primary: #ecfeff;
+  --text-secondary: #cffafe;
+  --border-color: #183f52;
+  --primary: #0ea5e9;
+  --primary-hover: #0284c7;
+
+  /* Aurora Borealis Sidebar */
+  --color-sidebar-bg: #041017;
+  --color-sidebar-border: #112b38;
+  --color-sidebar-border-inner: #081c26;
+  --color-sidebar-fg: #ecfeff;
+  --color-sidebar-muted: #7dd3fc;
+  --color-sidebar-nav-fg: #cffafe;
+  --color-sidebar-nav-icon: #7dd3fc;
+  --color-nav-hover-bg: #0c2635;
+  --color-nav-hover-fg: #ffffff;
+  --color-nav-active-bg: rgba(6, 214, 160, 0.22);
+  --color-nav-active-fg: #06d6a0;
+  --color-nav-active-icon: #06d6a0;
+
+  /* Aurora Borealis Topbar */
+  --color-header-bg: #041017;
+  --color-header-border: #112b38;
+  --color-header-fg: #ecfeff;
+  --color-header-btn-bg: #0b212d;
+  --color-header-btn-border: #183f52;
+  --color-header-btn-fg: #cffafe;
+  --color-header-tool-fg: #7dd3fc;
+  --color-header-tool-hover-bg: #0c2635;
+  --color-header-tool-hover-border: #1f4f66;
+  --color-header-key-bg: #143547;
+  --color-header-key-border: #1f4f66;
+  --color-header-key-fg: #06d6a0;
+}
+
+/* 16. Sunset Terracotta & Bronze (Warm Dusk Ember & Golden Brass) */
+[data-theme='sunset-amber'],
 [data-theme='terracotta-beige'] {
-  /* Main Canvas (Beige - Warm Tuscan Beige) */
-  --color-canvas-default: #f7efe5;
-  --color-canvas-subtle: #eedecf;
-  --color-canvas-surface: #fffdfa;
-  --color-border-default: #dfcdbc;
-  --color-border-muted: #eadbce;
-  --color-border-subtle: #ebdcd0;
-  --color-fg-default: #311d17;
-  --color-fg-muted: #6e4c41;
-  --color-fg-subtle: #8e6d62;
-  --color-accent-fg: #ba4836;
-  --color-accent-emphasis: #9f3a2a;
-  --color-accent-subtle: rgba(186, 72, 54, 0.12);
+  --color-canvas-default: #231712;
+  --color-canvas-subtle: #2f1f18;
+  --color-canvas-surface: #231712;
+  --color-border-default: #3d251b;
+  --color-border-muted: #341f17;
+  --color-border-subtle: #2c1a13;
+  --color-fg-default: #fff7ed;
+  --color-fg-muted: #fdba74;
+  --color-fg-subtle: #fb923c;
+  --color-fg-disabled: #7c2d12;
 
-  --color-bg-app: #f7efe5;
-  --color-bg-card: #fffdfa;
-  --color-bg-subtle: #eedecf;
-  --color-bg-hover: #edd9c8;
-  --color-border: #dfcdbc;
-  --color-border-subtle: #ebdcd0;
-  --color-text-main: #311d17;
-  --color-text-secondary: #57362d;
-  --color-text-muted: #7d594f;
-  --color-text-subtle: #9c786e;
-  --color-primary: #ba4836;
-  --color-primary-hover: #9f3a2a;
-  --color-primary-active: #863022;
-  --color-primary-light: rgba(186, 72, 54, 0.12);
+  --color-accent-fg: #f97316;
+  --color-accent-emphasis: #ea580c;
+  --color-accent-subtle: rgba(249, 115, 22, 0.18);
+  --color-accent-hover: #ea580c;
+
+  --color-bg-app: #19110d;
+  --color-bg-card: #231712;
+  --color-bg-subtle: #2f1f18;
+  --color-bg-hover: #3b231a;
+  --color-border: #3d251b;
+  --color-border-subtle: #2c1a13;
+  --color-text-main: #fff7ed;
+  --color-text-secondary: #ffedd5;
+  --color-text-muted: #fdba74;
+  --color-text-subtle: #fb923c;
+  --color-primary: #ea580c;
+  --color-primary-hover: #c2410c;
+  --color-primary-active: #9a3412;
+  --color-primary-light: rgba(249, 115, 22, 0.18);
   --color-primary-contrast: #ffffff;
 
-  --color-btn-text: #311d17;
-  --color-btn-bg: #f4e8dc;
-  --color-btn-border: #dcc8b6;
-  --color-btn-hover-bg: #ebdccd;
-  --color-btn-hover-border: #cfb9a5;
-
+  --color-btn-text: #fff7ed;
+  --color-btn-bg: #2d1c15;
+  --color-btn-border: #4d2f22;
+  --color-btn-hover-bg: #38231a;
+  --color-btn-hover-border: #f97316;
+  --color-btn-active-bg: #4d2f22;
   --color-btn-primary-text: #ffffff;
-  --color-btn-primary-bg: #ba4836;
-  --color-btn-primary-border: #9f3a2a;
-  --color-btn-primary-hover-bg: #9f3a2a;
+  --color-btn-primary-bg: #ea580c;
+  --color-btn-primary-border: #ea580c;
+  --color-btn-primary-hover-bg: #c2410c;
 
-  --color-income: #267b49;
-  --color-income-bg: rgba(38, 123, 73, 0.12);
-  --color-income-border: #267b49;
-  --color-expense: #ba4836;
-  --color-expense-bg: rgba(186, 72, 54, 0.12);
-  --color-expense-border: #ba4836;
-  --color-loan: #c78d26;
-  --color-loan-bg: rgba(199, 141, 38, 0.12);
-  --color-loan-border: #c78d26;
-  --color-investment: #ba4836;
-  --color-investment-bg: rgba(186, 72, 54, 0.12);
-  --color-investment-border: #ba4836;
-  --color-epf: #0d9488;
-  --color-epf-bg: rgba(13, 148, 136, 0.12);
+  --color-btn-danger-text: #f87171;
+  --color-btn-danger-bg: #2d1416;
+  --color-btn-danger-border: #561d21;
+  --color-btn-danger-hover-bg: #f87171;
+  --color-btn-danger-hover-text: #ffffff;
+
+  --color-income: #34d399;
+  --color-income-bg: rgba(52, 211, 153, 0.14);
+  --color-income-border: #059669;
+  --color-expense: #f87171;
+  --color-expense-bg: rgba(248, 113, 113, 0.14);
+  --color-expense-border: #dc2626;
+  --color-loan: #fbbf24;
+  --color-loan-bg: rgba(251, 191, 36, 0.14);
+  --color-loan-border: #d97706;
+  --color-investment: #fb923c;
+  --color-investment-bg: rgba(251, 146, 60, 0.18);
+  --color-investment-border: #ea580c;
+  --color-epf: #2dd4bf;
+  --color-epf-bg: rgba(45, 212, 191, 0.14);
   --color-epf-border: #0d9488;
+  --color-notif-bg: #f97316;
+  --color-notif-fg: #19110d;
 
-  --shadow-sm: 0 1px 3px rgba(186, 72, 54, 0.06);
-  --shadow-md: 0 4px 8px rgba(186, 72, 54, 0.08);
-  --bg-surface: #fffdfa;
-  --color-bg-main: #fffdfa;
-  --text-primary: #311d17;
-  --text-secondary: #57362d;
-  --border-color: #dfcdbc;
-  --primary: #ba4836;
-  --primary-hover: #9f3a2a;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.45);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.65);
+  --shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.85);
+  --bg-surface: #231712;
+  --color-bg-main: #231712;
+  --text-primary: #fff7ed;
+  --text-secondary: #ffedd5;
+  --border-color: #3d251b;
+  --primary: #ea580c;
+  --primary-hover: #c2410c;
 
-  /* Sidebar & Header (Terracotta with Brass Gold Trim) */
-  --color-sidebar-bg: #ba4836;
-  --color-sidebar-border: #deb16d; /* Signature Brass Gold Divider */
-  --color-sidebar-border-inner: rgba(255, 255, 255, 0.15);
-  --color-sidebar-fg: #fff8f5;
-  --color-sidebar-muted: #f8cfc7;
-  --color-sidebar-nav-fg: #fdeee9;
-  --color-sidebar-nav-icon: #f5beb5;
-  --color-nav-hover-bg: rgba(255, 255, 255, 0.15);
+  /* Sunset Terracotta Sidebar */
+  --color-sidebar-bg: #140d0a;
+  --color-sidebar-border: #362118;
+  --color-sidebar-border-inner: #1e130f;
+  --color-sidebar-fg: #fff7ed;
+  --color-sidebar-muted: #fdba74;
+  --color-sidebar-nav-fg: #ffedd5;
+  --color-sidebar-nav-icon: #fdba74;
+  --color-nav-hover-bg: #261711;
   --color-nav-hover-fg: #ffffff;
-  --color-nav-active-bg: rgba(222, 177, 109, 0.28);
-  --color-nav-active-fg: #ffffff;
-  --color-nav-active-icon: #ffebb8;
-  --color-notif-bg: #deb16d;
-  --color-notif-fg: #311d17;
+  --color-nav-active-bg: rgba(249, 115, 22, 0.26);
+  --color-nav-active-fg: #fb923c;
+  --color-nav-active-icon: #fb923c;
 
-  --color-header-bg: #ba4836;
-  --color-header-border: #deb16d; /* Signature Brass Gold Divider */
-  --color-header-fg: #fff8f5;
-  --color-header-btn-bg: rgba(255, 255, 255, 0.15);
-  --color-header-btn-border: rgba(222, 177, 109, 0.45);
-  --color-header-btn-fg: #fef0ea;
-  --color-header-key-bg: rgba(255, 255, 255, 0.18);
-  --color-header-key-border: rgba(255, 255, 255, 0.28);
-  --color-header-key-fg: #fff8f5;
-  --color-header-tool-fg: #f8d5cf;
-  --color-header-tool-hover-bg: rgba(255, 255, 255, 0.2);
-  --color-header-tool-hover-border: #deb16d;
-
-  --gold-accent: #deb16d;
+  /* Sunset Terracotta Topbar */
+  --color-header-bg: #140d0a;
+  --color-header-border: #362118;
+  --color-header-fg: #fff7ed;
+  --color-header-btn-bg: #241510;
+  --color-header-btn-border: #45291e;
+  --color-header-btn-fg: #ffedd5;
+  --color-header-tool-fg: #fdba74;
+  --color-header-tool-hover-bg: #261711;
+  --color-header-tool-hover-border: #533224;
+  --color-header-key-bg: #321d15;
+  --color-header-key-border: #533224;
+  --color-header-key-fg: #fb923c;
 }
 
 /* Typography Font Presets */
@@ -1448,6 +2055,27 @@ html {
   text-size-adjust: 100%;
 }
 
+
+/* Universal Smooth Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-default, #d1d5db);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-fg-subtle, #9ca3af);
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-default, #d1d5db) transparent;
+}
+
 body {
   min-height: 100%;
   font-family: var(--font-family-base);
@@ -1456,6 +2084,7 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 /* Compact Crisp Heading Hierarchy */
@@ -1526,7 +2155,7 @@ button.btn-retry {
   border-radius: 8px; /* Clean compact radius */
   border: 1px solid var(--color-border-default);
   background-color: var(--color-canvas-default);
-  color: var(--color-accent-fg);
+  color: var(--color-text-main);
   cursor: pointer;
   text-decoration: none;
   white-space: nowrap;
@@ -1540,12 +2169,12 @@ button.btn-retry {
   }
 
   &:active {
-    background-color: #e1e3e1;
+    background-color: var(--color-bg-hover);
   }
 
   &:focus-visible {
     outline: none;
-    box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.35);
+    box-shadow: 0 0 0 2px var(--color-accent-subtle);
   }
 
   &:disabled, &[disabled] {
@@ -1560,15 +2189,15 @@ button.btn-retry {
 
 /* 1. Primary Button */
 .btn-primary, button.btn-primary {
-  color: #ffffff !important;
+  color: var(--color-primary-contrast, #ffffff) !important;
   background-color: var(--color-btn-primary-bg) !important;
   border-color: var(--color-btn-primary-border) !important;
-  box-shadow: 0 1px 2px rgba(0, 166, 90, 0.2);
+  box-shadow: var(--shadow-sm);
 
   &:hover:not(:disabled) {
     background-color: var(--color-btn-primary-hover-bg) !important;
     border-color: var(--color-btn-primary-hover-bg) !important;
-    box-shadow: 0 2px 4px rgba(0, 166, 90, 0.3);
+    box-shadow: var(--shadow-md);
   }
 }
 
@@ -1621,8 +2250,8 @@ button.btn-retry {
   box-shadow: none;
 
   &:hover {
-    background-color: rgba(208, 215, 222, 0.32);
-    color: var(--color-fg-default);
+    background-color: var(--color-bg-hover);
+    color: var(--color-text-main);
   }
 }
 
@@ -1671,8 +2300,8 @@ button.btn-retry {
 
   &:focus {
     outline: none;
-    border-color: #34d399;
-    box-shadow: 0 0 0 2px rgba(52, 211, 153, 0.25);
+    border-color: var(--color-accent-fg);
+    box-shadow: 0 0 0 3px var(--color-accent-subtle);
   }
 
   &:disabled {
